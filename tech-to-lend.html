@@ -75,6 +75,48 @@
             color: white;
         }
     </style>
+
+    <style>
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 80%;
+            max-width: 800px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .close {
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            cursor: pointer;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
+    
 </head>
 <body>
     <header>
@@ -96,7 +138,15 @@
             <h3>Homemaker Memory Kit</h3>
             <p>A specialized collection designed to engage individuals experiencing memory loss through sensory experiences related to homemaking.</p>
             <button onclick="copyBarcode('39061004374556')">Copy Barcode</button>
+            <button onclick="openFormModal()">Open Form</button>
         </div>
+
+        <div id="formModal" style="display:none;" class="modal">
+            <div class="modal-content">
+            <span onclick="closeFormModal()" class="close">&times;</span>
+            <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSc9B88q9NYdHTmXq3wTpCR7zN8fA5z0Gv2G3ocnx-XXyw5ysw/viewform?usp=sf_link" width="100%" height="600"></iframe>
+            </div>
+        </div>  
         
         <div class="item-card">
             <img src="https://drive.google.com/thumbnail?id=1Lozx1vF-X48HhCNI5TZb1EQGAciLECdg" alt="Farmer Memory Kit">
@@ -378,5 +428,23 @@
             });
         }
     </script>
+
+        <script>
+        // Open the modal
+        function openFormModal() {
+            document.getElementById('formModal').style.display = 'flex';
+        }
+
+        // Close the modal
+        function closeFormModal() {
+            document.getElementById('formModal').style.display = 'none';
+        }
+
+        // Example function for the barcode button (you can replace this with your actual implementation)
+        function copyBarcode(barcode) {
+            alert("Barcode " + barcode + " copied!");
+        }
+    </script>
+    
 </body>
 </html>
