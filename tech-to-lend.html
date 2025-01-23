@@ -422,20 +422,19 @@
                 alert("Failed to copy barcode.");
             });
         }
-        
-        // Open the modal
-        function openFormModal(modalId) {
+
+        // Open the modal and dynamically load the iframe source
+        function openFormModal(modalId, formUrl) {
             document.getElementById(modalId).style.display = 'flex';
+            const iframeId = modalId === 'formModal1' ? 'iframe1' : 'iframe2';
+            document.getElementById(iframeId).src = formUrl;
         }
 
         // Close the modal
         function closeFormModal(modalId) {
             document.getElementById(modalId).style.display = 'none';
-        }
-
-        // Example function for the barcode button (you can replace this with your actual implementation)
-        function copyBarcode(barcode) {
-            alert("Barcode " + barcode + " copied!");
+            const iframeId = modalId === 'formModal1' ? 'iframe1' : 'iframe2';
+            document.getElementById(iframeId).src = ''; // Reset iframe src when closing modal
         }
     </script>
     
