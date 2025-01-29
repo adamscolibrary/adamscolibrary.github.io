@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Webcomic</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #000; /* Adjust if needed */
+        }
+
+        .comic-container {
+            width: 100vw;
+        }
+
+        .comic-container img {
+            width: 100%;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="comic-container">
+        <img src="https://drive.google.com/thumbnail?id=14didqGmmuqjO4qzYZYl8rn0KCQ0t8HuT" alt="Comic Panel 1">
+        <img src="https://drive.google.com/thumbnail?id=1SuuaOI5X42KM0Syc_-ZSeWVG_sRTf40x" alt="Comic Panel 2">
+        <img src="https://drive.google.com/thumbnail?id=1ikhGb9Ol06IbI0PBibatg1q_-K7S5qHI" alt="Comic Panel 3">
+        <img src="https://drive.google.com/thumbnail?id=" alt="Comic Panel 4">
+        <img src="https://drive.google.com/thumbnail?id=" alt="Comic Panel 5">
+        <img src="https://drive.google.com/thumbnail?id=" alt="Comic Panel 6">
+        <img src="https://drive.google.com/thumbnail?id=" alt="Comic Panel 7">
+        <img src="https://drive.google.com/thumbnail?id=" alt="Comic Panel 8">
+        <img src="https://drive.google.com/thumbnail?id=" alt="Comic Panel 9">
+        <img src="https://drive.google.com/thumbnail?id=" alt="Comic Panel 10">
+        <img src="https://drive.google.com/thumbnail?id=" alt="Comic Panel 11">
+        <img src="https://drive.google.com/thumbnail?id=" alt="Comic Panel 12">
+        <img src="https://drive.google.com/thumbnail?id=" alt="Comic Panel 13">
+        <img src="https://drive.google.com/thumbnail?id=" alt="Comic Panel 14">
+        <img src="https://drive.google.com/thumbnail?id=" alt="Comic Panel 15">
+        <img src="https://drive.google.com/thumbnail?id=" alt="Comic Panel 16">
+        <img src="https://drive.google.com/thumbnail?id=" alt="Comic Panel 17">
+        <img src="https://drive.google.com/thumbnail?id=" alt="Comic Panel 18">
+        <!-- Add more images as needed -->
+    </div>
+</body>
+</html>
