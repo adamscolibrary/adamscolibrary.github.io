@@ -6,7 +6,7 @@
     <title>MARC 650 Subject Finder</title>
     <style>
         body { font-family: Arial, sans-serif; text-align: center; margin: 50px; }
-        input, select { width: 80%; padding: 10px; margin: 10px; }
+        input { width: 80%; padding: 10px; margin: 10px; }
         button { padding: 10px; cursor: pointer; }
         ul { list-style: none; padding: 0; }
         li { padding: 5px; border-bottom: 1px solid #ddd; }
@@ -30,25 +30,13 @@
             let relatedTerms = new Map();
 
             // Fetch exact LCSH terms
-            let url = `https://id.loc.gov/authorities/subjects/suggest/?q=${encodeURIComponent(keyword)}`;
-            try {
-                let response = await fetch(url);
-                let data = await response.json();
-                if (data[1] && data[3]) {
-                    data[1].forEach((subject, index) => {
-                        let link = data[3][index];
-                        foundTerms.set(subject, link);
-                    });
-                }
-            } catch (error) {
-                console.error("Error fetching MARC data:", error);
-            }
+            await fetchLCSHSubjects(keyword, foundTerms);
 
-            // Fetch related terms from FAST API
-            await fetchFASTRelatedTerms(keyword, relatedTerms);
-
-            // Fetch broader/narrower/related terms from LoC API
+            // Fetch broader/narrower/related subjects from LoC API
             await fetchLOCRelatedTerms(keyword, relatedTerms);
+
+            // Fetch related subjects from FAST API
+            await fetchFASTRelatedTerms(keyword, relatedTerms);
 
             // Display Results
             let output = "<ul>";
@@ -73,6 +61,46 @@
             resultsContainer.innerHTML = output;
         }
 
+        // Fetch exact LCSH subjects
+        async function fetchLCSHSubjects(keyword, foundTerms) {
+            let url = `https://id.loc.gov/authorities/subjects/suggest/?q=${encodeURIComponent(keyword)}`;
+            try {
+                let response = await fetch(url);
+                let data = await response.json();
+                if (data[1] && data[3]) {
+                    data[1].forEach((subject, index) => {
+                        let link = data[3][index];
+                        foundTerms.set(subject, link);
+                    });
+                }
+            } catch (error) {
+                console.error("Error fetching LCSH subjects:", error);
+            }
+        }
+
+        // Fetch broader/narrower/related subjects from LoC API
+        async function fetchLOCRelatedTerms(keyword, relatedTerms) {
+            let locSearchUrl = `https://id.loc.gov/resources/works?query=${encodeURIComponent(keyword)}&format=json`;
+            try {
+                let response = await fetch(locSearchUrl);
+                let data = await response.json();
+
+                data.forEach(item => {
+                    let link = item["@id"];
+                    let label = item["label"];
+                    let broader = item["broader"] || [];
+                    let narrower = item["narrower"] || [];
+                    let related = item["related"] || [];
+
+                    broader.forEach(term => relatedTerms.set(term, link));
+                    narrower.forEach(term => relatedTerms.set(term, link));
+                    related.forEach(term => relatedTerms.set(term, link));
+                });
+            } catch (error) {
+                console.error("Error fetching LoC related terms:", error);
+            }
+        }
+
         // Fetch related subjects from FAST API
         async function fetchFASTRelatedTerms(keyword, relatedTerms) {
             let fastUrl = `https://fast.oclc.org/searchfast/fastSuggest?query=${encodeURIComponent(keyword)}&rows=5`;
@@ -88,29 +116,6 @@
                 }
             } catch (error) {
                 console.error("Error fetching FAST terms:", error);
-            }
-        }
-
-        // Fetch broader/narrower/related subjects from LoC API
-        async function fetchLOCRelatedTerms(keyword, relatedTerms) {
-            let locSearchUrl = `https://id.loc.gov/search/?q=${encodeURIComponent(keyword)}&format=json`;
-            try {
-                let response = await fetch(locSearchUrl);
-                let data = await response.json();
-
-                for (let item of data) {
-                    let link = item["@id"];
-                    let label = item["label"];
-                    let broader = item["broader"];
-                    let narrower = item["narrower"];
-                    let related = item["related"];
-
-                    if (broader) broader.forEach(term => relatedTerms.set(term, link));
-                    if (narrower) narrower.forEach(term => relatedTerms.set(term, link));
-                    if (related) related.forEach(term => relatedTerms.set(term, link));
-                }
-            } catch (error) {
-                console.error("Error fetching LoC related terms:", error);
             }
         }
     </script>
