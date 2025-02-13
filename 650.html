@@ -13,13 +13,17 @@
         li a { text-decoration: none; color: blue; }
         li a:hover { text-decoration: underline; }
         .section-title { font-size: 18px; font-weight: bold; margin-top: 20px; }
-        .related { font-size: 16px; color: #555; margin-top: 10px; }
+        .related-section { font-size: 16px; color: #555; margin-top: 20px; border-top: 2px solid #ddd; padding-top: 15px; }
+        .container { display: flex; justify-content: center; gap: 50px; margin-top: 20px; }
+        .results-container, .related-container { width: 45%; text-align: left; }
     </style>
     <script>
         async function fetchMARC() {
             let keyword = document.getElementById("keyword").value.trim();
             let resultsContainer = document.getElementById("results");
+            let relatedContainer = document.getElementById("related-results");
             resultsContainer.innerHTML = "";
+            relatedContainer.innerHTML = "";
 
             if (!keyword) {
                 resultsContainer.innerText = "Please enter a keyword.";
@@ -40,7 +44,7 @@
                 await fetchLCSHSubjects(term, foundTerms, broaderTerms, narrowerTerms, relatedTerms);
             }
 
-            // Display Results
+            // Display Exact Matches in Results Section
             let output = "<ul>";
             if (foundTerms.size > 0) {
                 foundTerms.forEach((link, subject) => {
@@ -49,14 +53,15 @@
             } else {
                 output += "<li>No exact LCSH terms found.</li>";
             }
-
-            // Show Related Subjects in Categories
-            output += buildCategorySection("Broader Terms", broaderTerms);
-            output += buildCategorySection("Narrower Terms", narrowerTerms);
-            output += buildCategorySection("Related Subjects", relatedTerms);
-
             output += "</ul>";
             resultsContainer.innerHTML = output;
+
+            // Display Related Subjects in a Separate Section
+            let relatedOutput = "";
+            relatedOutput += buildCategorySection("Broader Terms", broaderTerms);
+            relatedOutput += buildCategorySection("Narrower Terms", narrowerTerms);
+            relatedOutput += buildCategorySection("Related Subjects", relatedTerms);
+            relatedContainer.innerHTML = relatedOutput;
         }
 
         // Fetch synonyms from Datamuse API
@@ -101,11 +106,11 @@
         // Helper function to create category sections
         function buildCategorySection(title, terms) {
             if (terms.size === 0) return "";
-            let output = `<div class="section-title">${title}:</div><ul>`;
+            let output = `<div class="related-section"><div class="section-title">${title}:</div><ul>`;
             terms.forEach((link, subject) => {
                 output += `<li><a href="${link}" target="_blank">650 _0 $a ${subject} $2 lcsh</a></li>`;
             });
-            output += "</ul>";
+            output += "</ul></div>";
             return output;
         }
     </script>
@@ -114,6 +119,16 @@
     <h2>MARC 650 Subject Finder</h2>
     <input type="text" id="keyword" placeholder="Enter book topic (e.g., Climate Change)">
     <button onclick="fetchMARC()">Find Subjects</button>
-    <div id="results"></div>
+
+    <div class="container">
+        <div class="results-container">
+            <h3>Exact Matches</h3>
+            <div id="results"></div>
+        </div>
+        <div class="related-container">
+            <h3>Related Subjects</h3>
+            <div id="related-results"></div>
+        </div>
+    </div>
 </body>
 </html>
