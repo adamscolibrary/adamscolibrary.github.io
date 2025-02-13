@@ -44,8 +44,8 @@
             // Split keywords and add them individually to search
             keyword.split(" ").forEach(word => searchTerms.add(word));
 
-            let foundTerms = new Map();
-            let relatedTerms = new Map();
+            let foundTerms = new Set();
+            let relatedTerms = new Set();
 
             for (let term of searchTerms) {
                 let url = `https://id.loc.gov/authorities/subjects/suggest/?q=${encodeURIComponent(term)}`;
@@ -53,12 +53,11 @@
                     let response = await fetch(url);
                     let data = await response.json();
 
-                    data[1].forEach((subject, index) => {
-                        let link = data[3][index]; // Get official LoC URL
+                    data[1].forEach(subject => {
                         if (subject.toLowerCase().includes(keyword.toLowerCase())) {
-                            foundTerms.set(subject, link);
+                            foundTerms.add(subject);
                         } else {
-                            relatedTerms.set(subject, link);
+                            relatedTerms.add(subject);
                         }
                     });
                 } catch (error) {
@@ -66,23 +65,18 @@
                 }
             }
 
-            // Display main results with subdivisions
+            // Display main results
             if (foundTerms.size > 0) {
                 let list = document.createElement("ul");
-                for (let [subject, link] of foundTerms) {
-                    let { topicalSubdivisions, formSubdivisions } = await fetchSubdivisions(link);
-                    
+                foundTerms.forEach(subject => {
                     let listItem = document.createElement("li");
-                    let anchor = document.createElement("a");
-                    anchor.href = link;
-                    anchor.textContent = `650 _0 $a ${subject}` + 
-                        (topicalSubdivisions.size ? ` $x ${Array.from(topicalSubdivisions).join(" | ")}` : "") +
-                        (formSubdivisions.size ? ` $v ${Array.from(formSubdivisions).join(" | ")}` : "") +
-                        ` $2 lcsh`;
-                    anchor.target = "_blank";
-                    listItem.appendChild(anchor);
+                    let link = document.createElement("a");
+                    link.href = `https://id.loc.gov/authorities/subjects/${encodeURIComponent(subject.replace(/\s+/g, "_"))}`;
+                    link.textContent = `650 _0 ${subject}`;
+                    link.target = "_blank";
+                    listItem.appendChild(link);
                     list.appendChild(listItem);
-                }
+                });
                 resultsContainer.appendChild(list);
             } else {
                 resultsContainer.innerText = "No established LCSH terms found.";
@@ -94,52 +88,17 @@
                 relatedList.classList.add("related");
                 relatedList.innerHTML = "<div class='section-title'>Related Subjects:</div>";
                 let list = document.createElement("ul");
-                for (let [subject, link] of relatedTerms) {
-                    let { topicalSubdivisions, formSubdivisions } = await fetchSubdivisions(link);
-                    
+                relatedTerms.forEach(subject => {
                     let listItem = document.createElement("li");
-                    let anchor = document.createElement("a");
-                    anchor.href = link;
-                    anchor.textContent = `650 _0 $a ${subject}` + 
-                        (topicalSubdivisions.size ? ` $x ${Array.from(topicalSubdivisions).join(" | ")}` : "") +
-                        (formSubdivisions.size ? ` $v ${Array.from(formSubdivisions).join(" | ")}` : "") +
-                        ` $2 lcsh`;
-                    anchor.target = "_blank";
-                    listItem.appendChild(anchor);
+                    let link = document.createElement("a");
+                    link.href = `https://id.loc.gov/authorities/subjects/${encodeURIComponent(subject.replace(/\s+/g, "_"))}`;
+                    link.textContent = `650 _0 ${subject}`;
+                    link.target = "_blank";
+                    listItem.appendChild(link);
                     list.appendChild(listItem);
-                }
+                });
                 relatedList.appendChild(list);
                 relatedContainer.appendChild(relatedList);
-            }
-        }
-
-        async function fetchSubdivisions(subjectURL) {
-            try {
-                let response = await fetch(subjectURL + ".json");
-                let data = await response.json();
-
-                let topicalSubdivisions = new Set();
-                let formSubdivisions = new Set();
-
-                data.forEach(entry => {
-                    if (entry["http://www.w3.org/2004/02/skos/core#narrower"]) {
-                        entry["http://www.w3.org/2004/02/skos/core#narrower"].forEach(narrowerTerm => {
-                            let termLabel = narrowerTerm["@id"].split("/").pop().replace("_", " ");
-                            topicalSubdivisions.add(termLabel);
-                        });
-                    }
-                    if (entry["http://www.loc.gov/mads/rdf/v1#componentList"]) {
-                        entry["http://www.loc.gov/mads/rdf/v1#componentList"].forEach(formTerm => {
-                            let termLabel = formTerm["@id"].split("/").pop().replace("_", " ");
-                            formSubdivisions.add(termLabel);
-                        });
-                    }
-                });
-
-                return { topicalSubdivisions, formSubdivisions };
-            } catch (error) {
-                console.error("Error fetching subdivisions:", error);
-                return { topicalSubdivisions: new Set(), formSubdivisions: new Set() };
             }
         }
     </script>
