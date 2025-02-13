@@ -135,11 +135,11 @@
                 const response = await fetch(fastApiUrl);
                 const data = await response.json();
 
-                // Check the structure of the response
-                if (data && data.suggestions) {
-                    return data.suggestions;
+                // Check if "docs" is present in the response and extract terms
+                if (data && data.response && data.response.docs) {
+                    return data.response.docs.map(doc => doc.suggestall[0]); // Extract the FAST terms
                 } else {
-                    console.error("FAST API response is missing suggestions:", data);
+                    console.error("FAST API response is missing docs:", data);
                     return [];
                 }
             } catch (error) {
