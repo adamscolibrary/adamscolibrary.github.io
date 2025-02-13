@@ -19,7 +19,7 @@
         async function fetchMARC() {
             let keyword = document.getElementById("keyword").value.trim();
             let resultsContainer = document.getElementById("results");
-            resultsContainer.innerHTML = "";
+            resultsContainer.innerHTML = ""; // Clear previous results
 
             if (!keyword) {
                 resultsContainer.innerText = "Please enter a keyword.";
@@ -71,11 +71,11 @@
                 }
             }
 
-            // Display LCSH results (both exact and related)
-            let list = document.createElement("ul");
-
+            // Always show the results, even if no found terms exist
             if (foundTerms.size > 0 || relatedTerms.size > 0) {
-                // Always display exact matches first
+                let list = document.createElement("ul");
+
+                // Display found terms first
                 foundTerms.forEach((link, subject) => {
                     let listItem = document.createElement("li");
                     let anchor = document.createElement("a");
@@ -86,7 +86,7 @@
                     list.appendChild(listItem);
                 });
 
-                // Display related terms section even if no exact matches
+                // Display related terms (even if no exact matches were found)
                 if (relatedTerms.size > 0) {
                     let relatedList = document.createElement("div");
                     relatedList.classList.add("related");
