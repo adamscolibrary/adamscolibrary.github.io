@@ -149,6 +149,7 @@
                 let fastResults = [];
 
                 for (let record of records) {
+                    // Look for the 'subject' tag and extract the 'term' and 'uri'
                     const subjectTermNode = record.querySelector('subject > term');
                     const subjectLinkNode = record.querySelector('uri');
                     if (subjectTermNode && subjectLinkNode) {
