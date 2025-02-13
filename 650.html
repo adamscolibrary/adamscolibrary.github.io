@@ -99,9 +99,11 @@
                 });
                 relatedContainer.innerHTML += "<div class='section-title'>Related FAST Subjects:</div>";
                 relatedContainer.appendChild(fastList);
+            } else {
+                relatedContainer.innerHTML += "<div class='section-title'>No related FAST subjects found.</div>";
             }
 
-            // Display related subjects
+            // Display related subjects (LCSH)
             if (relatedTerms.size > 0) {
                 let relatedList = document.createElement("div");
                 relatedList.classList.add("related");
@@ -123,10 +125,15 @@
 
         // Function to fetch FAST subjects from the FAST API
         async function fetchFastSubjects(keyword) {
-            const fastApiUrl = `http://fast.oclc.org/searchfast/fastSuggest?query=${encodeURIComponent(keyword)}&queryIndex=suggestall&maxRecords=5`;
-            const response = await fetch(fastApiUrl);
-            const data = await response.json();
-            return data.suggestions || [];
+            const fastApiUrl = `https://fast.oclc.org/searchfast/fastSuggest?query=${encodeURIComponent(keyword)}&queryIndex=suggestall&maxRecords=5`;
+            try {
+                const response = await fetch(fastApiUrl);
+                const data = await response.json();
+                return data.suggestions || [];
+            } catch (error) {
+                console.error("Error fetching FAST data:", error);
+                return [];
+            }
         }
     </script>
 </head>
