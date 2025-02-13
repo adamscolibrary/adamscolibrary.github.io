@@ -96,7 +96,7 @@
                 fastResults.forEach(subject => {
                     let listItem = document.createElement("li");
                     let anchor = document.createElement("a");
-                    anchor.href = `https://fast.oclc.org/fast/fastSuggest?query=${encodeURIComponent(subject)}`;
+                    anchor.href = `http://fast.oclc.org/searchfast/fastsuggest?query=${encodeURIComponent(subject)}`;
                     anchor.textContent = `650 _0 $a ${subject} $2 fast`;
                     anchor.target = "_blank";
                     listItem.appendChild(anchor);
@@ -128,13 +128,20 @@
             }
         }
 
-        // Function to fetch FAST subjects from the FAST API
+        // Function to fetch FAST subjects from the correct FAST API
         async function fetchFastSubjects(keyword) {
-            const fastApiUrl = `http://fast.oclc.org/searchfast/fastsuggest?query=${encodeURIComponent(keyword)}&queryIndex=suggestall&maxRecords=5`;
+            const fastApiUrl = `http://fast.oclc.org/searchfast/fastsuggest?query=${encodeURIComponent(keyword)}`;
             try {
                 const response = await fetch(fastApiUrl);
                 const data = await response.json();
-                return data.suggestions || [];
+
+                // Check the structure of the response
+                if (data && data.suggestions) {
+                    return data.suggestions;
+                } else {
+                    console.error("FAST API response is missing suggestions:", data);
+                    return [];
+                }
             } catch (error) {
                 console.error("Error fetching FAST data:", error);
                 return [];
