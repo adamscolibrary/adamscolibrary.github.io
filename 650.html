@@ -29,14 +29,14 @@
             let foundTerms = new Map();
             let relatedTerms = new Map();
 
-            // Fetch exact LCSH terms
-            await fetchLCSHSubjects(keyword, foundTerms);
+            // Fetch synonyms to expand the search
+            let searchTerms = new Set([keyword]);
+            await fetchSynonyms(keyword, searchTerms);
 
-            // Fetch broader/narrower/related subjects from LoC API
-            await fetchLOCRelatedTerms(keyword, relatedTerms);
-
-            // Fetch related subjects from FAST API
-            await fetchFASTRelatedTerms(keyword, relatedTerms);
+            // Fetch LCSH terms for each search term
+            for (let term of searchTerms) {
+                await fetchLCSHSubjects(term, foundTerms, relatedTerms);
+            }
 
             // Display Results
             let output = "<ul>";
@@ -61,61 +61,36 @@
             resultsContainer.innerHTML = output;
         }
 
-        // Fetch exact LCSH subjects
-        async function fetchLCSHSubjects(keyword, foundTerms) {
-            let url = `https://id.loc.gov/authorities/subjects/suggest/?q=${encodeURIComponent(keyword)}`;
+        // Fetch synonyms from Datamuse API
+        async function fetchSynonyms(keyword, searchTerms) {
+            let url = `https://api.datamuse.com/words?ml=${encodeURIComponent(keyword)}&max=5`;
+            try {
+                let response = await fetch(url);
+                let data = await response.json();
+                data.forEach(term => searchTerms.add(term.word));
+            } catch (error) {
+                console.error("Error fetching synonyms:", error);
+            }
+        }
+
+        // Fetch exact and related LCSH subjects
+        async function fetchLCSHSubjects(term, foundTerms, relatedTerms) {
+            let url = `https://id.loc.gov/authorities/subjects/suggest/?q=${encodeURIComponent(term)}`;
             try {
                 let response = await fetch(url);
                 let data = await response.json();
                 if (data[1] && data[3]) {
                     data[1].forEach((subject, index) => {
                         let link = data[3][index];
-                        foundTerms.set(subject, link);
-                    });
-                }
-            } catch (error) {
-                console.error("Error fetching LCSH subjects:", error);
-            }
-        }
-
-        // Fetch broader/narrower/related subjects from LoC API
-        async function fetchLOCRelatedTerms(keyword, relatedTerms) {
-            let locSearchUrl = `https://id.loc.gov/resources/works?query=${encodeURIComponent(keyword)}&format=json`;
-            try {
-                let response = await fetch(locSearchUrl);
-                let data = await response.json();
-
-                data.forEach(item => {
-                    let link = item["@id"];
-                    let label = item["label"];
-                    let broader = item["broader"] || [];
-                    let narrower = item["narrower"] || [];
-                    let related = item["related"] || [];
-
-                    broader.forEach(term => relatedTerms.set(term, link));
-                    narrower.forEach(term => relatedTerms.set(term, link));
-                    related.forEach(term => relatedTerms.set(term, link));
-                });
-            } catch (error) {
-                console.error("Error fetching LoC related terms:", error);
-            }
-        }
-
-        // Fetch related subjects from FAST API
-        async function fetchFASTRelatedTerms(keyword, relatedTerms) {
-            let fastUrl = `https://fast.oclc.org/searchfast/fastSuggest?query=${encodeURIComponent(keyword)}&rows=5`;
-            try {
-                let response = await fetch(fastUrl);
-                let data = await response.json();
-                if (data.response.docs) {
-                    data.response.docs.forEach(doc => {
-                        if (doc.auth) {
-                            relatedTerms.set(doc.auth, `https://id.loc.gov/authorities/subjects/${doc.id}`);
+                        if (subject.toLowerCase().includes(term.toLowerCase())) {
+                            foundTerms.set(subject, link);
+                        } else {
+                            relatedTerms.set(subject, link);
                         }
                     });
                 }
             } catch (error) {
-                console.error("Error fetching FAST terms:", error);
+                console.error("Error fetching LCSH subjects:", error);
             }
         }
     </script>
