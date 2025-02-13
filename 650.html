@@ -6,7 +6,7 @@
     <title>MARC 650 Subject Finder</title>
     <style>
         body { font-family: Arial, sans-serif; text-align: center; margin: 50px; }
-        input { width: 80%; padding: 10px; margin: 10px; }
+        input { width: 80%; max-width: 500px; padding: 10px; margin: 10px; }
         button { padding: 10px; cursor: pointer; }
         ul { list-style: none; padding: 0; }
         li { padding: 5px; border-bottom: 1px solid #ddd; }
@@ -59,14 +59,16 @@
                     let response = await fetch(url);
                     let data = await response.json();
 
-                    data[1].forEach((subject, index) => {
-                        let link = data[3][index]; // Get the official LoC URL
-                        if (subject.toLowerCase().includes(keyword.toLowerCase())) {
-                            foundTerms.set(subject, link);
-                        } else {
-                            relatedTerms.set(subject, link);
-                        }
-                    });
+                    if (data[1] && data[3]) {
+                        data[1].forEach((subject, index) => {
+                            let link = data[3][index]; // Get the official LoC URL
+                            if (subject.toLowerCase().includes(keyword.toLowerCase())) {
+                                foundTerms.set(subject, link);
+                            } else {
+                                relatedTerms.set(subject, link);
+                            }
+                        });
+                    }
                 } catch (error) {
                     console.error("Error fetching MARC data:", error);
                 }
@@ -77,12 +79,14 @@
                 let list = document.createElement("ul");
                 foundTerms.forEach((link, subject) => {
                     let listItem = document.createElement("li");
-                    let anchor = document.createElement("a");
-                    anchor.href = link;
-                    anchor.textContent = `650 _0 $a ${subject} $2 lcsh`;
-                    anchor.target = "_blank";
-                    listItem.appendChild(anchor);
-                    list.appendChild(listItem);
+                    if (link) {
+                        let anchor = document.createElement("a");
+                        anchor.href = link;
+                        anchor.textContent = `650 _0 $a ${subject} $2 lcsh`;
+                        anchor.target = "_blank";
+                        listItem.appendChild(anchor);
+                        list.appendChild(listItem);
+                    }
                 });
                 resultsContainer.appendChild(list);
             } else {
@@ -116,12 +120,14 @@
                 let list = document.createElement("ul");
                 relatedTerms.forEach((link, subject) => {
                     let listItem = document.createElement("li");
-                    let anchor = document.createElement("a");
-                    anchor.href = link;
-                    anchor.textContent = `650 _0 $a ${subject} $2 lcsh`;
-                    anchor.target = "_blank";
-                    listItem.appendChild(anchor);
-                    list.appendChild(listItem);
+                    if (link) {
+                        let anchor = document.createElement("a");
+                        anchor.href = link;
+                        anchor.textContent = `650 _0 $a ${subject} $2 lcsh`;
+                        anchor.target = "_blank";
+                        listItem.appendChild(anchor);
+                        list.appendChild(listItem);
+                    }
                 });
                 relatedList.appendChild(list);
                 relatedContainer.appendChild(relatedList);
