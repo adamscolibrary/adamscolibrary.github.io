@@ -44,17 +44,20 @@
                     });
                     resultsContainer.appendChild(list);
                     
-                    // Suggest related terms from LCSH
-                    let suggestions = data[1].slice(1, 5); // Get up to 4 suggestions (ignoring the first)
-                    if (suggestions.length > 0) {
+                    // Suggest related terms from the thesaurus (WordNet API)
+                    let thesaurusUrl = `https://api.datamuse.com/words?rel_syn=${encodeURIComponent(keyword)}&max=5`;
+                    let thesaurusResponse = await fetch(thesaurusUrl);
+                    let thesaurusData = await thesaurusResponse.json();
+
+                    if (thesaurusData.length > 0) {
                         let suggestionList = document.createElement("div");
                         suggestionList.classList.add("suggestions");
                         suggestionList.innerHTML = "<strong>Try these related terms:</strong>";
-                        suggestions.forEach(suggestion => {
+                        thesaurusData.forEach(term => {
                             let link = document.createElement("a");
-                            link.textContent = suggestion;
+                            link.textContent = term.word;
                             link.onclick = () => {
-                                document.getElementById("keyword").value = suggestion;
+                                document.getElementById("keyword").value = term.word;
                                 fetchMARC();
                             };
                             suggestionList.appendChild(link);
