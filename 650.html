@@ -3,18 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MARC 650 Generator</title>
+    <title>MARC 650 Subject Finder</title>
     <style>
         body { font-family: Arial, sans-serif; text-align: center; margin: 50px; }
         input { width: 80%; padding: 10px; margin: 10px; }
         button { padding: 10px; cursor: pointer; }
-        #result { margin-top: 20px; font-weight: bold; }
+        ul { list-style: none; padding: 0; }
+        li { padding: 5px; cursor: pointer; border-bottom: 1px solid #ddd; }
+        li:hover { background-color: #f0f0f0; }
     </style>
     <script>
         async function fetchMARC() {
             let keyword = document.getElementById("keyword").value.trim();
+            let resultsContainer = document.getElementById("results");
+            resultsContainer.innerHTML = ""; // Clear previous results
+            
             if (!keyword) {
-                document.getElementById("result").innerText = "Please enter a keyword.";
+                resultsContainer.innerText = "Please enter a keyword.";
                 return;
             }
             
@@ -25,22 +30,33 @@
                 let data = await response.json();
 
                 if (data[1].length > 0) {
-                    let subject = data[1][0]; // First matching subject
-                    let marc650 = `650 _0 $a ${subject} $2 lcsh`;
-                    document.getElementById("result").innerText = marc650;
+                    let list = document.createElement("ul");
+                    data[1].forEach(subject => {
+                        let listItem = document.createElement("li");
+                        listItem.textContent = `650 _0 $a ${subject} $2 lcsh`;
+                        listItem.onclick = () => copyToClipboard(listItem.textContent);
+                        list.appendChild(listItem);
+                    });
+                    resultsContainer.appendChild(list);
                 } else {
-                    document.getElementById("result").innerText = "No established LCSH term found.";
+                    resultsContainer.innerText = "No established LCSH terms found.";
                 }
             } catch (error) {
-                document.getElementById("result").innerText = "Error fetching data.";
+                resultsContainer.innerText = "Error fetching data.";
             }
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert("Copied to clipboard: " + text);
+            });
         }
     </script>
 </head>
 <body>
-    <h2>MARC 650 Subject Generator</h2>
-    <input type="text" id="keyword" placeholder="Enter keyword (e.g., Climate Change)">
-    <button onclick="fetchMARC()">Generate</button>
-    <p id="result"></p>
+    <h2>MARC 650 Subject Finder</h2>
+    <input type="text" id="keyword" placeholder="Enter book topic (e.g., Climate Change)">
+    <button onclick="fetchMARC()">Find Subjects</button>
+    <div id="results"></div>
 </body>
 </html>
