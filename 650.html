@@ -14,8 +14,15 @@
         .suggestions { font-size: 14px; margin-top: 20px; }
         .suggestions a { margin: 0 5px; cursor: pointer; color: blue; }
         .suggestions a:hover { text-decoration: underline; }
+        .marc-preview { margin-top: 10px; font-size: 16px; }
+        .filter-options { margin-top: 20px; font-size: 14px; }
+        .filter-options label { margin-right: 10px; }
     </style>
     <script>
+        let termType = "all";  // Default to all terms
+        let showBroaderNarrower = false;  // Toggle for broader/narrower terms
+        let showGeneralTerms = false;  // Toggle for more general terms
+
         async function fetchMARC() {
             let keyword = document.getElementById("keyword").value.trim();
             let resultsContainer = document.getElementById("results");
@@ -28,8 +35,8 @@
                 return;
             }
             
+            // Search for MARC subjects based on the keyword
             let url = `https://id.loc.gov/authorities/subjects/suggest/?q=${encodeURIComponent(keyword)}`;
-
             try {
                 let response = await fetch(url);
                 let data = await response.json();
@@ -41,18 +48,51 @@
                         listItem.textContent = `650 _0 $a ${subject} $2 lcsh`;
                         listItem.onclick = () => copyToClipboard(listItem.textContent);
                         list.appendChild(listItem);
+
+                        // Add MARC preview
+                        let preview = document.createElement("div");
+                        preview.classList.add("marc-preview");
+                        preview.innerHTML = `<strong>MARC Preview:</strong> 650 _0 $a ${subject} $2 lcsh`;
+                        listItem.appendChild(preview);
                     });
                     resultsContainer.appendChild(list);
                     
-                    // Suggest related terms from the thesaurus (WordNet API)
-                    let thesaurusUrl = `https://api.datamuse.com/words?rel_syn=${encodeURIComponent(keyword)}&max=5`;
+                    // Show broader/narrower terms if toggled
+                    if (showBroaderNarrower) {
+                        let thesaurusUrl = `https://api.datamuse.com/words?rel_spc=${encodeURIComponent(keyword)}&max=5`;
+                        let thesaurusResponse = await fetch(thesaurusUrl);
+                        let thesaurusData = await thesaurusResponse.json();
+
+                        if (thesaurusData.length > 0) {
+                            let broaderNarrowerList = document.createElement("div");
+                            broaderNarrowerList.classList.add("suggestions");
+                            broaderNarrowerList.innerHTML = "<strong>Broader/Narrower terms:</strong>";
+                            thesaurusData.forEach(term => {
+                                let link = document.createElement("a");
+                                link.textContent = term.word;
+                                link.onclick = () => {
+                                    document.getElementById("keyword").value = term.word;
+                                    fetchMARC();
+                                };
+                                broaderNarrowerList.appendChild(link);
+                            });
+                            suggestionsContainer.appendChild(broaderNarrowerList);
+                        }
+                    }
+                } else {
+                    resultsContainer.innerText = "No established LCSH terms found.";
+                }
+
+                // Suggest general or more specific terms
+                if (showGeneralTerms) {
+                    let thesaurusUrl = `https://api.datamuse.com/words?rel_gen=${encodeURIComponent(keyword)}&max=5`;
                     let thesaurusResponse = await fetch(thesaurusUrl);
                     let thesaurusData = await thesaurusResponse.json();
 
                     if (thesaurusData.length > 0) {
-                        let suggestionList = document.createElement("div");
-                        suggestionList.classList.add("suggestions");
-                        suggestionList.innerHTML = "<strong>Try these related terms:</strong>";
+                        let generalList = document.createElement("div");
+                        generalList.classList.add("suggestions");
+                        generalList.innerHTML = "<strong>General terms:</strong>";
                         thesaurusData.forEach(term => {
                             let link = document.createElement("a");
                             link.textContent = term.word;
@@ -60,22 +100,59 @@
                                 document.getElementById("keyword").value = term.word;
                                 fetchMARC();
                             };
-                            suggestionList.appendChild(link);
+                            generalList.appendChild(link);
                         });
-                        suggestionsContainer.appendChild(suggestionList);
+                        suggestionsContainer.appendChild(generalList);
                     }
-                } else {
-                    resultsContainer.innerText = "No established LCSH terms found.";
                 }
             } catch (error) {
                 resultsContainer.innerText = "Error fetching data.";
             }
         }
 
+        // Copy text to clipboard
         function copyToClipboard(text) {
             navigator.clipboard.writeText(text).then(() => {
                 alert("Copied to clipboard: " + text);
             });
+        }
+
+        // Toggle broader/narrower terms
+        function toggleBroaderNarrower() {
+            showBroaderNarrower = !showBroaderNarrower;
+            fetchMARC();
+        }
+
+        // Toggle more general terms
+        function toggleGeneralTerms() {
+            showGeneralTerms = !showGeneralTerms;
+            fetchMARC();
+        }
+
+        // Toggle filter by subject heading type
+        function toggleFilter(type) {
+            termType = type;
+            fetchMARC();
+        }
+
+        // Export results to CSV
+        function exportToCSV() {
+            let rows = [];
+            document.querySelectorAll("#results ul li").forEach(item => {
+                rows.push([item.textContent]);
+            });
+
+            let csvContent = "data:text/csv;charset=utf-8,Term\n";
+            rows.forEach(row => {
+                csvContent += row.join(",") + "\n";
+            });
+
+            let encodedUri = encodeURI(csvContent);
+            let link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "marc_terms.csv");
+            document.body.appendChild(link);
+            link.click();
         }
     </script>
 </head>
@@ -83,6 +160,19 @@
     <h2>MARC 650 Subject Finder</h2>
     <input type="text" id="keyword" placeholder="Enter book topic (e.g., Climate Change)">
     <button onclick="fetchMARC()">Find Subjects</button>
+
+    <div class="filter-options">
+        <label>Show broader/narrower terms:</label>
+        <button onclick="toggleBroaderNarrower()">Toggle</button><br>
+        <label>Show general terms:</label>
+        <button onclick="toggleGeneralTerms()">Toggle</button><br>
+        <label>Filter by subject heading type:</label>
+        <button onclick="toggleFilter('topical')">Topical</button>
+        <button onclick="toggleFilter('geographic')">Geographic</button>
+        <button onclick="toggleFilter('')">All</button><br>
+        <button onclick="exportToCSV()">Export to CSV</button>
+    </div>
+
     <div id="results"></div>
     <div id="suggestions"></div>
 </body>
