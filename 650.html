@@ -11,12 +11,17 @@
         ul { list-style: none; padding: 0; }
         li { padding: 5px; cursor: pointer; border-bottom: 1px solid #ddd; }
         li:hover { background-color: #f0f0f0; }
+        .suggestions { font-size: 14px; margin-top: 20px; }
+        .suggestions a { margin: 0 5px; cursor: pointer; color: blue; }
+        .suggestions a:hover { text-decoration: underline; }
     </style>
     <script>
         async function fetchMARC() {
             let keyword = document.getElementById("keyword").value.trim();
             let resultsContainer = document.getElementById("results");
             resultsContainer.innerHTML = ""; // Clear previous results
+            let suggestionsContainer = document.getElementById("suggestions");
+            suggestionsContainer.innerHTML = ""; // Clear previous suggestions
             
             if (!keyword) {
                 resultsContainer.innerText = "Please enter a keyword.";
@@ -33,11 +38,29 @@
                     let list = document.createElement("ul");
                     data[1].forEach(subject => {
                         let listItem = document.createElement("li");
-                        listItem.textContent = `650 _0 ${subject}`;
+                        listItem.textContent = `650 _0 $a ${subject} $2 lcsh`;
                         listItem.onclick = () => copyToClipboard(listItem.textContent);
                         list.appendChild(listItem);
                     });
                     resultsContainer.appendChild(list);
+                    
+                    // Suggest related terms from LCSH
+                    let suggestions = data[1].slice(1, 5); // Get up to 4 suggestions (ignoring the first)
+                    if (suggestions.length > 0) {
+                        let suggestionList = document.createElement("div");
+                        suggestionList.classList.add("suggestions");
+                        suggestionList.innerHTML = "<strong>Try these related terms:</strong>";
+                        suggestions.forEach(suggestion => {
+                            let link = document.createElement("a");
+                            link.textContent = suggestion;
+                            link.onclick = () => {
+                                document.getElementById("keyword").value = suggestion;
+                                fetchMARC();
+                            };
+                            suggestionList.appendChild(link);
+                        });
+                        suggestionsContainer.appendChild(suggestionList);
+                    }
                 } else {
                     resultsContainer.innerText = "No established LCSH terms found.";
                 }
@@ -58,5 +81,6 @@
     <input type="text" id="keyword" placeholder="Enter book topic (e.g., Climate Change)">
     <button onclick="fetchMARC()">Find Subjects</button>
     <div id="results"></div>
+    <div id="suggestions"></div>
 </body>
 </html>
