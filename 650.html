@@ -27,6 +27,8 @@
             }
 
             let foundTerms = new Map();
+            let broaderTerms = new Map();
+            let narrowerTerms = new Map();
             let relatedTerms = new Map();
 
             // Fetch synonyms to expand the search
@@ -35,7 +37,7 @@
 
             // Fetch LCSH terms for each search term
             for (let term of searchTerms) {
-                await fetchLCSHSubjects(term, foundTerms, relatedTerms);
+                await fetchLCSHSubjects(term, foundTerms, broaderTerms, narrowerTerms, relatedTerms);
             }
 
             // Display Results
@@ -48,14 +50,10 @@
                 output += "<li>No exact LCSH terms found.</li>";
             }
 
-            // Show Related Subjects
-            if (relatedTerms.size > 0) {
-                output += `<div class="section-title">Related Subjects:</div><ul>`;
-                relatedTerms.forEach((link, subject) => {
-                    output += `<li><a href="${link}" target="_blank">650 _0 $a ${subject} $2 lcsh</a></li>`;
-                });
-                output += "</ul>";
-            }
+            // Show Related Subjects in Categories
+            output += buildCategorySection("Broader Terms", broaderTerms);
+            output += buildCategorySection("Narrower Terms", narrowerTerms);
+            output += buildCategorySection("Related Subjects", relatedTerms);
 
             output += "</ul>";
             resultsContainer.innerHTML = output;
@@ -74,7 +72,7 @@
         }
 
         // Fetch exact and related LCSH subjects
-        async function fetchLCSHSubjects(term, foundTerms, relatedTerms) {
+        async function fetchLCSHSubjects(term, foundTerms, broaderTerms, narrowerTerms, relatedTerms) {
             let url = `https://id.loc.gov/authorities/subjects/suggest/?q=${encodeURIComponent(term)}`;
             try {
                 let response = await fetch(url);
@@ -82,8 +80,14 @@
                 if (data[1] && data[3]) {
                     data[1].forEach((subject, index) => {
                         let link = data[3][index];
+
+                        // Categorize subjects based on keyword relation
                         if (subject.toLowerCase().includes(term.toLowerCase())) {
                             foundTerms.set(subject, link);
+                        } else if (subject.toLowerCase().includes("broader") || subject.startsWith(term)) {
+                            broaderTerms.set(subject, link);
+                        } else if (subject.toLowerCase().includes("narrower") || term.startsWith(subject)) {
+                            narrowerTerms.set(subject, link);
                         } else {
                             relatedTerms.set(subject, link);
                         }
@@ -92,6 +96,17 @@
             } catch (error) {
                 console.error("Error fetching LCSH subjects:", error);
             }
+        }
+
+        // Helper function to create category sections
+        function buildCategorySection(title, terms) {
+            if (terms.size === 0) return "";
+            let output = `<div class="section-title">${title}:</div><ul>`;
+            terms.forEach((link, subject) => {
+                output += `<li><a href="${link}" target="_blank">650 _0 $a ${subject} $2 lcsh</a></li>`;
+            });
+            output += "</ul>";
+            return output;
         }
     </script>
 </head>
