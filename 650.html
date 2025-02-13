@@ -54,7 +54,7 @@
                     let data = await response.json();
 
                     data[1].forEach((subject, index) => {
-                        let link = data[3][index]; // Get the official LoC URL
+                        let link = data[3][index]; // Get official LoC URL
                         if (subject.toLowerCase().includes(keyword.toLowerCase())) {
                             foundTerms.set(subject, link);
                         } else {
@@ -66,18 +66,23 @@
                 }
             }
 
-            // Display main results
+            // Display main results with subdivisions
             if (foundTerms.size > 0) {
                 let list = document.createElement("ul");
-                foundTerms.forEach((link, subject) => {
+                for (let [subject, link] of foundTerms) {
+                    let { topicalSubdivisions, formSubdivisions } = await fetchSubdivisions(link);
+                    
                     let listItem = document.createElement("li");
                     let anchor = document.createElement("a");
                     anchor.href = link;
-                    anchor.textContent = `650 _0 $a ${subject} $2 lcsh`;
+                    anchor.textContent = `650 _0 ${subject}` + 
+                        (topicalSubdivisions.size ? ` |x ${Array.from(topicalSubdivisions).join(" | ")}` : "") +
+                        (formSubdivisions.size ? ` |v ${Array.from(formSubdivisions).join(" | ")}` : "") +
+                        ``;
                     anchor.target = "_blank";
                     listItem.appendChild(anchor);
                     list.appendChild(listItem);
-                });
+                }
                 resultsContainer.appendChild(list);
             } else {
                 resultsContainer.innerText = "No established LCSH terms found.";
@@ -89,17 +94,52 @@
                 relatedList.classList.add("related");
                 relatedList.innerHTML = "<div class='section-title'>Related Subjects:</div>";
                 let list = document.createElement("ul");
-                relatedTerms.forEach((link, subject) => {
+                for (let [subject, link] of relatedTerms) {
+                    let { topicalSubdivisions, formSubdivisions } = await fetchSubdivisions(link);
+                    
                     let listItem = document.createElement("li");
                     let anchor = document.createElement("a");
                     anchor.href = link;
-                    anchor.textContent = `650 _0 $a ${subject} $2 lcsh`;
+                    anchor.textContent = `650 _0 ${subject}` + 
+                        (topicalSubdivisions.size ? ` |x ${Array.from(topicalSubdivisions).join(" | ")}` : "") +
+                        (formSubdivisions.size ? ` |v ${Array.from(formSubdivisions).join(" | ")}` : "") +
+                        ``;
                     anchor.target = "_blank";
                     listItem.appendChild(anchor);
                     list.appendChild(listItem);
-                });
+                }
                 relatedList.appendChild(list);
                 relatedContainer.appendChild(relatedList);
+            }
+        }
+
+        async function fetchSubdivisions(subjectURL) {
+            try {
+                let response = await fetch(subjectURL + ".json");
+                let data = await response.json();
+
+                let topicalSubdivisions = new Set();
+                let formSubdivisions = new Set();
+
+                data.forEach(entry => {
+                    if (entry["http://www.w3.org/2004/02/skos/core#narrower"]) {
+                        entry["http://www.w3.org/2004/02/skos/core#narrower"].forEach(narrowerTerm => {
+                            let termLabel = narrowerTerm["@id"].split("/").pop().replace("_", " ");
+                            topicalSubdivisions.add(termLabel);
+                        });
+                    }
+                    if (entry["http://www.loc.gov/mads/rdf/v1#componentList"]) {
+                        entry["http://www.loc.gov/mads/rdf/v1#componentList"].forEach(formTerm => {
+                            let termLabel = formTerm["@id"].split("/").pop().replace("_", " ");
+                            formSubdivisions.add(termLabel);
+                        });
+                    }
+                });
+
+                return { topicalSubdivisions, formSubdivisions };
+            } catch (error) {
+                console.error("Error fetching subdivisions:", error);
+                return { topicalSubdivisions: new Set(), formSubdivisions: new Set() };
             }
         }
     </script>
