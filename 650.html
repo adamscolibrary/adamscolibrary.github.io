@@ -14,37 +14,30 @@
         li a:hover { text-decoration: underline; }
         .section-title { font-size: 18px; font-weight: bold; margin-top: 20px; }
         .related { font-size: 16px; color: #555; margin-top: 10px; }
-        .suggestions { text-align: left; width: 80%; margin: 0 auto; position: absolute; background: white; border: 1px solid #ddd; display: none; max-height: 200px; overflow-y: auto; }
+        .suggestions { 
+            text-align: left; 
+            width: 80%; 
+            margin: 0 auto; 
+            position: absolute; 
+            background: white; 
+            border: 1px solid #ddd; 
+            display: none; 
+            max-height: 200px; 
+            overflow-y: auto; 
+            z-index: 1000;
+        }
         .suggestions div { padding: 8px; cursor: pointer; }
         .suggestions div:hover { background: #f0f0f0; }
     </style>
     <script>
-        let searchCache = new Map(); // Caches previous searches
-
-        async function fetchRelatedTerms(keyword) {
-            let relatedTerms = new Set();
-            let locUrl = `https://id.loc.gov/authorities/subjects/label/${encodeURIComponent(keyword)}?format=json`;
-
-            try {
-                let response = await fetch(locUrl);
-                let data = await response.json();
-                if (data[0]) {
-                    if (data[0].broader) data[0].broader.forEach(term => relatedTerms.add(term));
-                    if (data[0].narrower) data[0].narrower.forEach(term => relatedTerms.add(term));
-                    if (data[0].related) data[0].related.forEach(term => relatedTerms.add(term));
-                }
-            } catch (error) {
-                console.error("Error fetching related terms:", error);
-            }
-
-            return relatedTerms;
-        }
+        let searchCache = new Map();
 
         async function fetchMARC() {
             let keyword = document.getElementById("keyword").value.trim();
-            let searchType = document.getElementById("searchType").value;
             let resultsContainer = document.getElementById("results");
+            let suggestionsBox = document.getElementById("suggestions");
             resultsContainer.innerHTML = "";
+            suggestionsBox.style.display = "none"; // Hide suggestions when searching
 
             if (!keyword) {
                 resultsContainer.innerText = "Please enter a keyword.";
@@ -56,64 +49,37 @@
                 return;
             }
 
-            let searchTerms = new Set([keyword]);
-            let relatedTerms = await fetchRelatedTerms(keyword);
-            relatedTerms.forEach(term => searchTerms.add(term));
-
             let foundTerms = new Map();
             let broaderTerms = new Map();
             let narrowerTerms = new Map();
             let additionalRelatedTerms = new Map();
 
-            for (let term of searchTerms) {
-                let url = `https://id.loc.gov/authorities/subjects/suggest/?q=${encodeURIComponent(term)}`;
-                try {
-                    let response = await fetch(url);
-                    let data = await response.json();
+            let url = `https://id.loc.gov/authorities/subjects/suggest/?q=${encodeURIComponent(keyword)}`;
+            try {
+                let response = await fetch(url);
+                let data = await response.json();
 
-                    if (data[1] && data[3]) {
-                        data[1].forEach((subject, index) => {
-                            let link = data[3][index];
-                            if (subject.toLowerCase().includes(keyword.toLowerCase())) {
-                                foundTerms.set(subject, link);
-                            } else {
-                                if (relatedTerms.has(subject)) {
-                                    broaderTerms.set(subject, link);
-                                } else {
-                                    additionalRelatedTerms.set(subject, link);
-                                }
-                            }
-                        });
-                    }
-                } catch (error) {
-                    console.error("Error fetching MARC data:", error);
+                if (data[1] && data[3]) {
+                    data[1].forEach((subject, index) => {
+                        let link = data[3][index];
+                        if (subject.toLowerCase().includes(keyword.toLowerCase())) {
+                            foundTerms.set(subject, link);
+                        } else {
+                            additionalRelatedTerms.set(subject, link);
+                        }
+                    });
                 }
+            } catch (error) {
+                console.error("Error fetching MARC data:", error);
             }
 
             let output = "<ul>";
-
             if (foundTerms.size > 0) {
                 foundTerms.forEach((link, subject) => {
                     output += `<li><a href="${link}" target="_blank">650 _0 $a ${subject} $2 lcsh</a></li>`;
                 });
             } else {
                 output += "<li>No exact LCSH terms found.</li>";
-            }
-
-            if (broaderTerms.size > 0) {
-                output += `<div class="section-title">Broader Subjects:</div><ul>`;
-                broaderTerms.forEach((link, subject) => {
-                    output += `<li><a href="${link}" target="_blank">650 _0 $a ${subject} $2 lcsh</a></li>`;
-                });
-                output += "</ul>";
-            }
-
-            if (narrowerTerms.size > 0) {
-                output += `<div class="section-title">Narrower Subjects:</div><ul>`;
-                narrowerTerms.forEach((link, subject) => {
-                    output += `<li><a href="${link}" target="_blank">650 _0 $a ${subject} $2 lcsh</a></li>`;
-                });
-                output += "</ul>";
             }
 
             if (additionalRelatedTerms.size > 0) {
@@ -161,11 +127,18 @@
                 console.error("Error fetching suggestions:", error);
             }
         }
+
+        function hideSuggestions() {
+            setTimeout(() => {
+                document.getElementById("suggestions").style.display = "none";
+            }, 200); 
+        }
     </script>
 </head>
 <body>
     <h2>MARC 650 Subject Finder</h2>
-    <input type="text" id="keyword" placeholder="Enter book topic (e.g., Climate Change)" onkeyup="showSuggestions()">
+    <input type="text" id="keyword" placeholder="Enter book topic (e.g., Climate Change)" 
+           onkeyup="showSuggestions()" onblur="hideSuggestions()">
     <div id="suggestions" class="suggestions"></div>
     <button onclick="fetchMARC()">Find Subjects</button>
     <div id="results"></div>
