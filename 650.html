@@ -19,9 +19,7 @@
         async function fetchMARC() {
             let keyword = document.getElementById("keyword").value.trim();
             let resultsContainer = document.getElementById("results");
-            let relatedContainer = document.getElementById("relatedSubjects");
             resultsContainer.innerHTML = "";
-            relatedContainer.innerHTML = "";
 
             if (!keyword) {
                 resultsContainer.innerText = "Please enter a keyword.";
@@ -73,9 +71,10 @@
                 }
             }
 
-            // Display LCSH results
-            if (foundTerms.size > 0) {
-                let list = document.createElement("ul");
+            // Display LCSH results (both exact and related)
+            let list = document.createElement("ul");
+
+            if (foundTerms.size > 0 || relatedTerms.size > 0) {
                 foundTerms.forEach((link, subject) => {
                     let listItem = document.createElement("li");
                     if (link) {
@@ -87,82 +86,25 @@
                         list.appendChild(listItem);
                     }
                 });
+
+                // Add related terms if no exact matches
+                if (relatedTerms.size > 0) {
+                    relatedTerms.forEach((link, subject) => {
+                        let listItem = document.createElement("li");
+                        if (link) {
+                            let anchor = document.createElement("a");
+                            anchor.href = link;
+                            anchor.textContent = `650 _0 $a ${subject} $2 lcsh`;
+                            anchor.target = "_blank";
+                            listItem.appendChild(anchor);
+                            list.appendChild(listItem);
+                        }
+                    });
+                }
+
                 resultsContainer.appendChild(list);
             } else {
                 resultsContainer.innerText = "No established LCSH terms found.";
-            }
-
-            // Fetch FAST subjects (Updated to use XML response)
-            let fastResults = await fetchFastSubjects(keyword);
-            if (fastResults.length > 0) {
-                let fastList = document.createElement("ul");
-                fastResults.forEach(subject => {
-                    let listItem = document.createElement("li");
-                    let anchor = document.createElement("a");
-                    anchor.href = subject.link;
-                    anchor.textContent = `650 _0 $a ${subject.term} $2 fast`;
-                    anchor.target = "_blank";
-                    listItem.appendChild(anchor);
-                    fastList.appendChild(listItem);
-                });
-                relatedContainer.innerHTML += "<div class='section-title'>Related FAST Subjects:</div>";
-                relatedContainer.appendChild(fastList);
-            } else {
-                relatedContainer.innerHTML += "<div class='section-title'>No related FAST subjects found.</div>";
-            }
-
-            // Display related subjects (LCSH)
-            if (relatedTerms.size > 0) {
-                let relatedList = document.createElement("div");
-                relatedList.classList.add("related");
-                relatedList.innerHTML = "<div class='section-title'>Related Subjects:</div>";
-                let list = document.createElement("ul");
-                relatedTerms.forEach((link, subject) => {
-                    let listItem = document.createElement("li");
-                    if (link) {
-                        let anchor = document.createElement("a");
-                        anchor.href = link;
-                        anchor.textContent = `650 _0 $a ${subject} $2 lcsh`;
-                        anchor.target = "_blank";
-                        listItem.appendChild(anchor);
-                        list.appendChild(listItem);
-                    }
-                });
-                relatedList.appendChild(list);
-                relatedContainer.appendChild(relatedList);
-            }
-        }
-
-        // Function to fetch FAST subjects from the correct FAST API (now using XML)
-        async function fetchFastSubjects(keyword) {
-            const fastApiUrl = `http://fast.oclc.org/search?query=cql.any+%3D+%22${encodeURIComponent(keyword)}%22&httpAccept=application/xml`;
-            try {
-                const response = await fetch(fastApiUrl);
-                const data = await response.text(); // Get raw XML response
-
-                // Parse XML
-                const parser = new DOMParser();
-                const xmlDoc = parser.parseFromString(data, "application/xml");
-
-                // Extract FAST subject terms from XML
-                const records = xmlDoc.getElementsByTagName("record");
-                let fastResults = [];
-
-                for (let record of records) {
-                    // Look for the 'subject' tag and extract the 'term' and 'uri'
-                    const subjectTermNode = record.querySelector('subject > term');
-                    const subjectLinkNode = record.querySelector('uri');
-                    if (subjectTermNode && subjectLinkNode) {
-                        const term = subjectTermNode.textContent;
-                        const link = subjectLinkNode.textContent;
-                        fastResults.push({ term, link });
-                    }
-                }
-
-                return fastResults;
-            } catch (error) {
-                console.error("Error fetching FAST data:", error);
-                return [];
             }
         }
     </script>
@@ -172,6 +114,5 @@
     <input type="text" id="keyword" placeholder="Enter book topic (e.g., Climate Change)">
     <button onclick="fetchMARC()">Find Subjects</button>
     <div id="results"></div>
-    <div id="relatedSubjects"></div>
 </body>
 </html>
