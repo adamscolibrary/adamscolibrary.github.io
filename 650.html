@@ -47,6 +47,7 @@
             let foundTerms = new Map();
             let relatedTerms = new Map();
 
+            // Fetch LCSH terms
             for (let term of searchTerms) {
                 let url = `https://id.loc.gov/authorities/subjects/suggest/?q=${encodeURIComponent(term)}`;
                 try {
@@ -66,7 +67,7 @@
                 }
             }
 
-            // Display main results
+            // Display LCSH results
             if (foundTerms.size > 0) {
                 let list = document.createElement("ul");
                 foundTerms.forEach((link, subject) => {
@@ -81,6 +82,23 @@
                 resultsContainer.appendChild(list);
             } else {
                 resultsContainer.innerText = "No established LCSH terms found.";
+            }
+
+            // Fetch FAST subjects
+            let fastResults = await fetchFastSubjects(keyword);
+            if (fastResults.length > 0) {
+                let fastList = document.createElement("ul");
+                fastResults.forEach(subject => {
+                    let listItem = document.createElement("li");
+                    let anchor = document.createElement("a");
+                    anchor.href = `https://fast.oclc.org/fast/fastSuggest?query=${encodeURIComponent(subject)}`;
+                    anchor.textContent = `650 _0 $a ${subject} $2 fast`;
+                    anchor.target = "_blank";
+                    listItem.appendChild(anchor);
+                    fastList.appendChild(listItem);
+                });
+                relatedContainer.innerHTML += "<div class='section-title'>Related FAST Subjects:</div>";
+                relatedContainer.appendChild(fastList);
             }
 
             // Display related subjects
@@ -101,6 +119,14 @@
                 relatedList.appendChild(list);
                 relatedContainer.appendChild(relatedList);
             }
+        }
+
+        // Function to fetch FAST subjects from the FAST API
+        async function fetchFastSubjects(keyword) {
+            const fastApiUrl = `http://fast.oclc.org/searchfast/fastSuggest?query=${encodeURIComponent(keyword)}&queryIndex=suggestall&maxRecords=5`;
+            const response = await fetch(fastApiUrl);
+            const data = await response.json();
+            return data.suggestions || [];
         }
     </script>
 </head>
