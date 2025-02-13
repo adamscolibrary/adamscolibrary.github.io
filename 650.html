@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MARC 650 Generator</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; margin: 50px; }
+        input { width: 80%; padding: 10px; margin: 10px; }
+        button { padding: 10px; cursor: pointer; }
+        #result { margin-top: 20px; font-weight: bold; }
+    </style>
+    <script>
+        async function fetchMARC() {
+            let keyword = document.getElementById("keyword").value.trim();
+            if (!keyword) {
+                document.getElementById("result").innerText = "Please enter a keyword.";
+                return;
+            }
+            
+            let url = `https://id.loc.gov/authorities/subjects/suggest/?q=${encodeURIComponent(keyword)}`;
+
+            try {
+                let response = await fetch(url);
+                let data = await response.json();
+
+                if (data[1].length > 0) {
+                    let subject = data[1][0]; // First matching subject
+                    let marc650 = `650 _0 $a ${subject} $2 lcsh`;
+                    document.getElementById("result").innerText = marc650;
+                } else {
+                    document.getElementById("result").innerText = "No established LCSH term found.";
+                }
+            } catch (error) {
+                document.getElementById("result").innerText = "Error fetching data.";
+            }
+        }
+    </script>
+</head>
+<body>
+    <h2>MARC 650 Subject Generator</h2>
+    <input type="text" id="keyword" placeholder="Enter keyword (e.g., Climate Change)">
+    <button onclick="fetchMARC()">Generate</button>
+    <p id="result"></p>
+</body>
+</html>
