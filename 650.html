@@ -14,8 +14,7 @@
         li a:hover { text-decoration: underline; }
         .section-title { font-size: 18px; font-weight: bold; margin-top: 20px; }
         .related-section { font-size: 16px; color: #555; margin-top: 20px; border-top: 2px solid #ddd; padding-top: 15px; }
-        .container { display: flex; justify-content: center; gap: 50px; margin-top: 20px; }
-        .results-container, .related-container { width: 45%; text-align: left; }
+        .results-container { text-align: left; max-width: 600px; margin: 0 auto; }
     </style>
     <script>
         async function fetchMARC() {
@@ -46,7 +45,7 @@
             let output = "<ul>";
             if (foundTerms.size > 0) {
                 foundTerms.forEach((link, subject) => {
-                    output += `<li><a href="${link}" target="_blank">650 _0 $a ${subject} $2 lcsh</a></li>`;
+                    output += `<li><a href="${link}" target="_blank">650 _0 |a ${subject}</a></li>`;
                 });
             } else {
                 output += "<li>No exact LCSH terms found.</li>";
@@ -54,11 +53,11 @@
             output += "</ul>";
             resultsContainer.innerHTML = output;
 
-            // Display Related Subjects in a Separate Section
+            // Display Related Subjects in a Separate Section (Below)
             if (relatedTerms.size > 0) {
                 let relatedOutput = `<div class="related-section"><div class="section-title">Related Subjects:</div><ul>`;
                 relatedTerms.forEach((link, subject) => {
-                    relatedOutput += `<li><a href="${link}" target="_blank">650 _0 $a ${subject} $2 lcsh</a></li>`;
+                    relatedOutput += `<li><a href="${link}" target="_blank">650 _0 |a ${subject}</a></li>`;
                 });
                 relatedOutput += "</ul></div>";
                 relatedContainer.innerHTML = relatedOutput;
@@ -106,14 +105,12 @@
     <input type="text" id="keyword" placeholder="Enter book topic (e.g., Climate Change)">
     <button onclick="fetchMARC()">Find Subjects</button>
 
-    <div class="container">
-        <div class="results-container">
-            <h3>Exact Matches</h3>
-            <div id="results"></div>
-        </div>
-        <div class="related-container">
-            <div id="related-results"></div>
-        </div>
+    <div class="results-container">
+        <h3>Exact Matches</h3>
+        <div id="results"></div>
+
+        <h3>Related Subjects</h3>
+        <div id="related-results"></div>
     </div>
 </body>
 </html>
