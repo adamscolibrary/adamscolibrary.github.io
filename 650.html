@@ -39,17 +39,22 @@
             let relatedTerms = new Map();
             let synonyms = new Set();
 
-            // Fetch synonyms for separate display
+            // Fetch synonyms first
             await fetchSynonyms(searchTerm, synonyms);
 
-            // Fetch LCSH terms for exact and related subjects
-            await fetchLCSHSubjects(searchTerm, foundTerms, relatedTerms);
+            // Fetch exact matches for the original search term
+            await fetchLCSHSubjects(searchTerm, foundTerms);
+
+            // Fetch related subjects using synonyms (to populate related subjects)
+            for (let synonym of synonyms) {
+                await fetchLCSHSubjects(synonym, relatedTerms);
+            }
 
             // Display Exact Matches
             let output = "<ul>";
             if (foundTerms.size > 0) {
                 foundTerms.forEach((link, subject) => {
-                    output += `<li><a href="${link}" target="_blank">650 _0 ${subject}</a></li>`;
+                    output += `<li><a href="${link}" target="_blank">650 _0 $a ${subject} $2 lcsh</a></li>`;
                 });
             } else {
                 output += "<li>No exact LCSH terms found.</li>";
@@ -61,7 +66,7 @@
             if (relatedTerms.size > 0) {
                 let relatedOutput = `<div class="related-section"><div class="section-title">Related Subjects:</div><ul>`;
                 relatedTerms.forEach((link, subject) => {
-                    relatedOutput += `<li><a href="${link}" target="_blank">650 _0 ${subject}</a></li>`;
+                    relatedOutput += `<li><a href="${link}" target="_blank">650 _0 $a ${subject} $2 lcsh</a></li>`;
                 });
                 relatedOutput += "</ul></div>";
                 relatedContainer.innerHTML = relatedOutput;
@@ -69,7 +74,7 @@
                 relatedContainer.innerHTML = "<div class='related-section'>No related subjects found.</div>";
             }
 
-            // Display Synonyms as Clickable Search Links at the Bottom
+            // Display Synonyms at the Bottom as Clickable Links
             if (synonyms.size > 0) {
                 let synonymsOutput = `<div class="synonyms-section"><div class="section-title">Try These Synonyms:</div><ul>`;
                 synonyms.forEach(term => {
@@ -92,8 +97,8 @@
             }
         }
 
-        // Fetch LCSH subjects (Exact and Related)
-        async function fetchLCSHSubjects(term, foundTerms, relatedTerms) {
+        // Fetch LCSH subjects
+        async function fetchLCSHSubjects(term, storageMap) {
             let url = `https://id.loc.gov/authorities/subjects/suggest/?q=${encodeURIComponent(term)}`;
             try {
                 let response = await fetch(url);
@@ -101,7 +106,7 @@
                 if (data[1] && data[3]) {
                     data[1].forEach((subject, index) => {
                         let link = data[3][index];
-                        foundTerms.set(subject, link);
+                        storageMap.set(subject, link);
                     });
                 }
             } catch (error) {
