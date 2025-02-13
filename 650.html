@@ -75,10 +75,10 @@
                     let listItem = document.createElement("li");
                     let anchor = document.createElement("a");
                     anchor.href = link;
-                    anchor.textContent = `650 _0 ${subject}` + 
-                        (topicalSubdivisions.size ? ` |x ${Array.from(topicalSubdivisions).join(" | ")}` : "") +
-                        (formSubdivisions.size ? ` |v ${Array.from(formSubdivisions).join(" | ")}` : "") +
-                        ``;
+                    anchor.textContent = `650 _0 $a ${subject}` + 
+                        (topicalSubdivisions.size ? ` $x ${Array.from(topicalSubdivisions).join(" | ")}` : "") +
+                        (formSubdivisions.size ? ` $v ${Array.from(formSubdivisions).join(" | ")}` : "") +
+                        ` $2 lcsh`;
                     anchor.target = "_blank";
                     listItem.appendChild(anchor);
                     list.appendChild(listItem);
@@ -100,10 +100,10 @@
                     let listItem = document.createElement("li");
                     let anchor = document.createElement("a");
                     anchor.href = link;
-                    anchor.textContent = `650 _0 ${subject}` + 
-                        (topicalSubdivisions.size ? ` |x ${Array.from(topicalSubdivisions).join(" | ")}` : "") +
-                        (formSubdivisions.size ? ` |v ${Array.from(formSubdivisions).join(" | ")}` : "") +
-                        ``;
+                    anchor.textContent = `650 _0 $a ${subject}` + 
+                        (topicalSubdivisions.size ? ` $x ${Array.from(topicalSubdivisions).join(" | ")}` : "") +
+                        (formSubdivisions.size ? ` $v ${Array.from(formSubdivisions).join(" | ")}` : "") +
+                        ` $2 lcsh`;
                     anchor.target = "_blank";
                     listItem.appendChild(anchor);
                     list.appendChild(listItem);
