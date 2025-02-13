@@ -14,65 +14,43 @@
         li a:hover { text-decoration: underline; }
         .section-title { font-size: 18px; font-weight: bold; margin-top: 20px; }
         .related { font-size: 16px; color: #555; margin-top: 10px; }
-        .suggestions { 
-            text-align: left; 
-            width: 80%; 
-            margin: 0 auto; 
-            position: absolute; 
-            background: white; 
-            border: 1px solid #ddd; 
-            display: none; 
-            max-height: 200px; 
-            overflow-y: auto; 
-            z-index: 1000;
-        }
-        .suggestions div { padding: 8px; cursor: pointer; }
-        .suggestions div:hover { background: #f0f0f0; }
     </style>
     <script>
-        let searchCache = new Map();
-
         async function fetchMARC() {
             let keyword = document.getElementById("keyword").value.trim();
             let resultsContainer = document.getElementById("results");
-            let suggestionsBox = document.getElementById("suggestions");
             resultsContainer.innerHTML = "";
-            suggestionsBox.style.display = "none"; // Hide suggestions when searching
 
             if (!keyword) {
                 resultsContainer.innerText = "Please enter a keyword.";
                 return;
             }
 
-            if (searchCache.has(keyword)) {
-                resultsContainer.innerHTML = searchCache.get(keyword);
-                return;
-            }
-
             let foundTerms = new Map();
-            let broaderTerms = new Map();
-            let narrowerTerms = new Map();
-            let additionalRelatedTerms = new Map();
+            let relatedTerms = new Map();
 
+            // Fetch exact LCSH terms
             let url = `https://id.loc.gov/authorities/subjects/suggest/?q=${encodeURIComponent(keyword)}`;
             try {
                 let response = await fetch(url);
                 let data = await response.json();
-
                 if (data[1] && data[3]) {
                     data[1].forEach((subject, index) => {
                         let link = data[3][index];
-                        if (subject.toLowerCase().includes(keyword.toLowerCase())) {
-                            foundTerms.set(subject, link);
-                        } else {
-                            additionalRelatedTerms.set(subject, link);
-                        }
+                        foundTerms.set(subject, link);
                     });
                 }
             } catch (error) {
                 console.error("Error fetching MARC data:", error);
             }
 
+            // Fetch related terms from FAST API
+            await fetchFASTRelatedTerms(keyword, relatedTerms);
+
+            // Fetch broader/narrower/related terms from LoC API
+            await fetchLOCRelatedTerms(keyword, relatedTerms);
+
+            // Display Results
             let output = "<ul>";
             if (foundTerms.size > 0) {
                 foundTerms.forEach((link, subject) => {
@@ -82,9 +60,10 @@
                 output += "<li>No exact LCSH terms found.</li>";
             }
 
-            if (additionalRelatedTerms.size > 0) {
+            // Show Related Subjects
+            if (relatedTerms.size > 0) {
                 output += `<div class="section-title">Related Subjects:</div><ul>`;
-                additionalRelatedTerms.forEach((link, subject) => {
+                relatedTerms.forEach((link, subject) => {
                     output += `<li><a href="${link}" target="_blank">650 _0 $a ${subject} $2 lcsh</a></li>`;
                 });
                 output += "</ul>";
@@ -92,54 +71,53 @@
 
             output += "</ul>";
             resultsContainer.innerHTML = output;
-            searchCache.set(keyword, output);
         }
 
-        async function showSuggestions() {
-            let keyword = document.getElementById("keyword").value.trim();
-            let suggestionsBox = document.getElementById("suggestions");
-            suggestionsBox.innerHTML = "";
-
-            if (!keyword) {
-                suggestionsBox.style.display = "none";
-                return;
-            }
-
-            let url = `https://id.loc.gov/authorities/subjects/suggest/?q=${encodeURIComponent(keyword)}`;
+        // Fetch related subjects from FAST API
+        async function fetchFASTRelatedTerms(keyword, relatedTerms) {
+            let fastUrl = `https://fast.oclc.org/searchfast/fastSuggest?query=${encodeURIComponent(keyword)}&rows=5`;
             try {
-                let response = await fetch(url);
+                let response = await fetch(fastUrl);
                 let data = await response.json();
-                if (data[1]) {
-                    data[1].forEach(subject => {
-                        let div = document.createElement("div");
-                        div.innerText = subject;
-                        div.onclick = () => {
-                            document.getElementById("keyword").value = subject;
-                            suggestionsBox.style.display = "none";
-                        };
-                        suggestionsBox.appendChild(div);
+                if (data.response.docs) {
+                    data.response.docs.forEach(doc => {
+                        if (doc.auth) {
+                            relatedTerms.set(doc.auth, `https://id.loc.gov/authorities/subjects/${doc.id}`);
+                        }
                     });
-                    suggestionsBox.style.display = "block";
-                } else {
-                    suggestionsBox.style.display = "none";
                 }
             } catch (error) {
-                console.error("Error fetching suggestions:", error);
+                console.error("Error fetching FAST terms:", error);
             }
         }
 
-        function hideSuggestions() {
-            setTimeout(() => {
-                document.getElementById("suggestions").style.display = "none";
-            }, 200); 
+        // Fetch broader/narrower/related subjects from LoC API
+        async function fetchLOCRelatedTerms(keyword, relatedTerms) {
+            let locSearchUrl = `https://id.loc.gov/search/?q=${encodeURIComponent(keyword)}&format=json`;
+            try {
+                let response = await fetch(locSearchUrl);
+                let data = await response.json();
+
+                for (let item of data) {
+                    let link = item["@id"];
+                    let label = item["label"];
+                    let broader = item["broader"];
+                    let narrower = item["narrower"];
+                    let related = item["related"];
+
+                    if (broader) broader.forEach(term => relatedTerms.set(term, link));
+                    if (narrower) narrower.forEach(term => relatedTerms.set(term, link));
+                    if (related) related.forEach(term => relatedTerms.set(term, link));
+                }
+            } catch (error) {
+                console.error("Error fetching LoC related terms:", error);
+            }
         }
     </script>
 </head>
 <body>
     <h2>MARC 650 Subject Finder</h2>
-    <input type="text" id="keyword" placeholder="Enter book topic (e.g., Climate Change)" 
-           onkeyup="showSuggestions()" onblur="hideSuggestions()">
-    <div id="suggestions" class="suggestions"></div>
+    <input type="text" id="keyword" placeholder="Enter book topic (e.g., Climate Change)">
     <button onclick="fetchMARC()">Find Subjects</button>
     <div id="results"></div>
 </body>
