@@ -33,7 +33,7 @@
                     let list = document.createElement("ul");
                     data[1].forEach(subject => {
                         let listItem = document.createElement("li");
-                        listItem.textContent = `650 _0 $a ${subject} $2 lcsh`;
+                        listItem.textContent = `650 _0 ${subject}`;
                         listItem.onclick = () => copyToClipboard(listItem.textContent);
                         list.appendChild(listItem);
                     });
