@@ -31,12 +31,17 @@
             let searchTerms = new Set();
             searchTerms.add(keyword);
 
-            // Fetch synonyms to expand search
+            // Fetch synonyms to expand search, but filter out irrelevant ones
             let synonymUrl = `https://api.datamuse.com/words?rel_syn=${encodeURIComponent(keyword)}&max=5`;
             try {
                 let synonymResponse = await fetch(synonymUrl);
                 let synonymData = await synonymResponse.json();
-                synonymData.forEach(term => searchTerms.add(term.word));
+                synonymData.forEach(term => {
+                    // Add synonyms that are similar to the original term
+                    if (term.word.toLowerCase().includes(keyword.toLowerCase())) {
+                        searchTerms.add(term.word);
+                    }
+                });
             } catch (error) {
                 console.error("Error fetching synonyms:", error);
             }
@@ -125,7 +130,7 @@
 
         // Function to fetch FAST subjects from the FAST API
         async function fetchFastSubjects(keyword) {
-            const fastApiUrl = `https://fast.oclc.org/searchfast/fastSuggest?query=${encodeURIComponent(keyword)}&queryIndex=suggestall&maxRecords=5`;
+            const fastApiUrl = `http://fast.oclc.org/searchfast/fastsuggest?query=${encodeURIComponent(keyword)}&queryIndex=suggestall&maxRecords=5`;
             try {
                 const response = await fetch(fastApiUrl);
                 const data = await response.json();
