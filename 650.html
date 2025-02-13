@@ -75,31 +75,34 @@
             let list = document.createElement("ul");
 
             if (foundTerms.size > 0 || relatedTerms.size > 0) {
+                // Always display exact matches first
                 foundTerms.forEach((link, subject) => {
                     let listItem = document.createElement("li");
-                    if (link) {
+                    let anchor = document.createElement("a");
+                    anchor.href = link;
+                    anchor.textContent = `650 _0 $a ${subject} $2 lcsh`;
+                    anchor.target = "_blank";
+                    listItem.appendChild(anchor);
+                    list.appendChild(listItem);
+                });
+
+                // Display related terms section even if no exact matches
+                if (relatedTerms.size > 0) {
+                    let relatedList = document.createElement("div");
+                    relatedList.classList.add("related");
+                    relatedList.innerHTML = "<div class='section-title'>Related Subjects:</div>";
+                    let relatedListItems = document.createElement("ul");
+                    relatedTerms.forEach((link, subject) => {
+                        let listItem = document.createElement("li");
                         let anchor = document.createElement("a");
                         anchor.href = link;
                         anchor.textContent = `650 _0 $a ${subject} $2 lcsh`;
                         anchor.target = "_blank";
                         listItem.appendChild(anchor);
-                        list.appendChild(listItem);
-                    }
-                });
-
-                // Add related terms if no exact matches
-                if (relatedTerms.size > 0) {
-                    relatedTerms.forEach((link, subject) => {
-                        let listItem = document.createElement("li");
-                        if (link) {
-                            let anchor = document.createElement("a");
-                            anchor.href = link;
-                            anchor.textContent = `650 _0 $a ${subject} $2 lcsh`;
-                            anchor.target = "_blank";
-                            listItem.appendChild(anchor);
-                            list.appendChild(listItem);
-                        }
+                        relatedListItems.appendChild(listItem);
                     });
+                    relatedList.appendChild(relatedListItems);
+                    resultsContainer.appendChild(relatedList);
                 }
 
                 resultsContainer.appendChild(list);
