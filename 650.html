@@ -271,7 +271,7 @@
             }
           });
 
-          // Store the extracted subject and URL
+          // Store the extracted subject and URL if valid
           if (subject && url) {
             let formattedSubject = `${subject}|2fast`;
             storageMap.set(formattedSubject, url);
