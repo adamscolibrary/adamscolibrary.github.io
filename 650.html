@@ -250,67 +250,61 @@
 
         // Iterate over datafields to find subjects and URLs
         Array.from(datafields).forEach(datafield => {
-          let subfields = datafield.getElementsByTagName("mx:subfield");
-          let subject = "";
-          let url = "";
-          let subjectFound = false;
+                    // Iterate over datafields to find subjects and URLs
+          Array.from(datafields).forEach(datafield => {
+            let subject = "";
+            let subjectLink = "";
 
-          // Extract subject and URL
-          Array.from(subfields).forEach(subfield => {
-            if (subfield.getAttribute("code") === "a") {
-              if (subjectFound) {
-                subject += "|" + subfield.textContent.trim(); // Concatenate subject parts
-              } else {
-                subject = subfield.textContent.trim();
-                subjectFound = true;
-              }
-            } else if (subfield.getAttribute("code") === "x") {
-              subject += "|x" + subfield.textContent.trim(); // Add x part
-            } else if (subfield.getAttribute("code") === "2" && subfield.textContent.trim() === "fast") {
-              url = datafield.getElementsByTagName("mx:subfield")[0].textContent.trim();
+            // Find subfield "a" for subject
+            let subjectSubfield = datafield.querySelector("mx\\:subfield[code='a'], subfield[code='a']");
+            if (subjectSubfield) {
+              subject = subjectSubfield.textContent.trim();
+            }
+
+            // Find subfield "a" for URL
+            let urlSubfield = datafield.querySelector("mx\\:subfield[code='a'], subfield[code='a']");
+            if (urlSubfield && urlSubfield.textContent.includes("http://")) {
+              subjectLink = urlSubfield.textContent.trim();
+            }
+
+            // If a subject and URL were found, add them to the map
+            if (subject && subjectLink) {
+              storageMap.set(subject, subjectLink);
             }
           });
 
-          // Store the extracted subject and URL if valid
-          if (subject && url) {
-            let formattedSubject = `${subject}|2fast`;
-            storageMap.set(formattedSubject, url);
-          }
-        });
-
         log(`Fetched OCLC FAST terms for ${term}: ${[...storageMap.keys()].join(", ")}`);
       } catch (error) {
-        log("Error fetching OCLC FAST subjects: " + error);
+        log("Error fetching OCLC FAST terms: " + error);
       }
     }
+
+    // Initialize the function when the page loads
+    document.addEventListener("DOMContentLoaded", () => {
+      const searchButton = document.getElementById("search-button");
+      searchButton.addEventListener("click", () => fetchMARC());
+    });
   </script>
 </head>
 
 <body>
-  <h2>MARC 650 Subject Finder</h2>
-  <input type="text" id="keyword" placeholder="Enter book topic (e.g., Climate Change)">
-  <button onclick="fetchMARC()">Find Subjects</button>
+  <h1>MARC 650 Subject Finder</h1>
 
-  <div class="results-container">
-    <h3>LOC Exact Matches</h3>
-    <div id="results"></div>
+  <!-- Input Field -->
+  <input type="text" id="keyword" placeholder="Enter a keyword..." />
 
-    <h3>Related LOC Subjects</h3>
-    <div id="related-results"></div>
+  <!-- Search Button -->
+  <button id="search-button">Search</button>
 
-    <h3>OCLC FAST Results</h3>
-    <div id="oclc-results"></div>
+  <!-- Display Results -->
+  <div id="results" class="results-container"></div>
+  <div id="related-results" class="results-container"></div>
+  <div id="synonyms-list" class="results-container"></div>
+  <div id="oclc-results" class="results-container"></div>
 
-    <h3>Synonyms</h3>
-    <div id="synonyms-list"></div>
-  </div>
-
-  <!-- Log container to display log messages -->
+  <!-- Log Display -->
   <div id="log-container"></div>
-
-  <!-- Button to copy log -->
   <button id="copy-log-button" onclick="copyLog()">Copy Log</button>
-
 </body>
 
 </html>
