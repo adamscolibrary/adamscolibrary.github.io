@@ -65,54 +65,22 @@
       margin: 0 auto;
     }
 
-    /* Style for log area */
     #log-container {
-      font-family: monospace;
-      background-color: #f4f4f4;
+      margin-top: 30px;
       padding: 10px;
       border: 1px solid #ddd;
-      margin-top: 20px;
       max-height: 200px;
       overflow-y: auto;
-      white-space: pre-wrap; /* Allows long log entries to wrap */
-      text-align: left;
-      margin-top: 30px;
-      max-width: 600px;
-      margin: 20px auto;
+      background-color: #f4f4f4;
+      font-family: monospace;
     }
 
     #copy-log-button {
-      padding: 10px;
-      cursor: pointer;
-      background-color: #007bff;
-      color: white;
-      border: none;
       margin-top: 10px;
+      padding: 5px 10px;
     }
   </style>
   <script>
-    function log(message) {
-      // Create or get the log container
-      let logContainer = document.getElementById("log-container");
-      logContainer.innerText += message + "\n"; // Append the message with a new line
-      logContainer.scrollTop = logContainer.scrollHeight; // Scroll to the bottom
-    }
-
-    function copyLog() {
-      // Get the log container
-      let logContainer = document.getElementById("log-container");
-      // Create a temporary textarea to copy text from the log container
-      let tempTextArea = document.createElement("textarea");
-      tempTextArea.value = logContainer.innerText;
-      document.body.appendChild(tempTextArea);
-      tempTextArea.select();
-      document.execCommand("copy");
-      document.body.removeChild(tempTextArea);
-
-      // Alert the user that the log has been copied
-      alert("Log copied to clipboard!");
-    }
-
     async function fetchMARC(keyword = null) {
       let inputField = document.getElementById("keyword");
       let searchTerm = keyword || inputField.value.trim();
@@ -120,11 +88,13 @@
       let relatedContainer = document.getElementById("related-results");
       let synonymsContainer = document.getElementById("synonyms-list");
       let oclcContainer = document.getElementById("oclc-results");
+      let logContainer = document.getElementById("log-container");
 
       resultsContainer.innerHTML = "";
       relatedContainer.innerHTML = "";
       synonymsContainer.innerHTML = "";
       oclcContainer.innerHTML = "";
+      logContainer.innerHTML = "";
 
       if (!searchTerm) {
         resultsContainer.innerText = "Please enter a keyword.";
@@ -138,9 +108,6 @@
       let synonyms = new Set();
       let oclcTerms = new Map();
 
-      // Log message
-      log(`Searching for: ${searchTerm}`);
-
       // Fetch synonyms first
       await fetchSynonyms(searchTerm, synonyms);
 
@@ -153,7 +120,7 @@
       }
 
       // Fetch OCLC FAST subjects
-      await fetchOCLCSubjects(searchTerm, oclcTerms);
+      await fetchOCLCSubjects(searchTerm, oclcTerms, logContainer);
 
       // Display Exact Matches (LOC)
       let output = "<ul>";
@@ -209,7 +176,6 @@
         let response = await fetch(url);
         let data = await response.json();
         data.forEach(term => synonyms.add(term.word));
-        log(`Found synonyms: ${[...synonyms].join(", ")}`);
       } catch (error) {
         log("Error fetching synonyms: " + error);
       }
@@ -227,56 +193,68 @@
             storageMap.set(subject, link);
           });
         }
-        log(`Fetched LCSH terms for ${term}: ${[...storageMap.keys()].join(", ")}`);
       } catch (error) {
         log("Error fetching LCSH subjects: " + error);
       }
     }
 
     // Fetch OCLC FAST subjects
-    async function fetchOCLCSubjects(term, storageMap) {
-      let url = `https://fast.oclc.org/search?query=cql.any+%3D+%22${encodeURIComponent(term)}%22&httpAccept=application/xml`;
+    async function fetchOCLCSubjects(term, storageMap, logContainer) {
+      let url = `http://fast.oclc.org/search?query=cql.any+%3D+%22${encodeURIComponent(term)}%22&httpAccept=application/xml`;
       try {
         let response = await fetch(url);
         let text = await response.text();
-        log(`Raw OCLC FAST Response: ${text}`); // Log the raw response for debugging
 
-        // Parse the XML
+        // Parse the XML response
         let parser = new DOMParser();
         let xmlDoc = parser.parseFromString(text, "application/xml");
-
-        // Find all <mx:datafield> elements with relevant data
         let datafields = xmlDoc.getElementsByTagName("mx:datafield");
 
         // Iterate over datafields to find subjects and URLs
         Array.from(datafields).forEach(datafield => {
-                    // Iterate over datafields to find subjects and URLs
-          Array.from(datafields).forEach(datafield => {
-            let subject = "";
-            let subjectLink = "";
+          let subject = "";
+          let subjectLink = "";
 
-            // Find subfield "a" for subject
-            let subjectSubfield = datafield.querySelector("mx\\:subfield[code='a'], subfield[code='a']");
-            if (subjectSubfield) {
-              subject = subjectSubfield.textContent.trim();
-            }
+          // Find subfield "a" for subject
+          let subjectSubfield = datafield.querySelector("mx\\:subfield[code='a'], subfield[code='a']");
+          if (subjectSubfield) {
+            subject = subjectSubfield.textContent.trim();
+          }
 
-            // Find subfield "a" for URL
-            let urlSubfield = datafield.querySelector("mx\\:subfield[code='a'], subfield[code='a']");
-            if (urlSubfield && urlSubfield.textContent.includes("http://")) {
-              subjectLink = urlSubfield.textContent.trim();
-            }
+          // Find subfield "a" for URL
+          let urlSubfield = datafield.querySelector("mx\\:subfield[code='a'], subfield[code='a']");
+          if (urlSubfield && urlSubfield.textContent.includes("http://")) {
+            subjectLink = urlSubfield.textContent.trim();
+          }
 
-            // If a subject and URL were found, add them to the map
-            if (subject && subjectLink) {
-              storageMap.set(subject, subjectLink);
-            }
-          });
+          // If a subject and URL were found, add them to the map
+          if (subject && subjectLink) {
+            storageMap.set(subject, subjectLink);
+          }
+        });
 
-        log(`Fetched OCLC FAST terms for ${term}: ${[...storageMap.keys()].join(", ")}`);
+        log("Fetched OCLC FAST terms for " + term + ": " + [...storageMap.keys()].join(", "), logContainer);
       } catch (error) {
-        log("Error fetching OCLC FAST terms: " + error);
+        log("Error fetching OCLC FAST terms: " + error, logContainer);
       }
+    }
+
+    // Log helper function
+    function log(message, logContainer = document.getElementById("log-container")) {
+      let logEntry = document.createElement("div");
+      logEntry.textContent = message;
+      logContainer.appendChild(logEntry);
+    }
+
+    // Copy log to clipboard
+    function copyLog() {
+      let logContainer = document.getElementById("log-container");
+      let range = document.createRange();
+      range.selectNode(logContainer);
+      window.getSelection().removeAllRanges();
+      window.getSelection().addRange(range);
+      document.execCommand("copy");
+      alert("Log copied to clipboard.");
     }
 
     // Initialize the function when the page loads
@@ -299,10 +277,10 @@
   <!-- Display Results -->
   <div id="results" class="results-container"></div>
   <div id="related-results" class="results-container"></div>
-  <div id="synonyms-list" class="results-container"></div>
   <div id="oclc-results" class="results-container"></div>
+  <div id="synonyms-list" class="results-container"></div>
 
-  <!-- Log Display -->
+  <!-- Log Section -->
   <div id="log-container"></div>
   <button id="copy-log-button" onclick="copyLog()">Copy Log</button>
 </body>
