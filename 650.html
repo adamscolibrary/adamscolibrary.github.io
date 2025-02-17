@@ -196,7 +196,7 @@
 
           if (isValidSubject && subject) {
             if (!uri && fastID) {
-              uri = `http://id.worldcat.org/fast/${fastID}`;
+              uri = `http://id.worldcat.org/fast/${fastID}`; // Generate URI from FAST ID if not explicitly present
             }
             if (uri) {
               storageMap.set(subject, uri);
