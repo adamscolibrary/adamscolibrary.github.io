@@ -6,89 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MARC 650 Subject Finder</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      margin: 50px;
-    }
-
-    input {
-      width: 80%;
-      padding: 10px;
-      margin: 10px;
-    }
-
-    button {
-      padding: 10px;
-      cursor: pointer;
-    }
-
-    ul {
-      list-style: none;
-      padding: 0;
-    }
-
-    li {
-      padding: 5px;
-      border-bottom: 1px solid #ddd;
-    }
-
-    li a {
-      text-decoration: none;
-      color: blue;
-      cursor: pointer;
-    }
-
-    li a:hover {
-      text-decoration: underline;
-    }
-
-    .section-title {
-      font-size: 18px;
-      font-weight: bold;
-      margin-top: 20px;
-    }
-
-    .related-section,
-    .synonyms-section,
-    .oclc-section {
-      font-size: 16px;
-      color: #555;
-      margin-top: 20px;
-      border-top: 2px solid #ddd;
-      padding-top: 15px;
-    }
-
-    .results-container {
-      text-align: left;
-      max-width: 600px;
-      margin: 0 auto;
-    }
-
-    /* Style for log area */
-    #log-container {
-      font-family: monospace;
-      background-color: #f4f4f4;
-      padding: 10px;
-      border: 1px solid #ddd;
-      margin-top: 20px;
-      max-height: 200px;
-      overflow-y: auto;
-      white-space: pre-wrap; /* Allows long log entries to wrap */
-      text-align: left;
-      margin-top: 30px;
-      max-width: 600px;
-      margin: 20px auto;
-    }
-
-    #copy-log-button {
-      padding: 10px;
-      cursor: pointer;
-      background-color: #007bff;
-      color: white;
-      border: none;
-      margin-top: 10px;
-    }
+    /* Your existing styles... */
   </style>
   <script>
     function log(message) {
@@ -183,7 +101,7 @@
       if (oclcTerms.size > 0) {
         let oclcOutput = `<div class="oclc-section"><div class="section-title">OCLC FAST Results:</div><ul>`;
         oclcTerms.forEach((link, subject) => {
-          oclcOutput += `<li><a href="${link}" target="_blank">650 _0 $a ${subject} $2 fast</a></li>`;
+          oclcOutput += `<li><a href="${link}" target="_blank">${subject}</a></li>`; // Updated to display just the subject
         });
         oclcOutput += "</ul></div>";
         oclcContainer.innerHTML = oclcOutput;
@@ -271,7 +189,7 @@
 
           // Store the extracted subject and URL
           if (subject && url) {
-            let formattedSubject = `${subject}|2fast`;
+            let formattedSubject = `<a href="${url}" target="_blank">${subject}</a>`; // Link the subject
             storageMap.set(formattedSubject, url);
           }
         });
