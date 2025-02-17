@@ -10,19 +10,24 @@
   </style>
   <script>
     function log(message) {
+      // Create or get the log container
       let logContainer = document.getElementById("log-container");
-      logContainer.innerText += message + "\n";
-      logContainer.scrollTop = logContainer.scrollHeight;
+      logContainer.innerText += message + "\n"; // Append the message with a new line
+      logContainer.scrollTop = logContainer.scrollHeight; // Scroll to the bottom
     }
 
     function copyLog() {
+      // Get the log container
       let logContainer = document.getElementById("log-container");
+      // Create a temporary textarea to copy text from the log container
       let tempTextArea = document.createElement("textarea");
       tempTextArea.value = logContainer.innerText;
       document.body.appendChild(tempTextArea);
       tempTextArea.select();
       document.execCommand("copy");
       document.body.removeChild(tempTextArea);
+
+      // Alert the user that the log has been copied
       alert("Log copied to clipboard!");
     }
 
@@ -44,24 +49,31 @@
         return;
       }
 
-      inputField.value = searchTerm; 
+      inputField.value = searchTerm; // Update input field if a synonym was clicked
 
       let foundTerms = new Map();
       let relatedTerms = new Map();
       let synonyms = new Set();
       let oclcTerms = new Map();
 
+      // Log message
       log(`Searching for: ${searchTerm}`);
 
+      // Fetch synonyms first
       await fetchSynonyms(searchTerm, synonyms);
+
+      // Fetch exact matches for the original search term from LOC
       await fetchLCSHSubjects(searchTerm, foundTerms);
 
+      // Fetch related subjects using synonyms (to populate related subjects)
       for (let synonym of synonyms) {
         await fetchLCSHSubjects(synonym, relatedTerms);
       }
 
+      // Fetch OCLC FAST subjects
       await fetchOCLCSubjects(searchTerm, oclcTerms);
 
+      // Display Exact Matches (LOC)
       let output = "<ul>";
       if (foundTerms.size > 0) {
         foundTerms.forEach((link, subject) => {
@@ -73,6 +85,7 @@
       output += "</ul>";
       resultsContainer.innerHTML = output;
 
+      // Display Related Subjects (LOC)
       if (relatedTerms.size > 0) {
         let relatedOutput = `<div class="related-section"><div class="section-title">Related Subjects:</div><ul>`;
         relatedTerms.forEach((link, subject) => {
@@ -84,10 +97,11 @@
         relatedContainer.innerHTML = "<div class='related-section'>No related subjects found.</div>";
       }
 
+      // Display OCLC FAST Results
       if (oclcTerms.size > 0) {
         let oclcOutput = `<div class="oclc-section"><div class="section-title">OCLC FAST Results:</div><ul>`;
         oclcTerms.forEach((link, subject) => {
-          oclcOutput += `<li><a href="${link}" target="_blank">650 _7 $a ${subject} $2 fast</a></li>`; 
+          oclcOutput += `<li><a href="${link}" target="_blank">${subject}</a></li>`; // Updated to display just the subject
         });
         oclcOutput += "</ul></div>";
         oclcContainer.innerHTML = oclcOutput;
@@ -95,6 +109,7 @@
         oclcContainer.innerHTML = "<div class='oclc-section'>No OCLC FAST terms found.</div>";
       }
 
+      // Display Synonyms as Clickable Links
       if (synonyms.size > 0) {
         let synonymsOutput = `<div class="synonyms-section"><div class="section-title">Try These Synonyms:</div><ul>`;
         synonyms.forEach(term => {
@@ -105,6 +120,7 @@
       }
     }
 
+    // Fetch synonyms from Datamuse API
     async function fetchSynonyms(keyword, synonyms) {
       let url = `https://api.datamuse.com/words?ml=${encodeURIComponent(keyword)}&max=5`;
       try {
@@ -117,6 +133,7 @@
       }
     }
 
+    // Fetch LCSH subjects
     async function fetchLCSHSubjects(term, storageMap) {
       let url = `https://id.loc.gov/authorities/subjects/suggest/?q=${encodeURIComponent(term)}`;
       try {
@@ -134,28 +151,32 @@
       }
     }
 
+    // Fetch OCLC FAST subjects
     async function fetchOCLCSubjects(term, storageMap) {
       let url = `https://fast.oclc.org/search?query=cql.any+%3D+%22${encodeURIComponent(term)}%22&httpAccept=application/xml`;
+
       try {
         let response = await fetch(url);
         let text = await response.text();
-        log(`Raw OCLC FAST Response: ${text}`);
+        log(`Raw OCLC FAST Response:\n${text}`); // Debugging: Log full XML response
 
         let parser = new DOMParser();
         let xmlDoc = parser.parseFromString(text, "application/xml");
         let datafields = xmlDoc.getElementsByTagName("mx:datafield");
 
+        let foundSubjects = [];
+
         Array.from(datafields).forEach(datafield => {
           let tag = datafield.getAttribute("tag");
           let subfields = datafield.getElementsByTagName("mx:subfield");
-          
+
           let subject = "";
           let fastID = "";
           let uri = "";
-          let isSubject = false;
+          let isValidSubject = false;
 
           if (tag === "150" || tag === "110" || tag === "111") {
-            isSubject = true;
+            isValidSubject = true;
           }
 
           Array.from(subfields).forEach(subfield => {
@@ -163,27 +184,29 @@
             let value = subfield.textContent.trim();
 
             if (code === "a") {
-              subject = value;
+              subject = value; // Main subject heading
             } else if (code === "0") {
-              fastID = value;
+              fastID = value; // FAST ID (sometimes present)
             } else if (code === "2" && value === "fast") {
-              isSubject = true;
-            } else if (code === "a" && tag === "024") {
-              uri = value;
+              isValidSubject = true; // Ensures it's a FAST heading
+            } else if (tag === "024" && code === "a") {
+              uri = value; // Explicit FAST URI
             }
           });
 
-          if (isSubject && subject) {
+          if (isValidSubject && subject) {
             if (!uri && fastID) {
               uri = `http://id.worldcat.org/fast/${fastID}`;
             }
             if (uri) {
               storageMap.set(subject, uri);
+              foundSubjects.push(subject);
             }
           }
         });
 
-        log(`Fetched OCLC FAST terms for ${term}: ${[...storageMap.keys()].join(", ")}`);
+        log(`Fetched OCLC FAST terms for ${term}: ${foundSubjects.join(", ")}`); // Log extracted terms
+
       } catch (error) {
         log("Error fetching OCLC FAST subjects: " + error);
       }
@@ -193,21 +216,29 @@
 
 <body>
   <h2>MARC 650 Subject Finder</h2>
-  <input type="text" id="keyword" placeholder="Enter book topic">
+  <input type="text" id="keyword" placeholder="Enter book topic (e.g., Climate Change)">
   <button onclick="fetchMARC()">Find Subjects</button>
 
   <div class="results-container">
     <h3>LOC Exact Matches</h3>
     <div id="results"></div>
+
     <h3>Related LOC Subjects</h3>
     <div id="related-results"></div>
+
     <h3>OCLC FAST Results</h3>
     <div id="oclc-results"></div>
+
     <h3>Synonyms</h3>
     <div id="synonyms-list"></div>
   </div>
+
+  <!-- Log container to display log messages -->
   <div id="log-container"></div>
+
+  <!-- Button to copy log -->
   <button id="copy-log-button" onclick="copyLog()">Copy Log</button>
+
 </body>
 
 </html>
