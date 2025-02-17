@@ -101,7 +101,7 @@
       if (oclcTerms.size > 0) {
         let oclcOutput = `<div class="oclc-section"><div class="section-title">OCLC FAST Results:</div><ul>`;
         oclcTerms.forEach((link, subject) => {
-          oclcOutput += `<li><a href="${link}" target="_blank">${subject}</a></li>`; // Updated to display just the subject
+          oclcOutput += `<li><a href="${link}" target="_blank">${subject}</a></li>`;
         });
         oclcOutput += "</ul></div>";
         oclcContainer.innerHTML = oclcOutput;
