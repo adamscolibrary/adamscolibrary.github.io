@@ -12,17 +12,17 @@
                 return;
             }
 
-            let searchType = "";
+            let endpoint = "";
             if (document.getElementById("topicalToggle").checked) {
-                searchType = "authorities/subjects";
+                endpoint = "https://id.loc.gov/authorities/subjects/suggest2/?q=";
             } else if (document.getElementById("subdivisionToggle").checked) {
-                searchType = "authorities/subjects/childrens";
+                endpoint = "https://id.loc.gov/authorities/subjects/suggest2/?q="; // Adjust if there's a separate API for subdivisions
             } else {
                 alert("Please select a search type.");
                 return;
             }
 
-            const url = `https://id.loc.gov/${searchType}.json?q=${encodeURIComponent(query)}`;
+            const url = endpoint + encodeURIComponent(query);
 
             try {
                 const response = await fetch(url);
@@ -38,18 +38,16 @@
             const resultsContainer = document.getElementById("results");
             resultsContainer.innerHTML = "";
 
-            if (!data.length) {
+            if (!data.hits || data.hits.length === 0) {
                 resultsContainer.innerHTML = "<p>No results found.</p>";
                 return;
             }
 
             const list = document.createElement("ul");
-            data.forEach(item => {
-                if (item["@id"] && item["http://www.w3.org/2000/01/rdf-schema#label"]) {
+            data.hits.forEach(item => {
+                if (item.suggestLabel && item.uri) {
                     const listItem = document.createElement("li");
-                    listItem.innerHTML = `<a href="${item["@id"]}" target="_blank">
-                        ${item["http://www.w3.org/2000/01/rdf-schema#label"][0]["@value"]}
-                    </a>`;
+                    listItem.innerHTML = `<a href="${item.uri}" target="_blank">${item.suggestLabel}</a>`;
                     list.appendChild(listItem);
                 }
             });
