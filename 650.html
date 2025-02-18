@@ -7,7 +7,7 @@
     <style>
         body { font-family: Arial, sans-serif; margin: 20px; }
         .builder-container { display: flex; gap: 5px; margin-bottom: 20px; }
-        .builder-input { width: 30%; padding: 5px; font-size: 16px; }
+        .builder-input { width: 22%; padding: 5px; font-size: 16px; }
         .dropdown { cursor: pointer; padding: 5px; border: 1px solid #ccc; background: #f9f9f9; text-align: center; width: 40px; }
         .dropdown-menu { display: none; position: absolute; background: white; border: 1px solid #ccc; z-index: 10; }
         .dropdown-menu div { padding: 5px; cursor: pointer; }
@@ -34,14 +34,16 @@
         <input type="text" id="field2" class="builder-input" placeholder="Subdivision">
         <div class="dropdown" onclick="toggleDropdown(event, 1)">+</div>
         <input type="text" id="field3" class="builder-input" placeholder="Subdivision">
+        <div class="dropdown" onclick="toggleDropdown(event, 2)">+</div>
+        <input type="text" id="field4" class="builder-input" placeholder="Subdivision">
     </div>
 
     <div id="dropdownMenu" class="dropdown-menu">
         <div onclick="selectSubdivision('')">— None —</div>
-        <div onclick="selectSubdivision('$v')">$v - Form subdivision</div>
-        <div onclick="selectSubdivision('$x')">$x - General subdivision</div>
-        <div onclick="selectSubdivision('$y')">$y - Chronological subdivision</div>
-        <div onclick="selectSubdivision('$z')">$z - Geographic subdivision</div>
+        <div onclick="selectSubdivision('|v')">|v - Form subdivision</div>
+        <div onclick="selectSubdivision('|x')">|x - General subdivision</div>
+        <div onclick="selectSubdivision('|y')">|y - Chronological subdivision</div>
+        <div onclick="selectSubdivision('|z')">|z - Geographic subdivision</div>
     </div>
 
     <button onclick="copyMARC()">Copy 650 MARC Field</button>
@@ -87,9 +89,7 @@
                             <span class="more-info">More Info</span>
                         `;
 
-                        // Corrected event listener attachment
                         div.querySelector(".more-info").addEventListener("click", () => openModal(hit));
-
                         resultsDiv.appendChild(div);
                     });
                 })
@@ -101,6 +101,7 @@
             document.getElementById("field1").value = parts[0] || "";
             document.getElementById("field2").value = parts[1] || "";
             document.getElementById("field3").value = parts[2] || "";
+            document.getElementById("field4").value = parts[3] || "";
         }
 
         function toggleDropdown(event, index) {
@@ -122,12 +123,14 @@
             const field1 = document.getElementById("field1").value;
             const field2 = document.getElementById("field2").value;
             const field3 = document.getElementById("field3").value;
+            const field4 = document.getElementById("field4").value;
             const dropdowns = document.querySelectorAll(".dropdown");
 
             const sub1 = dropdowns[0].textContent.includes("$") ? dropdowns[0].textContent : "";
             const sub2 = dropdowns[1].textContent.includes("$") ? dropdowns[1].textContent : "";
+            const sub3 = dropdowns[2].textContent.includes("$") ? dropdowns[2].textContent : "";
 
-            const finalText = `${field1} ${sub1} ${field2} ${sub2} ${field3}`.trim();
+            const finalText = `${field1} ${sub1} ${field2} ${sub2} ${field3} ${sub3} ${field4}`.trim();
             navigator.clipboard.writeText(finalText);
             alert("Copied: " + finalText);
         }
