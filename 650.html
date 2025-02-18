@@ -1,74 +1,290 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LoC Linked Data Search</title>
-    <script>
-        async function searchLoC() {
-            const query = document.getElementById("searchInput").value.trim();
-            if (!query) {
-                alert("Please enter a search term.");
-                return;
-            }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>650 MARC Field Builder</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    /* 650 Builder Styles */
+    #builder {
+      border: 1px solid #ccc;
+      padding: 10px;
+      margin-bottom: 20px;
+    }
+    #builderContainer {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      flex-wrap: wrap;
+    }
+    #builderContainer input[type="text"] {
+      flex: 1;
+      padding: 5px;
+      font-size: 1em;
+    }
+    .subdiv-box {
+      width: 40px;
+      text-align: center;
+      border: 1px solid #888;
+      cursor: pointer;
+      user-select: none;
+      padding: 5px;
+      background-color: #f0f0f0;
+    }
+    /* Dropdown select for subdivision */
+    .subdiv-select {
+      position: absolute;
+      z-index: 100;
+      font-size: 1em;
+    }
+    /* Search Section */
+    #searchSection {
+      margin-bottom: 20px;
+    }
+    #searchInput {
+      width: 300px;
+      padding: 5px;
+      font-size: 1em;
+    }
+    #results ul {
+      list-style-type: none;
+      padding-left: 0;
+    }
+    #results li {
+      padding: 5px 0;
+    }
+    #results li span.subjectOption {
+      cursor: pointer;
+      color: blue;
+      text-decoration: underline;
+    }
+    #results li a.moreInfo {
+      margin-left: 10px;
+      font-size: 0.9em;
+      color: #555;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+    /* Modal Styles */
+    #modal {
+      display: none;
+      position: fixed;
+      z-index: 200;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.5);
+    }
+    #modal .modal-content {
+      background-color: #fff;
+      margin: 10% auto;
+      padding: 10px;
+      width: 80%;
+      position: relative;
+    }
+    #modal .modal-content iframe {
+      width: 100%;
+      height: 400px;
+      border: none;
+    }
+    #modal .close {
+      position: absolute;
+      top: 5px;
+      right: 10px;
+      color: #aaa;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    #copyButton {
+      margin-top: 10px;
+      padding: 5px 10px;
+      font-size: 1em;
+      cursor: pointer;
+    }
+  </style>
+  <script>
+    // --- 650 Builder Functionality ---
+    // When a subject is clicked in the search results, split its label on dashes and populate builder fields.
+    function populateBuilder(subjectLabel) {
+      // Split on dash (–) with optional spaces around it.
+      const parts = subjectLabel.split(/\s*-\s*/);
+      document.getElementById("builderField1").value = parts[0] || "";
+      document.getElementById("builderField2").value = parts[1] || "";
+      document.getElementById("builderField3").value = parts[2] || "";
+    }
 
-            let endpoint = "";
-            if (document.getElementById("topicalToggle").checked) {
-                endpoint = "https://id.loc.gov/authorities/subjects/suggest2/?q=";
-            } else if (document.getElementById("subdivisionToggle").checked) {
-                endpoint = "https://id.loc.gov/authorities/subjects/suggest2/?q="; // Adjust if there's a separate API for subdivisions
-            } else {
-                alert("Please select a search type.");
-                return;
-            }
+    // Handle clicks on subdivision boxes to open dropdowns.
+    function showDropdown(boxId, dropdownId) {
+      const box = document.getElementById(boxId);
+      const dropdown = document.getElementById(dropdownId);
+      // Position the dropdown over the box.
+      const rect = box.getBoundingClientRect();
+      dropdown.style.left = rect.left + "px";
+      dropdown.style.top = rect.top + "px";
+      dropdown.style.display = "block";
+      dropdown.focus();
+    }
 
-            const url = endpoint + encodeURIComponent(query);
+    // When a dropdown selection is made, update the corresponding box.
+    function selectSubdivision(dropdownId, boxId) {
+      const dropdown = document.getElementById(dropdownId);
+      const box = document.getElementById(boxId);
+      const value = dropdown.value;
+      if (value !== "") {
+        box.textContent = value;
+      }
+      dropdown.style.display = "none";
+    }
 
-            try {
-                const response = await fetch(url);
-                const data = await response.json();
-                displayResults(data);
-            } catch (error) {
-                console.error("Error fetching data:", error);
-                alert("Failed to fetch data. Please try again.");
-            }
+    // Copy the full 650 field text to clipboard.
+    function copyBuilderField() {
+      // Build the 650 text: Field1 + [box1] + Field2 + [box2] + Field3
+      const field1 = document.getElementById("builderField1").value.trim();
+      const subdiv1 = document.getElementById("subdivBox1").textContent.trim();
+      const field2 = document.getElementById("builderField2").value.trim();
+      const subdiv2 = document.getElementById("subdivBox2").textContent.trim();
+      const field3 = document.getElementById("builderField3").value.trim();
+      
+      // Only include subdivisions if they have been set to a valid value ($v, $x, $y, or $z)
+      const part1 = field1;
+      const part2 = subdiv1.match(/^\$(v|x|y|z)$/) ? subdiv1 + " " + field2 : field2;
+      const part3 = subdiv2.match(/^\$(v|x|y|z)$/) ? subdiv2 + " " + field3 : field3;
+      
+      const fullText = [part1, part2, part3].filter(Boolean).join(" -- ");
+      navigator.clipboard.writeText(fullText).then(() => {
+        alert("650 field copied to clipboard:\n" + fullText);
+      }).catch(err => {
+        alert("Error copying text: " + err);
+      });
+    }
+
+    // --- Search and Results Functionality ---
+    async function searchLoC() {
+      const query = document.getElementById("searchInput").value.trim();
+      if (!query) {
+        alert("Please enter a search term.");
+        return;
+      }
+      const url = "https://id.loc.gov/authorities/subjects/suggest2/?q=" + encodeURIComponent(query);
+      try {
+        const response = await fetch(url);
+        const data = await response.json();
+        displayResults(data);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        alert("Failed to fetch data. Please try again.");
+      }
+    }
+
+    function displayResults(data) {
+      const resultsContainer = document.getElementById("results");
+      resultsContainer.innerHTML = "";
+      if (!data.hits || data.hits.length === 0) {
+        resultsContainer.innerHTML = "<p>No results found.</p>";
+        return;
+      }
+      const list = document.createElement("ul");
+      data.hits.forEach(item => {
+        if (item.suggestLabel && item.uri) {
+          const li = document.createElement("li");
+          // Create span for subject option (click populates builder)
+          const subjectSpan = document.createElement("span");
+          subjectSpan.className = "subjectOption";
+          subjectSpan.textContent = item.suggestLabel;
+          subjectSpan.onclick = () => populateBuilder(item.suggestLabel);
+          li.appendChild(subjectSpan);
+          // Create "more info" link next to it.
+          const moreInfo = document.createElement("a");
+          moreInfo.className = "moreInfo";
+          moreInfo.textContent = "more info";
+          moreInfo.href = "#";
+          moreInfo.onclick = (e) => {
+            e.preventDefault();
+            openModal(item.uri);
+          };
+          li.appendChild(moreInfo);
+          list.appendChild(li);
         }
+      });
+      resultsContainer.appendChild(list);
+    }
 
-        function displayResults(data) {
-            const resultsContainer = document.getElementById("results");
-            resultsContainer.innerHTML = "";
+    // --- Modal (iframe) Functionality ---
+    function openModal(uri) {
+      const modal = document.getElementById("modal");
+      const iframe = document.getElementById("modalIframe");
+      iframe.src = uri;
+      modal.style.display = "block";
+    }
+    function closeModal() {
+      const modal = document.getElementById("modal");
+      const iframe = document.getElementById("modalIframe");
+      iframe.src = "";
+      modal.style.display = "none";
+    }
 
-            if (!data.hits || data.hits.length === 0) {
-                resultsContainer.innerHTML = "<p>No results found.</p>";
-                return;
-            }
-
-            const list = document.createElement("ul");
-            data.hits.forEach(item => {
-                if (item.suggestLabel && item.uri) {
-                    const listItem = document.createElement("li");
-                    listItem.innerHTML = `<a href="${item.uri}" target="_blank">${item.suggestLabel}</a>`;
-                    list.appendChild(listItem);
-                }
-            });
-
-            resultsContainer.appendChild(list);
-        }
-    </script>
+    // Hide dropdown if click occurs outside
+    document.addEventListener("click", function(e) {
+      const dropdown1 = document.getElementById("dropdown1");
+      const dropdown2 = document.getElementById("dropdown2");
+      if (!dropdown1.contains(e.target) && e.target.id !== "subdivBox1") {
+        dropdown1.style.display = "none";
+      }
+      if (!dropdown2.contains(e.target) && e.target.id !== "subdivBox2") {
+        dropdown2.style.display = "none";
+      }
+    });
+  </script>
 </head>
 <body>
-    <h2>Library of Congress Linked Data Search</h2>
-    <input type="text" id="searchInput" placeholder="Enter search term">
-    <br>
-    <label>
-        <input type="checkbox" id="topicalToggle"> Topical Subject Headings
-    </label>
-    <label>
-        <input type="checkbox" id="subdivisionToggle"> Subdivisions
-    </label>
-    <br>
+  <h2>650 MARC Field Builder</h2>
+  <!-- 650 Builder Section -->
+  <div id="builder">
+    <div id="builderContainer">
+      <input type="text" id="builderField1" placeholder="Main Subject" />
+      <div class="subdiv-box" id="subdivBox1" onclick="showDropdown('subdivBox1','dropdown1')">$</div>
+      <input type="text" id="builderField2" placeholder="Sub-division 1" />
+      <div class="subdiv-box" id="subdivBox2" onclick="showDropdown('subdivBox2','dropdown2')">$</div>
+      <input type="text" id="builderField3" placeholder="Sub-division 2" />
+    </div>
+    <button id="copyButton" onclick="copyBuilderField()">Copy 650 Field</button>
+    <!-- Hidden dropdown selects for subdivisions -->
+    <select id="dropdown1" class="subdiv-select" style="display:none" onchange="selectSubdivision('dropdown1','subdivBox1')">
+      <option value="">Select</option>
+      <option value="$v">$v</option>
+      <option value="$x">$x</option>
+      <option value="$y">$y</option>
+      <option value="$z">$z</option>
+    </select>
+    <select id="dropdown2" class="subdiv-select" style="display:none" onchange="selectSubdivision('dropdown2','subdivBox2')">
+      <option value="">Select</option>
+      <option value="$v">$v</option>
+      <option value="$x">$x</option>
+      <option value="$y">$y</option>
+      <option value="$z">$z</option>
+    </select>
+  </div>
+
+  <!-- Search Section -->
+  <div id="searchSection">
+    <input type="text" id="searchInput" placeholder="Enter search term" />
     <button onclick="searchLoC()">Search</button>
-    <h3>Results:</h3>
-    <div id="results"></div>
+  </div>
+  <div id="results"></div>
+
+  <!-- Modal for More Info -->
+  <div id="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal()">&times;</span>
+      <iframe id="modalIframe" src=""></iframe>
+    </div>
+  </div>
 </body>
 </html>
