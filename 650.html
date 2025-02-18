@@ -84,11 +84,16 @@
                         div.className = "result-item";
                         div.innerHTML = `
                             <span onclick="populateBuilder('${hit.suggestLabel}')">${hit.suggestLabel}</span>
-                            <span class="more-info" onclick='openModal(${JSON.stringify(hit)})'>More Info</span>
+                            <span class="more-info">More Info</span>
                         `;
+
+                        // Corrected event listener attachment
+                        div.querySelector(".more-info").addEventListener("click", () => openModal(hit));
+
                         resultsDiv.appendChild(div);
                     });
-                });
+                })
+                .catch(error => console.error("Error fetching data:", error));
         }
 
         function populateBuilder(subject) {
