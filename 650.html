@@ -1,244 +1,76 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MARC 650 Subject Finder</title>
-  <style>
-    /* Your existing styles... */
-  </style>
-  <script>
-    function log(message) {
-      // Create or get the log container
-      let logContainer = document.getElementById("log-container");
-      logContainer.innerText += message + "\n"; // Append the message with a new line
-      logContainer.scrollTop = logContainer.scrollHeight; // Scroll to the bottom
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LoC Linked Data Search</title>
+    <script>
+        async function searchLoC() {
+            const query = document.getElementById("searchInput").value.trim();
+            if (!query) {
+                alert("Please enter a search term.");
+                return;
+            }
 
-    function copyLog() {
-      // Get the log container
-      let logContainer = document.getElementById("log-container");
-      // Create a temporary textarea to copy text from the log container
-      let tempTextArea = document.createElement("textarea");
-      tempTextArea.value = logContainer.innerText;
-      document.body.appendChild(tempTextArea);
-      tempTextArea.select();
-      document.execCommand("copy");
-      document.body.removeChild(tempTextArea);
+            let searchType = "";
+            if (document.getElementById("topicalToggle").checked) {
+                searchType = "authorities/subjects";
+            } else if (document.getElementById("subdivisionToggle").checked) {
+                searchType = "authorities/subjects/childrens";
+            } else {
+                alert("Please select a search type.");
+                return;
+            }
 
-      // Alert the user that the log has been copied
-      alert("Log copied to clipboard!");
-    }
+            const url = `https://id.loc.gov/${searchType}.json?q=${encodeURIComponent(query)}`;
 
-    async function fetchMARC(keyword = null) {
-      let inputField = document.getElementById("keyword");
-      let searchTerm = keyword || inputField.value.trim();
-      let resultsContainer = document.getElementById("results");
-      let relatedContainer = document.getElementById("related-results");
-      let synonymsContainer = document.getElementById("synonyms-list");
-      let oclcContainer = document.getElementById("oclc-results");
-
-      resultsContainer.innerHTML = "";
-      relatedContainer.innerHTML = "";
-      synonymsContainer.innerHTML = "";
-      oclcContainer.innerHTML = "";
-
-      if (!searchTerm) {
-        resultsContainer.innerText = "Please enter a keyword.";
-        return;
-      }
-
-      inputField.value = searchTerm; // Update input field if a synonym was clicked
-
-      let foundTerms = new Map();
-      let relatedTerms = new Map();
-      let synonyms = new Set();
-      let oclcTerms = new Map();
-
-      // Log message
-      log(`Searching for: ${searchTerm}`);
-
-      // Fetch synonyms first
-      await fetchSynonyms(searchTerm, synonyms);
-
-      // Fetch exact matches for the original search term from LOC
-      await fetchLCSHSubjects(searchTerm, foundTerms);
-
-      // Fetch related subjects using synonyms (to populate related subjects)
-      for (let synonym of synonyms) {
-        await fetchLCSHSubjects(synonym, relatedTerms);
-      }
-
-      // Fetch OCLC FAST subjects
-      await fetchOCLCSubjects(searchTerm, oclcTerms);
-
-      // Display Exact Matches (LOC)
-      let output = "<ul>";
-      if (foundTerms.size > 0) {
-        foundTerms.forEach((link, subject) => {
-          output += `<li><a href="${link}" target="_blank">650 _0 $a ${subject} $2 lcsh</a></li>`;
-        });
-      } else {
-        output += "<li>No exact LCSH terms found.</li>";
-      }
-      output += "</ul>";
-      resultsContainer.innerHTML = output;
-
-      // Display Related Subjects (LOC)
-      if (relatedTerms.size > 0) {
-        let relatedOutput = `<div class="related-section"><div class="section-title">Related Subjects:</div><ul>`;
-        relatedTerms.forEach((link, subject) => {
-          relatedOutput += `<li><a href="${link}" target="_blank">650 _0 $a ${subject} $2 lcsh</a></li>`;
-        });
-        relatedOutput += "</ul></div>";
-        relatedContainer.innerHTML = relatedOutput;
-      } else {
-        relatedContainer.innerHTML = "<div class='related-section'>No related subjects found.</div>";
-      }
-
-      // Display OCLC FAST Results
-      if (oclcTerms.size > 0) {
-        let oclcOutput = `<div class="oclc-section"><div class="section-title">OCLC FAST Results:</div><ul>`;
-        oclcTerms.forEach((link, subject) => {
-          oclcOutput += `<li><a href="${link}" target="_blank">${subject}</a></li>`;
-        });
-        oclcOutput += "</ul></div>";
-        oclcContainer.innerHTML = oclcOutput;
-      } else {
-        oclcContainer.innerHTML = "<div class='oclc-section'>No OCLC FAST terms found.</div>";
-      }
-
-      // Display Synonyms as Clickable Links
-      if (synonyms.size > 0) {
-        let synonymsOutput = `<div class="synonyms-section"><div class="section-title">Try These Synonyms:</div><ul>`;
-        synonyms.forEach(term => {
-          synonymsOutput += `<li><a href="#" onclick="fetchMARC('${term}')">${term}</a></li>`;
-        });
-        synonymsOutput += "</ul></div>";
-        synonymsContainer.innerHTML = synonymsOutput;
-      }
-    }
-
-    // Fetch synonyms from Datamuse API
-    async function fetchSynonyms(keyword, synonyms) {
-      let url = `https://api.datamuse.com/words?ml=${encodeURIComponent(keyword)}&max=5`;
-      try {
-        let response = await fetch(url);
-        let data = await response.json();
-        data.forEach(term => synonyms.add(term.word));
-        log(`Found synonyms: ${[...synonyms].join(", ")}`);
-      } catch (error) {
-        log("Error fetching synonyms: " + error);
-      }
-    }
-
-    // Fetch LCSH subjects
-    async function fetchLCSHSubjects(term, storageMap) {
-      let url = `https://id.loc.gov/authorities/subjects/suggest/?q=${encodeURIComponent(term)}`;
-      try {
-        let response = await fetch(url);
-        let data = await response.json();
-        if (data[1] && data[3]) {
-          data[1].forEach((subject, index) => {
-            let link = data[3][index];
-            storageMap.set(subject, link);
-          });
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                displayResults(data);
+            } catch (error) {
+                console.error("Error fetching data:", error);
+                alert("Failed to fetch data. Please try again.");
+            }
         }
-        log(`Fetched LCSH terms for ${term}: ${[...storageMap.keys()].join(", ")}`);
-      } catch (error) {
-        log("Error fetching LCSH subjects: " + error);
-      }
-    }
 
-    // Fetch OCLC FAST subjects
-    async function fetchOCLCSubjects(term, storageMap) {
-      let url = `https://fast.oclc.org/search?query=cql.any+%3D+%22${encodeURIComponent(term)}%22&httpAccept=application/xml`;
+        function displayResults(data) {
+            const resultsContainer = document.getElementById("results");
+            resultsContainer.innerHTML = "";
 
-      try {
-        let response = await fetch(url);
-        let text = await response.text();
-        log(`Raw OCLC FAST Response:\n${text}`); // Debugging: Log full XML response
-
-        let parser = new DOMParser();
-        let xmlDoc = parser.parseFromString(text, "application/xml");
-        let datafields = xmlDoc.getElementsByTagName("mx:datafield");
-
-        let foundSubjects = [];
-
-        Array.from(datafields).forEach(datafield => {
-          let tag = datafield.getAttribute("tag");
-          let subfields = datafield.getElementsByTagName("mx:subfield");
-
-          let subject = "";
-          let fastID = "";
-          let uri = "";
-          let isValidSubject = false;
-
-          if (tag === "150" || tag === "110" || tag === "111") {
-            isValidSubject = true;
-          }
-
-          Array.from(subfields).forEach(subfield => {
-            let code = subfield.getAttribute("code");
-            let value = subfield.textContent.trim();
-
-            if (code === "a") {
-              subject = value; // Main subject heading
-            } else if (code === "0") {
-              fastID = value; // FAST ID (sometimes present)
-            } else if (code === "2" && value === "fast") {
-              isValidSubject = true; // Ensures it's a FAST heading
-            } else if (tag === "024" && code === "a") {
-              uri = value; // Explicit FAST URI
+            if (!data.length) {
+                resultsContainer.innerHTML = "<p>No results found.</p>";
+                return;
             }
-          });
 
-          if (isValidSubject && subject) {
-            if (!uri && fastID) {
-              uri = `http://id.worldcat.org/fast/${fastID}`; // Generate URI from FAST ID if not explicitly present
-            }
-            if (uri) {
-              storageMap.set(subject, uri);
-              foundSubjects.push(subject);
-            }
-          }
-        });
+            const list = document.createElement("ul");
+            data.forEach(item => {
+                if (item["@id"] && item["http://www.w3.org/2000/01/rdf-schema#label"]) {
+                    const listItem = document.createElement("li");
+                    listItem.innerHTML = `<a href="${item["@id"]}" target="_blank">
+                        ${item["http://www.w3.org/2000/01/rdf-schema#label"][0]["@value"]}
+                    </a>`;
+                    list.appendChild(listItem);
+                }
+            });
 
-        log(`Fetched OCLC FAST terms for ${term}: ${foundSubjects.join(", ")}`); // Log extracted terms
-
-      } catch (error) {
-        log("Error fetching OCLC FAST subjects: " + error);
-      }
-    }
-  </script>
+            resultsContainer.appendChild(list);
+        }
+    </script>
 </head>
-
 <body>
-  <h2>MARC 650 Subject Finder</h2>
-  <input type="text" id="keyword" placeholder="Enter book topic (e.g., Climate Change)">
-  <button onclick="fetchMARC()">Find Subjects</button>
-
-  <div class="results-container">
-    <h3>LOC Exact Matches</h3>
+    <h2>Library of Congress Linked Data Search</h2>
+    <input type="text" id="searchInput" placeholder="Enter search term">
+    <br>
+    <label>
+        <input type="checkbox" id="topicalToggle"> Topical Subject Headings
+    </label>
+    <label>
+        <input type="checkbox" id="subdivisionToggle"> Subdivisions
+    </label>
+    <br>
+    <button onclick="searchLoC()">Search</button>
+    <h3>Results:</h3>
     <div id="results"></div>
-
-    <h3>Related LOC Subjects</h3>
-    <div id="related-results"></div>
-
-    <h3>OCLC FAST Results</h3>
-    <div id="oclc-results"></div>
-
-    <h3>Synonyms</h3>
-    <div id="synonyms-list"></div>
-  </div>
-
-  <!-- Log container to display log messages -->
-  <div id="log-container"></div>
-
-  <!-- Button to copy log -->
-  <button id="copy-log-button" onclick="copyLog()">Copy Log</button>
-
 </body>
-
 </html>
