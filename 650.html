@@ -152,7 +152,7 @@
             const sub2 = dropdowns[1].textContent.includes("|") ? dropdowns[1].textContent : "";
             const sub3 = dropdowns[2].textContent.includes("|") ? dropdowns[2].textContent : "";
 
-            const finalText = `${field1}${sub1}${field2}${sub2}${field3}${sub3}${field4}`.trim();
+            const finalText = `${field1}${sub1}${field2}${sub2}${field3}${sub3}${field4}.`.trim();
             navigator.clipboard.writeText(finalText);
             alert("Copied: " + finalText);
         }
