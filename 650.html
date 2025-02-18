@@ -21,6 +21,19 @@
         .modal p { margin: 5px 0; }
         .modal-link { display: block; margin-top: 10px; font-size: 18px; color: blue; text-decoration: underline; }
         .close-modal { position: absolute; top: 10px; right: 10px; cursor: pointer; font-size: 20px; }
+        .search-container { margin-top: 20px; /* Adds space between copy button and search bar */
+        }
+        
+        #searchInput {
+        	width: 80%;
+            padding: 10px;
+            font-size: 16px;
+        }
+        
+        #searchButton {
+        	padding: 10px 15px;
+            font-size: 16px;
+        }
     </style>
 </head>
 <body>
@@ -49,10 +62,9 @@
     <button onclick="copyMARC()">Copy 650 MARC Field</button>
 
     <!-- Search Bar -->
-    <div>
-        
+    <div class="search-container">
     	<input type="text" id="searchInput" placeholder="Search Library of Congress">
-    	<button onclick="searchLOC()">Search</button>
+    	<button id="searchButton" onclick="searchLOC()">Search</button>
 	</div>
     
     <!-- Results Section -->
