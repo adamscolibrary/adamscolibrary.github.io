@@ -16,8 +16,9 @@
         .result-item { padding: 5px; border-bottom: 1px solid #ddd; display: flex; justify-content: space-between; align-items: center; }
         .more-info { cursor: pointer; color: blue; text-decoration: underline; }
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
-        .modal-content { background: white; padding: 20px; width: 80%; height: 80%; position: relative; text-align: center; }
-        .modal-object { width: 100%; height: 90%; border: none; }
+        .modal-content { background: white; padding: 20px; width: 60%; height: auto; position: relative; text-align: left; max-height: 80vh; overflow-y: auto; }
+        .modal h3 { margin-top: 0; }
+        .modal p { margin: 5px 0; }
         .modal-link { display: block; margin-top: 10px; font-size: 18px; color: blue; text-decoration: underline; }
         .close-modal { position: absolute; top: 10px; right: 10px; cursor: pointer; font-size: 20px; }
     </style>
@@ -55,7 +56,11 @@
     <div id="infoModal" class="modal">
         <div class="modal-content">
             <span class="close-modal" onclick="closeModal()">&times;</span>
-            <object id="infoObject" class="modal-object"></object>
+            <h3 id="modalTitle"></h3>
+            <p><strong>Scope Note:</strong> <span id="modalScope"></span></p>
+            <p><strong>Broader Term:</strong> <span id="modalBroader"></span></p>
+            <p><strong>Source:</strong> <span id="modalSource"></span></p>
+            <p><strong>Classification:</strong> <span id="modalType"></span></p>
             <a id="infoLink" class="modal-link" href="#" target="_blank">Open in New Tab</a>
         </div>
     </div>
@@ -76,7 +81,7 @@
                         div.className = "result-item";
                         div.innerHTML = `
                             <span onclick="populateBuilder('${hit.suggestLabel}')">${hit.suggestLabel}</span>
-                            <span class="more-info" onclick="openModal('${hit.uri}')">More Info</span>
+                            <span class="more-info" onclick="openModal(${JSON.stringify(hit)})">More Info</span>
                         `;
                         resultsDiv.appendChild(div);
                     });
@@ -120,15 +125,18 @@
             alert("Copied: " + finalText);
         }
 
-        function openModal(uri) {
-            document.getElementById("infoObject").data = uri;
-            document.getElementById("infoLink").href = uri;
+        function openModal(hit) {
+            document.getElementById("modalTitle").innerText = hit.suggestLabel || "No Title Available";
+            document.getElementById("modalScope").innerText = hit.more?.scopenote || "No scope note available.";
+            document.getElementById("modalBroader").innerText = hit.more?.broader || "No broader term available.";
+            document.getElementById("modalSource").innerText = hit.more?.source || "No source information available.";
+            document.getElementById("modalType").innerText = hit.more?.rdftype || "No classification available.";
+            document.getElementById("infoLink").href = hit.uri;
             document.getElementById("infoModal").style.display = "flex";
         }
 
         function closeModal() {
             document.getElementById("infoModal").style.display = "none";
-            document.getElementById("infoObject").data = "";
         }
     </script>
 
