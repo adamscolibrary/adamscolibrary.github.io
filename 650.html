@@ -84,7 +84,7 @@
                         div.className = "result-item";
                         div.innerHTML = `
                             <span onclick="populateBuilder('${hit.suggestLabel}')">${hit.suggestLabel}</span>
-                            <span class="more-info" onclick="openModal(${encodeURIComponent(JSON.stringify(hit))})">More Info</span>
+                            <span class="more-info" onclick='openModal(${JSON.stringify(hit)})'>More Info</span>
                         `;
                         resultsDiv.appendChild(div);
                     });
@@ -128,14 +128,12 @@
         }
 
         function openModal(hit) {
-            const decodedHit = JSON.parse(decodeURIComponent(hit));
-
-            document.getElementById("modalTitle").innerText = decodedHit.suggestLabel || "No Title Available";
-            document.getElementById("modalScope").innerText = decodedHit.more?.scopenote || "No scope note available.";
-            document.getElementById("modalBroader").innerText = decodedHit.more?.broader || "No broader term available.";
-            document.getElementById("modalSource").innerText = decodedHit.more?.source || "No source information available.";
-            document.getElementById("modalType").innerText = decodedHit.more?.rdftype || "No classification available.";
-            document.getElementById("infoLink").href = decodedHit.uri;
+            document.getElementById("modalTitle").innerText = hit.suggestLabel || "No Title Available";
+            document.getElementById("modalScope").innerText = hit.more?.scopenote || "No scope note available.";
+            document.getElementById("modalBroader").innerText = hit.more?.broader || "No broader term available.";
+            document.getElementById("modalSource").innerText = hit.more?.source || "No source information available.";
+            document.getElementById("modalType").innerText = hit.more?.rdftype || "No classification available.";
+            document.getElementById("infoLink").href = hit.uri;
 
             document.getElementById("infoModal").style.display = "flex";
         }
