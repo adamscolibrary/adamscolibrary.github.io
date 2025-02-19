@@ -34,9 +34,10 @@
 
     /* Logo styles */
     .logo {
-      width: 450px; /* Adjust width as needed */
-      height: auto; /* Keep aspect ratio */
+      width: 150px; /* Default logo width */
+      height: auto; /* Maintain aspect ratio */
       margin-bottom: 1.5rem; /* Space between logo and title */
+      transition: width 0.3s ease-in-out; /* Smooth transition */
     }
     
     /* Title styles */
@@ -99,6 +100,11 @@
         padding: 0.8rem 1.5rem;
         min-width: 160px;
       }
+
+      /* Logo optimization for mobile */
+      .logo {
+        width: 120px; /* Reduce logo size for smaller screens */
+      }
     }
 
     /* Extremely small screens (optional) */
@@ -113,6 +119,11 @@
         font-size: 1rem;
         padding: 0.8rem 1.2rem;
         min-width: 150px;
+      }
+
+      /* Further reduce logo size for very small screens */
+      .logo {
+        width: 100px; /* Even smaller logo size for very small screens */
       }
     }
   </style>
