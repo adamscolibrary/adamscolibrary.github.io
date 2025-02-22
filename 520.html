@@ -66,9 +66,9 @@
             <div onclick="selectSubdivision('|y')">|y - Chronological subdivision</div>
             <div onclick="selectSubdivision('|z')">|z - Geographic subdivision</div>
         </div>
-
-        <button onclick="copyMARC()">Copy 650 MARC Field</button>
-
+        <div>
+            <button onclick="copyMARC()">Copy 650 MARC Field</button>
+        </div>
         <!-- Search Bar -->
         <div class="search-container">
             <input type="text" id="searchInput" placeholder="Search Library of Congress">
@@ -92,7 +92,7 @@
         </div>
         <!-- Open FAST OCLC Search Modal -->
         <div style="margin-top: 20px; text-align: left;">
-            <a href="#" onclick="openFastModal()" style="font-size: 18px; color: blue; text-decoration: underline;">Search FAST (use 650 _7 {subject}.|2fast)</a>
+            <button onclick="openFastModal()" style="font-size: 18px; color: blue; text-decoration: underline;">Search FAST (use 650 _7 {subject}.|2fast)</button>
         </div>
         <!-- FAST OCLC Modal -->
         <div id="fastModal" class="modal">
