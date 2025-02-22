@@ -34,7 +34,7 @@
                         if (!summaryText.startsWith("\"")) {
                             summaryText = `"${summaryText}"`;
                         }
-                        summaryText += " --Google Books";
+                        summaryText = summaryText.replace(/--$/, "").trim() + " --Google Books";
                         document.getElementById("summary").innerText = summaryText;
                         document.getElementById("copyBtn").style.display = "inline-block";
                     } else {
