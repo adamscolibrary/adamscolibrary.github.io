@@ -3,32 +3,210 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Book Summary Finder</title>
+    <title>Library Tools</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 20px; }
+        /* Tab style */
+        .tabs { display: flex; margin-bottom: 20px; }
+        .tab { padding: 10px; cursor: pointer; border: 1px solid #ccc; margin-right: 5px; }
+        .tab.active { background-color: #f1f1f1; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* MARC Builder styles */
+        .builder-container { display: flex; gap: 5px; margin-bottom: 20px; }
+        .builder-input { width: 22%; padding: 5px; font-size: 16px; }
+        .dropdown { cursor: pointer; padding: 5px; border: 1px solid #ccc; background: #f9f9f9; text-align: center; width: 40px; }
+        .dropdown-menu { display: none; position: absolute; background: white; border: 1px solid #ccc; z-index: 10; }
+        .dropdown-menu div { padding: 5px; cursor: pointer; }
+        .dropdown-menu div:hover { background: #eee; }
+        .results { margin-top: 20px; }
+        .result-item { padding: 5px; border-bottom: 1px solid #ddd; display: flex; justify-content: space-between; align-items: center; }
+        .more-info { cursor: pointer; color: blue; text-decoration: underline; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
+        .modal-content { background: white; padding: 20px; width: 60%; max-height: 80vh; overflow-y: auto; position: relative; }
+        .modal h3 { margin-top: 0; }
+        .modal p { margin: 5px 0; }
+        .modal-link { display: block; margin-top: 10px; font-size: 18px; color: blue; text-decoration: underline; }
+        .close-modal { position: absolute; top: 10px; right: 10px; cursor: pointer; font-size: 20px; }
+
+        /* Google Books Summary Finder styles */
         input { padding: 8px; width: 200px; }
         button { padding: 8px; margin-left: 5px; cursor: pointer; }
         #summary { margin-top: 20px; font-style: italic; }
     </style>
 </head>
 <body>
-    <h2>Google Books ISBN Summary Finder</h2>
-    <input type="text" id="isbn" placeholder="Enter ISBN" />
-    <button onclick="fetchSummary()">Search</button>
-    <p id="summary"></p>
-    <button id="copyBtn" style="display:none;" onclick="copySummary()">Copy Summary</button>
-    
+
+    <h2>MARC Tools</h2>
+
+    <!-- Tabs -->
+    <div class="tabs">
+        <div class="tab active" onclick="switchTab('marc-builder')">MARC Builder</div>
+        <div class="tab" onclick="switchTab('book-summary')">Book Summary Finder</div>
+    </div>
+
+    <!-- MARC Builder Tab -->
+    <div id="marc-builder" class="tab-content active">
+        <h3>650</h3>
+        <div class="builder-container">
+            <input type="text" id="field1" class="builder-input" placeholder="Main Term">
+            <div class="dropdown" onclick="toggleDropdown(event, 0)">+</div>
+            <input type="text" id="field2" class="builder-input" placeholder="Subdivision">
+            <div class="dropdown" onclick="toggleDropdown(event, 1)">+</div>
+            <input type="text" id="field3" class="builder-input" placeholder="Subdivision">
+            <div class="dropdown" onclick="toggleDropdown(event, 2)">+</div>
+            <input type="text" id="field4" class="builder-input" placeholder="Subdivision">
+        </div>
+
+        <div id="dropdownMenu" class="dropdown-menu">
+            <div onclick="selectSubdivision('')">— None —</div>
+            <div onclick="selectSubdivision('|v')">|v - Form subdivision</div>
+            <div onclick="selectSubdivision('|x')">|x - General subdivision</div>
+            <div onclick="selectSubdivision('|y')">|y - Chronological subdivision</div>
+            <div onclick="selectSubdivision('|z')">|z - Geographic subdivision</div>
+        </div>
+
+        <button onclick="copyMARC()">Copy 650 MARC Field</button>
+
+        <!-- Search Bar -->
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="Search Library of Congress">
+            <button id="searchButton" onclick="searchLOC()">Search</button>
+        </div>
+
+        <!-- Results Section -->
+        <div id="results" class="results"></div>
+
+        <!-- More Info Modal -->
+        <div id="infoModal" class="modal">
+            <div class="modal-content">
+                <span class="close-modal" onclick="closeModal()">&times;</span>
+                <h3 id="modalTitle"></h3>
+                <p><strong>Scope Note:</strong> <span id="modalScope"></span></p>
+                <p><strong>Broader Term:</strong> <span id="modalBroader"></span></p>
+                <p><strong>Source:</strong> <span id="modalSource"></span></p>
+                <p><strong>Classification:</strong> <span id="modalType"></span></p>
+                <a id="infoLink" class="modal-link" href="#" target="_blank">Open in New Tab</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Book Summary Finder Tab -->
+    <div id="book-summary" class="tab-content">
+        <h3>520</h3>
+        <input type="text" id="isbn" placeholder="Enter ISBN" />
+        <button onclick="fetchSummary()">Search</button>
+        <p id="summary"></p>
+        <button id="copyBtn" style="display:none;" onclick="copySummary()">Copy Summary</button>
+    </div>
+
     <script>
+        // Tab Switch Function
+        function switchTab(tabId) {
+            const tabs = document.querySelectorAll('.tab');
+            const contents = document.querySelectorAll('.tab-content');
+
+            tabs.forEach(tab => tab.classList.remove('active'));
+            contents.forEach(content => content.classList.remove('active'));
+
+            document.querySelector(`.tab[onclick="switchTab('${tabId}')"]`).classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        // MARC Builder Functions
+        let activeDropdownIndex = null;
+
+        function searchLOC() {
+            const query = document.getElementById("searchInput").value;
+            if (!query) return;
+
+            fetch(`https://id.loc.gov/authorities/subjects/suggest2/?q=${query}`)
+                .then(response => response.json())
+                .then(data => {
+                    const resultsDiv = document.getElementById("results");
+                    resultsDiv.innerHTML = "";
+
+                    data.hits.forEach(hit => {
+                        const div = document.createElement("div");
+                        div.className = "result-item";
+                        div.innerHTML = `
+                            <span onclick="populateBuilder('${hit.suggestLabel}')">${hit.suggestLabel}</span>
+                            <span class="more-info">More Info</span>
+                        `;
+
+                        div.querySelector(".more-info").addEventListener("click", () => openModal(hit));
+                        resultsDiv.appendChild(div);
+                    });
+                })
+                .catch(error => console.error("Error fetching data:", error));
+        }
+
+        function populateBuilder(subject) {
+            const parts = subject.split("--");
+            document.getElementById("field1").value = parts[0] || "";
+            document.getElementById("field2").value = parts[1] || "";
+            document.getElementById("field3").value = parts[2] || "";
+            document.getElementById("field4").value = parts[3] || "";
+        }
+
+        function toggleDropdown(event, index) {
+            activeDropdownIndex = index;
+            const menu = document.getElementById("dropdownMenu");
+            menu.style.display = "block";
+            menu.style.left = `${event.clientX}px`;
+            menu.style.top = `${event.clientY}px`;
+        }
+
+        function selectSubdivision(value) {
+            if (activeDropdownIndex !== null) {
+                document.querySelectorAll(".dropdown")[activeDropdownIndex].textContent = value || "+";
+            }
+            document.getElementById("dropdownMenu").style.display = "none";
+        }
+
+        function copyMARC() {
+            const field1 = document.getElementById("field1").value;
+            const field2 = document.getElementById("field2").value;
+            const field3 = document.getElementById("field3").value;
+            const field4 = document.getElementById("field4").value;
+            const dropdowns = document.querySelectorAll(".dropdown");
+
+            const sub1 = dropdowns[0].textContent.includes("|") ? dropdowns[0].textContent : "";
+            const sub2 = dropdowns[1].textContent.includes("|") ? dropdowns[1].textContent : "";
+            const sub3 = dropdowns[2].textContent.includes("|") ? dropdowns[2].textContent : "";
+
+            const finalText = `${field1}${sub1}${field2}${sub2}${field3}${sub3}${field4}.`.trim();
+            navigator.clipboard.writeText(finalText);
+            alert("Copied: " + finalText);
+        }
+
+        function openModal(hit) {
+            document.getElementById("modalTitle").innerText = hit.suggestLabel || "No Title Available";
+            document.getElementById("modalScope").innerText = hit.more?.scopenote || "No scope note available.";
+            document.getElementById("modalBroader").innerText = hit.more?.broader || "No broader term available.";
+            document.getElementById("modalSource").innerText = hit.more?.source || "No source information available.";
+            document.getElementById("modalType").innerText = hit.more?.rdftype || "No classification available.";
+            document.getElementById("infoLink").href = hit.uri;
+
+            document.getElementById("infoModal").style.display = "flex";
+        }
+
+        function closeModal() {
+            document.getElementById("infoModal").style.display = "none";
+        }
+
+        // Google Books Summary Finder Functions
         function fetchSummary() {
             const isbn = document.getElementById("isbn").value.trim();
             if (!isbn) return;
-            
+
             fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}`)
                 .then(response => response.json())
                 .then(data => {
                     const book = data.items?.find(item => 
                         item.volumeInfo.industryIdentifiers?.some(id => id.identifier === isbn));
-                    
+
                     if (book && book.volumeInfo.description) {
                         let summaryText = book.volumeInfo.description.trim();
                         if (!summaryText.startsWith("\"")) {
@@ -48,7 +226,7 @@
                     document.getElementById("copyBtn").style.display = "none";
                 });
         }
-        
+
         function copySummary() {
             const summaryText = document.getElementById("summary").innerText;
             navigator.clipboard.writeText(summaryText).then(() => {
@@ -56,5 +234,6 @@
             });
         }
     </script>
+
 </body>
 </html>
