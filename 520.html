@@ -80,7 +80,7 @@
         <div id="results" class="results"></div>
 
         <!-- More Info Modal -->
-        <div id="infoModal" class="modal">
+        <div id="moreinfoModal" class="modal">
             <div class="modal-content">
                 <span class="close-modal" onclick="closeModal()">&times;</span>
                 <h3 id="modalTitle"></h3>
@@ -221,11 +221,11 @@
             document.getElementById("modalType").innerText = hit.more?.rdftype || "No classification available.";
             document.getElementById("infoLink").href = hit.uri;
 
-            document.getElementById("infoModal").style.display = "flex";
+            document.getElementById("moreinfoModal").style.display = "flex";
         }
 
         function closeModal() {
-            document.getElementById("infoModal").style.display = "none";
+            document.getElementById("moreinfoModal").style.display = "none";
         }
 
         // Google Books Summary Finder Functions
