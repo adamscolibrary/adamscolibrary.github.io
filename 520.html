@@ -117,6 +117,7 @@
         <button id="copyBtn" style="display:none;" onclick="copySummary()">Copy Summary</button>
     </div>
 
+    <!-- Info Tab -->
     <div id="infoTab" class="tab-content">
         <h2>Library of Congress Resources</h2>
         <button onclick="openInfoModal('https://www.loc.gov/aba/publications/FreeLCSH/NUMERALS.pdf')">Numerals Guide</button>
@@ -274,15 +275,15 @@
             }
             
                 // Function to open Info modal with embedded PDF
-    function openInfoModal(url) {
-        document.getElementById("infoFrame").src = url;
-        document.getElementById("infoModal").style.display = "flex";
-    }
+            function openInfoModal(url) {
+                document.getElementById("infoFrame").src = url;
+                document.getElementById("infoModal").style.display = "flex";
+            }
 
-    function closeInfoModal() {
-        document.getElementById("infoModal").style.display = "none";
-        document.getElementById("infoFrame").src = "";
-    }
+            function closeInfoModal() {
+                document.getElementById("infoModal").style.display = "none";
+                document.getElementById("infoFrame").src = "";
+            }
     </script>
 
 </body>
