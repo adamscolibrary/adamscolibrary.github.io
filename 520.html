@@ -90,6 +90,20 @@
                 <a id="infoLink" class="modal-link" href="#" target="_blank">Open in New Tab</a>
             </div>
         </div>
+        
+        <!-- Open FAST OCLC Search Modal -->
+        <div style="margin-top: 20px; text-align: center;">
+            <a href="#" onclick="openFastModal()" style="font-size: 18px; color: blue; text-decoration: underline;">Search FAST (Faceted Application of Subject Terminology)</a>
+        </div>
+        
+        <!-- FAST OCLC Modal -->
+        <div id="fastModal" class="modal">
+            <div class="modal-content" style="width: 80%; height: 80vh; position: relative;">
+                <span class="close-modal" onclick="closeFastModal()" style="position: absolute; top: 10px; right: 15px; font-size: 24px; cursor: pointer;">&times;</span>
+                <h3 style="text-align: center;">FAST OCLC Search</h3>
+                <iframe src="https://fast.oclc.org/searchfast/?&limit=keywords&facet=topic&query=&sort=usage+desc&start=0#&fullview=null&sep=null" width="100%" height="90%" style="border: none;"></iframe>
+            </div>
+        </div>
     </div>
 
     <!-- Book Summary Finder Tab -->
@@ -233,6 +247,14 @@
                 alert("Summary copied to clipboard!");
             });
         }
+        
+            function openFastModal() {
+                document.getElementById("fastModal").style.display = "flex";
+            }
+
+            function closeFastModal() {
+                document.getElementById("fastModal").style.display = "none";
+            }
     </script>
 
 </body>
