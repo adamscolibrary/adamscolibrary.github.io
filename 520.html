@@ -67,7 +67,7 @@
             <div onclick="selectSubdivision('|z')">|z - Geographic subdivision</div>
         </div>
         <div>
-            <button onclick="copyMARC()">Copy 650 MARC Field</button>
+            <button onclick="copyMARC()" style="margin-bottom: 20px;" >Copy 650 MARC Field</button>
         </div>
         <!-- Search Bar -->
         <div class="search-container">
@@ -92,7 +92,8 @@
         </div>
         <!-- Open FAST OCLC Search Modal -->
         <div style="margin-top: 20px; text-align: left;">
-            <button onclick="openFastModal()" style="font-size: 18px; color: blue; text-decoration: underline;">Search FAST (use 650 _7 {subject}.|2fast)</button>
+            <button onclick="openFastModal()" style="font-size: 18px;margin-bottom: 20px;">Search FAST</button>
+            <h1>(use 650 _7 {subject}.|2fast)</h1>
         </div>
         <!-- FAST OCLC Modal -->
         <div id="fastModal" class="modal">
