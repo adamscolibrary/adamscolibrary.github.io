@@ -1,11 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<script src="https://mozilla.github.io/pdf.js/build/pdf.js"></script>
-<script>
-  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://mozilla.github.io/pdf.js/build/pdf.worker.js';
-</script>
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Library Tools</title>
@@ -43,18 +38,17 @@
 </head>
 <body>
 
-    <h2>MARC Tools</h2>
+    <h2>Library Tools</h2>
 
     <!-- Tabs -->
     <div class="tabs">
-        <div class="tab active" onclick="switchTab('marc-builder')">650 Builder</div>
-        <div class="tab" onclick="switchTab('book-summary')">520 Search</div>
-        <div class="tab" onclick="switchTab('infoTab')">Info</div>
+        <div class="tab active" onclick="switchTab('marc-builder')">MARC Builder</div>
+        <div class="tab" onclick="switchTab('book-summary')">Book Summary Finder</div>
     </div>
 
     <!-- MARC Builder Tab -->
     <div id="marc-builder" class="tab-content active">
-        <h3>LCSH: 650 _0</h3>
+        <h3>Library of Congress 650 MARC Builder</h3>
         <div class="builder-container">
             <input type="text" id="field1" class="builder-input" placeholder="Main Term">
             <div class="dropdown" onclick="toggleDropdown(event, 0)">+</div>
@@ -85,7 +79,7 @@
         <div id="results" class="results"></div>
 
         <!-- More Info Modal -->
-        <div id="moreinfoModal" class="modal">
+        <div id="infoModal" class="modal">
             <div class="modal-content">
                 <span class="close-modal" onclick="closeModal()">&times;</span>
                 <h3 id="modalTitle"></h3>
@@ -96,50 +90,31 @@
                 <a id="infoLink" class="modal-link" href="#" target="_blank">Open in New Tab</a>
             </div>
         </div>
-        
-        <!-- Open FAST OCLC Search Modal -->
-        <h3>FAST: 650 _7 {subject}|2fast</h3>
-        <div style="margin-top: 20px; text-align: center;">
-            <a href="#" onclick="openFastModal()" style="font-size: 18px; color: blue; text-decoration: underline;">OCLC Search FAST</a>
-        </div>
-        
-        <!-- FAST OCLC Modal -->
-        <div id="fastModal" class="modal">
-            <div class="modal-content" style="width: 80%; height: 80vh; position: relative;">
-                <span class="close-modal" onclick="closeFastModal()" style="position: absolute; top: 10px; right: 15px; font-size: 24px; cursor: pointer;">&times;</span>
-                <h3 style="text-align: center;">FAST OCLC Search</h3>
-                <iframe src="https://fast.oclc.org/searchfast/?&limit=keywords&facet=topic&query=&sort=usage+desc&start=0#&fullview=null&sep=null" width="100%" height="90%" style="border: none;"></iframe>
-            </div>
-        </div>
     </div>
+    
+    <!-- Open FAST OCLC Search Modal -->
+      <div style="margin-top: 20px; text-align: left;">
+          <a href="#" onclick="openFastModal()" style="font-size: 18px; color: blue; text-decoration: underline;">Search FAST (Faceted Application of Subject Terminology)</a>
+      </div>
 
     <!-- Book Summary Finder Tab -->
     <div id="book-summary" class="tab-content">
-        <h3>520 __</h3>
+        <h3>Google Books ISBN Summary Finder</h3>
         <input type="text" id="isbn" placeholder="Enter ISBN" />
         <button onclick="fetchSummary()">Search</button>
         <p id="summary"></p>
         <button id="copyBtn" style="display:none;" onclick="copySummary()">Copy Summary</button>
     </div>
 
-    <!-- Info Tab -->
-    <div id="infoTab" class="tab-content">
-        <h2>Library of Congress Resources</h2>
-        <button onclick="openInfoModal('https://www.loc.gov/aba/publications/FreeLCSH/NUMERALS.pdf')">Numerals Guide</button>
-        <button onclick="openInfoModal('https://www.loc.gov/aba/publications/FreeLCSH/ACRONYMS.pdf')">Acronyms Guide</button>
-        <button onclick="openInfoModal('https://www.loc.gov/aba/publications/FreeLCSH/GENRE-FORM.pdf')">Genre & Form Terms</button>
-    </div>
-    
-    <!-- Info Modal using PDF.js -->
-    <div id="infoModal" class="modal">
-      <div class="modal-content" style="width: 80%; height: 80vh; position: relative;">
-        <span class="close-modal" onclick="closeInfoModal()" style="position: absolute; top: 10px; right: 15px; font-size: 24px; cursor: pointer;">&times;</span>
-        <h3 style="text-align: center;">Library of Congress Document</h3>
-        <div id="pdfContainer" style="width: 100%; height: 90%; overflow: auto;">
-          <canvas id="pdfCanvas"></canvas>
+    <!-- FAST OCLC Modal -->
+    <div id="fastModal" class="modal">
+        <div class="modal-content" style="width: 80%; height: 80vh; position: relative;">
+            <span class="close-modal" onclick="closeFastModal()" style="position: absolute; top: 10px; right: 15px; font-size: 24px; cursor: pointer;">&times;</span>
+            <h3 style="text-align: center;">FAST OCLC Search</h3>
+            <iframe src="https://fast.oclc.org/searchfast/?&limit=keywords&facet=topic&query=&sort=usage+desc&start=0#&fullview=null&sep=null" width="100%" height="90%" style="border: none;"></iframe>
         </div>
-      </div>
     </div>
+
     <script>
         // Tab Switch Function
         function switchTab(tabId) {
@@ -228,11 +203,11 @@
             document.getElementById("modalType").innerText = hit.more?.rdftype || "No classification available.";
             document.getElementById("infoLink").href = hit.uri;
 
-            document.getElementById("moreinfoModal").style.display = "flex";
+            document.getElementById("infoModal").style.display = "flex";
         }
 
         function closeModal() {
-            document.getElementById("moreinfoModal").style.display = "none";
+            document.getElementById("infoModal").style.display = "none";
         }
 
         // Google Books Summary Finder Functions
@@ -280,52 +255,8 @@
         function closeFastModal() {
             document.getElementById("fastModal").style.display = "none";
         }
-            
-        // Function to open Info modal with embedded PDF
-        function openInfoModal(url) {
-        // Display the modal
-            document.getElementById("infoModal").style.display = "flex";
-
-            const canvas = document.getElementById("pdfCanvas");
-            const context = canvas.getContext("2d");
-
-        // Clear previous render
-            context.clearRect(0, 0, canvas.width, canvas.height);
-
-        // Load the PDF document from the URL
-            pdfjsLib.getDocument(url).promise.then(function(pdf) {
-        // For simplicity, we render only the first page
-                pdf.getPage(1).then(function(page) {
-                const scale = 1.5; // Adjust scale as needed
-                const viewport = page.getViewport({ scale: scale });
-
-          // Set canvas dimensions to match the PDF page dimensions
-                canvas.height = viewport.height;
-                canvas.width = viewport.width;
-
-          // Prepare the render context
-                const renderContext = {
-                    canvasContext: context,
-                    viewport: viewport
-                };
-
-                // Render the PDF page into the canvas
-                page.render(renderContext).promise.catch(function(error) {
-                    console.error('Error during page rendering: ', error);
-                });
-            });
-          }).catch(function(error) {
-            console.error('Error loading PDF: ', error);
-          });
-        }
-
-        function closeInfoModal() {
-            document.getElementById("infoModal").style.display = "none";
-          // Optionally, clear the canvas or perform any cleanup here
-            const canvas = document.getElementById("pdfCanvas");
-            const context = canvas.getContext("2d");
-            context.clearRect(0, 0, canvas.width, canvas.height);
-        }
+    </script>
+        
     </script>
 
 </body>
