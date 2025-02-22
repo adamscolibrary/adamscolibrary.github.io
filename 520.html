@@ -44,6 +44,7 @@
     <div class="tabs">
         <div class="tab active" onclick="switchTab('marc-builder')">650 Builder</div>
         <div class="tab" onclick="switchTab('book-summary')">520 Search</div>
+        <div class="tab" onclick="switchTab('infoTab')">Info</div>
     </div>
 
     <!-- MARC Builder Tab -->
@@ -116,6 +117,21 @@
         <button id="copyBtn" style="display:none;" onclick="copySummary()">Copy Summary</button>
     </div>
 
+    <div id="infoTab" class="tab-content">
+        <h2>Library of Congress Resources</h2>
+        <button onclick="openInfoModal('https://www.loc.gov/aba/publications/FreeLCSH/NUMERALS.pdf')">Numerals Guide</button>
+        <button onclick="openInfoModal('https://www.loc.gov/aba/publications/FreeLCSH/ACRONYMS.pdf')">Acronyms Guide</button>
+        <button onclick="openInfoModal('https://www.loc.gov/aba/publications/FreeLCSH/GENRE-FORM.pdf')">Genre & Form Terms</button>
+    </div>
+    
+    <!-- Info Modal -->
+    <div id="infoModal" class="modal">
+        <div class="modal-content" style="width: 80%; height: 80vh; position: relative;">
+            <span class="close-modal" onclick="closeInfoModal()" style="position: absolute; top: 10px; right: 15px; font-size: 24px; cursor: pointer;">&times;</span>
+            <h3 style="text-align: center;">Library of Congress Document</h3>
+            <iframe id="infoFrame" width="100%" height="90%" style="border: none;"></iframe>
+        </div>
+    </div>
     <script>
         // Tab Switch Function
         function switchTab(tabId) {
@@ -256,6 +272,17 @@
             function closeFastModal() {
                 document.getElementById("fastModal").style.display = "none";
             }
+            
+                // Function to open Info modal with embedded PDF
+    function openInfoModal(url) {
+        document.getElementById("infoFrame").src = url;
+        document.getElementById("infoModal").style.display = "flex";
+    }
+
+    function closeInfoModal() {
+        document.getElementById("infoModal").style.display = "none";
+        document.getElementById("infoFrame").src = "";
+    }
     </script>
 
 </body>
