@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Summary Finder</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        input { padding: 8px; width: 200px; }
+        button { padding: 8px; margin-left: 5px; cursor: pointer; }
+        #summary { margin-top: 20px; font-style: italic; }
+    </style>
+</head>
+<body>
+    <h2>Google Books ISBN Summary Finder</h2>
+    <input type="text" id="isbn" placeholder="Enter ISBN" />
+    <button onclick="fetchSummary()">Search</button>
+    <p id="summary"></p>
+    <button id="copyBtn" style="display:none;" onclick="copySummary()">Copy Summary</button>
+    
+    <script>
+        function fetchSummary() {
+            const isbn = document.getElementById("isbn").value.trim();
+            if (!isbn) return;
+            
+            fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}`)
+                .then(response => response.json())
+                .then(data => {
+                    const book = data.items?.find(item => 
+                        item.volumeInfo.industryIdentifiers?.some(id => id.identifier === isbn));
+                    
+                    if (book && book.volumeInfo.description) {
+                        let summaryText = book.volumeInfo.description.trim();
+                        if (!summaryText.startsWith("\"")) {
+                            summaryText = `"${summaryText}"`;
+                        }
+                        summaryText += " --Google Books";
+                        document.getElementById("summary").innerText = summaryText;
+                        document.getElementById("copyBtn").style.display = "inline-block";
+                    } else {
+                        document.getElementById("summary").innerText = "No summary available.";
+                        document.getElementById("copyBtn").style.display = "none";
+                    }
+                })
+                .catch(error => {
+                    console.error("Error fetching data:", error);
+                    document.getElementById("summary").innerText = "Error fetching summary.";
+                    document.getElementById("copyBtn").style.display = "none";
+                });
+        }
+        
+        function copySummary() {
+            const summaryText = document.getElementById("summary").innerText;
+            navigator.clipboard.writeText(summaryText).then(() => {
+                alert("Summary copied to clipboard!");
+            });
+        }
+    </script>
+</body>
+</html>
