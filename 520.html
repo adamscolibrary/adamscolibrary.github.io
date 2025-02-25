@@ -50,9 +50,19 @@
     </div>
     
     <!-- bib formats Tab -->
-    <div id="bib-formats" class="tab-content-active">
-        <iframe src="https://www.oclc.org/bibformats/en/about.html" width="100%" height="100%" style="border: none;"></iframe>
+    <div id="bib-formats" class="tab-content-active" style="position: relative; height: 80vh; overflow: auto;">
+        <iframe id="bib-frame" src="https://www.oclc.org/bibformats/en/about.html" width="100%" height="100%" style="border: none;"></iframe>
     </div>
+
+    <script>
+        function adjustIframeHeight() {
+            const iframe = document.getElementById("bib-frame");
+            iframe.style.height = window.innerHeight * 0.8 + "px"; // Adjusts to 80% of viewport height
+        }
+
+        window.addEventListener("load", adjustIframeHeight);
+        window.addEventListener("resize", adjustIframeHeight);
+    </script>
     
     <!-- MARC Builder Tab -->
     <div id="marc-builder" class="tab-content">
@@ -136,12 +146,6 @@
             document.querySelector(`.tab[onclick="switchTab('${tabId}')"]`).classList.add('active');
             document.getElementById(tabId).classList.add('active');
         }
-
-        window.addEventListener("message", function(event) {
-            if (event.data.height) {
-                document.getElementById("bib-frame").style.height = event.data.height + "px";
-            }
-        });
 
         // MARC Builder Functions
         let activeDropdownIndex = null;
