@@ -50,12 +50,12 @@
     </div>
     
     <!-- bib formats Tab -->
-    <div id="bib-formats" class="tab-content">
+    <div id="bib-formats" class="tab-content-active">
         <iframe src="https://www.oclc.org/bibformats/en/about.html" width="100%" height="100%" style="border: none;"></iframe>
     </div>
     
     <!-- MARC Builder Tab -->
-    <div id="marc-builder" class="tab-content active">
+    <div id="marc-builder" class="tab-content">
         <h3>LCSH 650 MARC Builder</h3>
         <div class="builder-container">
             <input type="text" id="field1" class="builder-input" placeholder="Main Term">
@@ -136,6 +136,12 @@
             document.querySelector(`.tab[onclick="switchTab('${tabId}')"]`).classList.add('active');
             document.getElementById(tabId).classList.add('active');
         }
+
+        window.addEventListener("message", function(event) {
+            if (event.data.height) {
+                document.getElementById("bib-frame").style.height = event.data.height + "px";
+            }
+        });
 
         // MARC Builder Functions
         let activeDropdownIndex = null;
@@ -264,8 +270,6 @@
         function closeFastModal() {
             document.getElementById("fastModal").style.display = "none";
         }
-    </script>
-        
     </script>
 
 </body>
