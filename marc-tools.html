@@ -54,16 +54,6 @@
     <div id="bib-formats" class="tab-content active" style="position: relative; height: 80vh; overflow: auto;">
         <iframe id="bib-frame" src="https://www.oclc.org/bibformats/en/about.html" width="100%" height="100%" style="border: none;"></iframe>
     </div>
-
-    <script>
-        function adjustIframeHeight() {
-            const iframe = document.getElementById("bib-frame");
-            iframe.style.height = window.innerHeight * 0.8 + "px"; // Adjusts to 80% of viewport height
-        }
-
-        window.addEventListener("load", adjustIframeHeight);
-        window.addEventListener("resize", adjustIframeHeight);
-    </script>
     
     <!-- MARC Builder Tab -->
     <div id="marc-builder" class="tab-content">
@@ -94,6 +84,11 @@
             <button id="searchButton" onclick="searchLOC()">Search</button>
         </div>
 
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="Search Library of Congress" onkeydown="checkEnter(event)">
+            <button id="searchButton" onclick="searchLOC()">Search</button>
+        </div>
+        
         <!-- Results Section -->
         <div id="results" class="results"></div>
 
@@ -174,6 +169,20 @@
                     });
                 })
                 .catch(error => console.error("Error fetching data:", error));
+        }
+
+        function searchLOC() {
+            // Your search functionality here
+            const searchQuery = document.getElementById('searchInput').value;
+            console.log('Searching for:', searchQuery);
+        }
+
+        function checkEnter(event) {
+            // Check if the pressed key is the "Enter" key (keyCode 13)
+            if (event.key === 'Enter') {
+                event.preventDefault(); // Optional: prevent form submission (if any)
+                searchLOC(); // Trigger the search function
+            }
         }
 
         function populateBuilder(subject) {
@@ -275,6 +284,15 @@
         function closeFastModal() {
             document.getElementById("fastModal").style.display = "none";
         }
+
+        function adjustIframeHeight() {
+            const iframe = document.getElementById("bib-frame");
+            iframe.style.height = window.innerHeight * 0.8 + "px"; // Adjusts to 80% of viewport height
+        }
+
+        window.addEventListener("load", adjustIframeHeight);
+        window.addEventListener("resize", adjustIframeHeight);
+        
     </script>
 
 </body>
