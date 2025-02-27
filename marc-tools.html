@@ -78,15 +78,16 @@
         <div>
             <button onclick="copyMARC()" style="margin-bottom: 20px;" >Copy 650 MARC Field</button>
         </div>
+        
         <!-- Search Bar -->
         <div class="search-container">
-            <input type="text" id="searchInput" placeholder="Search Library of Congress">
-            <button id="searchButton" onclick="searchLOC()">Search</button>
+            <input type="text" id="searchInput1" placeholder="Search Library of Congress">
+            <button id="searchButton1">Search</button>
         </div>
 
         <div class="search-container">
-            <input type="text" id="searchInput" placeholder="Search Library of Congress" onkeydown="checkEnter(event)">
-            <button id="searchButton" onclick="searchLOC()">Search</button>
+            <input type="text" id="searchInput2" placeholder="Search Library of Congress">
+            <button id="searchButton2">Search</button>
         </div>
         
         <!-- Results Section -->
@@ -146,8 +147,9 @@
         // MARC Builder Functions
         let activeDropdownIndex = null;
 
-        function searchLOC() {
-            const query = document.getElementById("searchInput").value;
+        // Function to handle search
+        function searchLOC(searchInputId) {
+            const query = document.getElementById(searchInputId).value;
             if (!query) return;
 
             fetch(`https://id.loc.gov/authorities/subjects/suggest2/?q=${query}`)
@@ -171,19 +173,19 @@
                 .catch(error => console.error("Error fetching data:", error));
         }
 
-        function searchLOC() {
-            // Your search functionality here
-            const searchQuery = document.getElementById('searchInput').value;
-            console.log('Searching for:', searchQuery);
-        }
-
-        function checkEnter(event) {
-            // Check if the pressed key is the "Enter" key (keyCode 13)
-            if (event.key === 'Enter') {
-                event.preventDefault(); // Optional: prevent form submission (if any)
-                searchLOC(); // Trigger the search function
+        // Function to check for Enter key press
+        function checkEnter(event, searchInputId) {
+            if (event.key === "Enter") {
+                searchLOC(searchInputId);
             }
         }
+
+        // Attach event listeners dynamically
+        document.getElementById("searchButton1").addEventListener("click", () => searchLOC("searchInput1"));
+        document.getElementById("searchButton2").addEventListener("click", () => searchLOC("searchInput2"));
+
+        document.getElementById("searchInput1").addEventListener("keydown", (event) => checkEnter(event, "searchInput1"));
+        document.getElementById("searchInput2").addEventListener("keydown", (event) => checkEnter(event, "searchInput2"));
 
         function populateBuilder(subject) {
             const parts = subject.split("--");
