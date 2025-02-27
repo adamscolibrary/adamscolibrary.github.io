@@ -12,7 +12,7 @@
     .tab.active { background-color: #f1f1f1; }
     .tab-content { display: none; }
     .tab-content.active { display: block; }
-
+    
     /* MARC Builder styles */
     .builder-container { display: flex; gap: 5px; margin-bottom: 20px; }
     .builder-input { width: 22%; padding: 5px; font-size: 16px; }
@@ -29,7 +29,7 @@
     .modal p { margin: 5px 0; }
     .modal-link { display: block; margin-top: 10px; font-size: 18px; color: blue; text-decoration: underline; }
     .close-modal { position: absolute; top: 10px; right: 10px; cursor: pointer; font-size: 20px; }
-
+    
     /* Google Books Summary Finder styles */
     input { padding: 8px; width: 200px; }
     button { padding: 8px; margin-left: 5px; cursor: pointer; }
@@ -38,7 +38,7 @@
 </head>
 <body>
   <h2>MARC Tools</h2>
-
+  
   <!-- Tabs -->
   <div class="tabs" role="tablist">
     <div class="tab active" data-tab="bib-formats" role="tab" aria-selected="true" tabindex="0">Bib Formats</div>
@@ -48,12 +48,12 @@
     <div class="tab" data-url="https://www.loc.gov/aba/cataloging/tools/" role="tab" tabindex="0">LCSH</div>
     <div class="tab" data-url="https://authorities.loc.gov/webvoy.htm" role="tab" tabindex="0">LOC Authorities</div>
   </div>
-
-  <!-- bib formats Tab -->
+  
+  <!-- Bib Formats Tab -->
   <div id="bib-formats" class="tab-content active" style="position: relative; height: 80vh; overflow: auto;" role="tabpanel">
     <iframe id="bib-frame" src="https://www.oclc.org/bibformats/en/about.html" width="100%" height="100%" style="border: none;"></iframe>
   </div>
-
+  
   <!-- MARC Builder Tab -->
   <div id="marc-builder" class="tab-content" role="tabpanel">
     <h3>LCSH 650 MARC Builder</h3>
@@ -66,7 +66,7 @@
       <div class="dropdown" data-index="2">+</div>
       <input type="text" id="field4" class="builder-input" placeholder="Subdivision">
     </div>
-
+  
     <div id="dropdownMenu" class="dropdown-menu">
       <div data-value="">— None —</div>
       <div data-value="|v">|v - Form subdivision</div>
@@ -77,16 +77,16 @@
     <div>
       <button id="copyMARC" style="margin-bottom: 20px;">Copy 650 MARC Field</button>
     </div>
-
+  
     <!-- Search Bar -->
     <div class="search-container">
       <input type="text" id="searchInput1" placeholder="Search Library of Congress">
       <button id="searchButton1">Search</button>
     </div>
-
+  
     <!-- Results Section -->
     <div id="results" class="results"></div>
-
+  
     <!-- More Info Modal -->
     <div id="infoModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
       <div class="modal-content">
@@ -115,7 +115,7 @@
       </div>
     </div>
   </div>
-
+  
   <!-- Book Summary Finder Tab -->
   <div id="book-summary" class="tab-content" role="tabpanel">
     <h3>Google Books ISBN Summary Search</h3>
@@ -124,12 +124,12 @@
     <p id="summary"></p>
     <button id="copySummaryBtn" style="display:none;">Copy Summary</button>
   </div>
-
+  
   <script>
     // Global variable for dropdown index
     let activeDropdownIndex = null;
-
-    // Tab switch function
+  
+    // Function to switch tabs
     function switchTab(tabId) {
       const tabs = document.querySelectorAll('.tabs .tab');
       const contents = document.querySelectorAll('.tab-content');
@@ -140,8 +140,7 @@
         }
       });
       contents.forEach(content => content.classList.remove('active'));
-
-      // Activate selected tab
+  
       const activeTab = document.querySelector(`.tab[data-tab="${tabId}"]`);
       if(activeTab) {
         activeTab.classList.add('active');
@@ -149,33 +148,33 @@
       }
       document.getElementById(tabId).classList.add('active');
     }
-
+  
     // MARC Builder Functions
-
-    function searchLOC(searchInputId) {
-      const query = document.getElementById(searchInputId).value;
+  
+    function searchLOC(inputId) {
+      const query = document.getElementById(inputId).value;
       if (!query) return;
-
-      fetch(`https://id.loc.gov/authorities/subjects/suggest2/?q=${query}`)
+  
+      fetch(`https://id.loc.gov/authorities/subjects/suggest2/?q=${encodeURIComponent(query)}`)
         .then(response => response.json())
         .then(data => {
           const resultsDiv = document.getElementById("results");
           resultsDiv.innerHTML = "";
-
+  
           data.hits.forEach(hit => {
             const div = document.createElement("div");
             div.className = "result-item";
-
+  
             const labelSpan = document.createElement("span");
             labelSpan.textContent = hit.suggestLabel;
             labelSpan.style.cursor = "pointer";
             labelSpan.addEventListener("click", () => populateBuilder(hit.suggestLabel));
-
+  
             const moreInfoSpan = document.createElement("span");
             moreInfoSpan.textContent = "More Info";
             moreInfoSpan.className = "more-info";
             moreInfoSpan.addEventListener("click", () => openModal(hit));
-
+  
             div.appendChild(labelSpan);
             div.appendChild(moreInfoSpan);
             resultsDiv.appendChild(div);
@@ -183,13 +182,13 @@
         })
         .catch(error => console.error("Error fetching data:", error));
     }
-
-    function checkEnter(event, searchInputId) {
+  
+    function handleSearchKeyPress(event, inputId) {
       if (event.key === "Enter") {
-        searchLOC(searchInputId);
+        searchLOC(inputId);
       }
     }
-
+  
     function populateBuilder(subject) {
       const parts = subject.split("--");
       document.getElementById("field1").value = parts[0] || "";
@@ -197,7 +196,7 @@
       document.getElementById("field3").value = parts[2] || "";
       document.getElementById("field4").value = parts[3] || "";
     }
-
+  
     function toggleDropdown(event, index) {
       activeDropdownIndex = index;
       const menu = document.getElementById("dropdownMenu");
@@ -205,8 +204,9 @@
       menu.style.display = "block";
       menu.style.left = rect.left + "px";
       menu.style.top = rect.bottom + "px";
+      event.stopPropagation();
     }
-
+  
     // Close dropdown when clicking an item
     document.getElementById("dropdownMenu").addEventListener("click", function(event) {
       const value = event.target.getAttribute("data-value");
@@ -216,23 +216,23 @@
         this.style.display = "none";
       }
     });
-
+  
     function copyMARC() {
       const field1 = document.getElementById("field1").value;
       const field2 = document.getElementById("field2").value;
       const field3 = document.getElementById("field3").value;
       const field4 = document.getElementById("field4").value;
       const dropdowns = document.querySelectorAll(".dropdown");
-
+  
       const sub1 = dropdowns[0].textContent.includes("|") ? dropdowns[0].textContent : "";
       const sub2 = dropdowns[1].textContent.includes("|") ? dropdowns[1].textContent : "";
       const sub3 = dropdowns[2].textContent.includes("|") ? dropdowns[2].textContent : "";
-
+  
       const finalText = `${field1}${sub1}${field2}${sub2}${field3}${sub3}${field4}.`.trim();
       navigator.clipboard.writeText(finalText);
       alert("Copied: " + finalText);
     }
-
+  
     function openModal(hit) {
       document.getElementById("modalTitle").innerText = hit.suggestLabel || "No Title Available";
       document.getElementById("modalScope").innerText = hit.more?.scopenote || "No scope note available.";
@@ -242,23 +242,20 @@
       document.getElementById("infoLink").href = hit.uri;
       document.getElementById("infoModal").style.display = "flex";
     }
-
-    function closeModal() {
-      document.getElementById("infoModal").style.display = "none";
-    }
-
+  
     // Google Books Summary Finder Functions
-
+  
     function fetchSummary() {
       const isbn = document.getElementById("isbn").value.trim();
       if (!isbn) return;
-
-      fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}`)
+  
+      fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${encodeURIComponent(isbn)}`)
         .then(response => response.json())
         .then(data => {
-          const book = data.items?.find(item => 
-            item.volumeInfo.industryIdentifiers?.some(id => id.identifier === isbn));
-
+          const book = data.items?.find(item =>
+            item.volumeInfo.industryIdentifiers?.some(id => id.identifier === isbn)
+          );
+  
           if (book && book.volumeInfo.description) {
             let summaryText = book.volumeInfo.description.trim();
             if (!summaryText.startsWith("\"")) {
@@ -278,34 +275,31 @@
           document.getElementById("copySummaryBtn").style.display = "none";
         });
     }
-
-    function checkEnter(event) {
+  
+    function handleSummaryKeyPress(event) {
       if (event.key === "Enter") {
         fetchSummary();
       }
     }
-
+  
     function copySummary() {
       const summaryText = document.getElementById("summary").innerText;
       navigator.clipboard.writeText(summaryText).then(() => {
         alert("Summary copied to clipboard!");
       });
     }
-
+  
     function openFastModal() {
       document.getElementById("fastModal").style.display = "flex";
     }
-
-    function closeFastModal() {
-      document.getElementById("fastModal").style.display = "none";
-    }
-
+  
+    // Adjust iframe height for bib formats
     function adjustIframeHeight() {
       const iframe = document.getElementById("bib-frame");
       iframe.style.height = window.innerHeight * 0.8 + "px";
     }
-
-    // Set up all event listeners after DOM is loaded
+  
+    // Set up event listeners after DOM is loaded
     document.addEventListener("DOMContentLoaded", function() {
       // Tab click events
       document.querySelectorAll('.tabs .tab').forEach(tab => {
@@ -318,19 +312,19 @@
           }
         });
       });
-
-      // Search buttons and Enter key events
+  
+      // MARC Builder search events
       document.getElementById("searchButton1").addEventListener("click", () => searchLOC("searchInput1"));
-      document.getElementById("searchInput1").addEventListener("keydown", (event) => checkEnter(event, "searchInput1"));
-
-      // Summary events
-      document.getElementById("fetchSummary").addEventListener("click", fetchSummary);
-      document.getElementById("copySummaryBtn").addEventListener("click", copySummary);
-      document.getElementById("isbn").addEventListener("keydown", checkEnter); // Add this line
+      document.getElementById("searchInput1").addEventListener("keydown", (event) => handleSearchKeyPress(event, "searchInput1"));
+  
+      // Bind dropdown click events
+      document.querySelectorAll('.builder-container .dropdown').forEach(dropdown => {
+        dropdown.addEventListener("click", function(event) {
+          const index = parseInt(this.getAttribute("data-index"), 10);
+          toggleDropdown(event, index);
+        });
       });
-
-      // Dropdown button events (attached earlier via data-index)
-
+  
       // Global click to close dropdown if clicking outside
       document.addEventListener("click", (e) => {
         const menu = document.getElementById("dropdownMenu");
@@ -338,18 +332,26 @@
           menu.style.display = "none";
         }
       });
-
+  
       // Copy MARC button event
       document.getElementById("copyMARC").addEventListener("click", copyMARC);
-
+  
       // FAST modal trigger event
       document.getElementById("openFastModal").addEventListener("click", openFastModal);
-
-      // Fetch and Copy Summary button events
+  
+      // Book Summary events
       document.getElementById("fetchSummary").addEventListener("click", fetchSummary);
       document.getElementById("copySummaryBtn").addEventListener("click", copySummary);
-
-      // Adjust iframe height
+      document.getElementById("isbn").addEventListener("keydown", handleSummaryKeyPress);
+  
+      // Close modal events for any element with class "close-modal"
+      document.querySelectorAll('.modal .close-modal').forEach(btn => {
+        btn.addEventListener("click", function() {
+          this.closest('.modal').style.display = "none";
+        });
+      });
+  
+      // Adjust iframe height on load and on resize
       adjustIframeHeight();
       window.addEventListener("resize", adjustIframeHeight);
     });
