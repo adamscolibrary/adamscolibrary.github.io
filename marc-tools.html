@@ -78,14 +78,10 @@
       <button id="copyMARC" style="margin-bottom: 20px;">Copy 650 MARC Field</button>
     </div>
 
-    <!-- Search Bars -->
+    <!-- Search Bar -->
     <div class="search-container">
       <input type="text" id="searchInput1" placeholder="Search Library of Congress">
       <button id="searchButton1">Search</button>
-    </div>
-    <div class="search-container">
-      <input type="text" id="searchInput2" placeholder="Search Library of Congress">
-      <button id="searchButton2">Search</button>
     </div>
 
     <!-- Results Section -->
@@ -281,6 +277,12 @@
           document.getElementById("summary").innerText = "Error fetching summary.";
           document.getElementById("copySummaryBtn").style.display = "none";
         });
+    }
+
+    function checkEnter(event, ) {
+      if (event.key === "Enter") {
+        fetchSummary();
+      }
     }
 
     function copySummary() {
