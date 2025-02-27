@@ -279,7 +279,7 @@
         });
     }
 
-    function checkEnter(event, ) {
+    function checkEnter(event) {
       if (event.key === "Enter") {
         fetchSummary();
       }
@@ -323,7 +323,12 @@
       document.getElementById("searchButton1").addEventListener("click", () => searchLOC("searchInput1"));
       document.getElementById("searchButton2").addEventListener("click", () => searchLOC("searchInput2"));
       document.getElementById("searchInput1").addEventListener("keydown", (event) => checkEnter(event, "searchInput1"));
-      document.getElementById("searchInput2").addEventListener("keydown", (event) => checkEnter(event, "searchInput2"));
+
+      // Summary events
+      document.getElementById("fetchSummary").addEventListener("click", fetchSummary);
+      document.getElementById("copySummaryBtn").addEventListener("click", copySummary);
+      document.getElementById("isbn").addEventListener("keydown", checkEnter); // Add this line
+      });
 
       // Dropdown button events (attached earlier via data-index)
 
