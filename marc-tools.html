@@ -139,16 +139,15 @@
     <iframe id="talpa-frame" src="https://www.talpasearch.com/429.669" width="100%" height="100%" style="border: none;"></iframe>
   </div>
   
-  <!-- Book Summary Finder Tab -->
-  <div>
-      <div id="book-summary" class="tab-content" role="tabpanel">
-        <h3>Google Books ISBN Summary Search</h3>
-        <input type="text" id="isbn" placeholder="Enter ISBN" />
-        <button id="fetchSummary">Search</button>
-        <p id="summary"></p>
-        <button id="copySummaryBtn" style="display:none;">Copy Summary</button>
-      </div>
-  
+  <!-- Book Summary Finder Tab (520) -->
+    <div id="book-summary" class="tab-content" role="tabpanel">
+      <h3>Google Books ISBN Summary Search</h3>
+      <input type="text" id="isbn" placeholder="Enter ISBN" />
+      <button id="fetchSummary">Search</button>
+      <p id="summary"></p>
+      <button id="copySummaryBtn" style="display:none;">Copy Summary</button>
+
+  <!-- Amazon Search (Only in the 520 Tab) -->
       <div>
         <h3>Amazon Search</h3>
         <form id="searchForm" action="https://www.amazon.com/s" method="get" target="_blank">
@@ -156,32 +155,31 @@
           <button type="submit">Search</button>
         </form>
       </div>
-  </div>
-  
-  <!-- New OCR Tool Tab Content -->
-  <div id="ocr-tool" class="tab-content" role="tabpanel">
-    <h3>Free OCR Tool</h3>
-    <div id="ocr-drop-area">
-      <p>Drag &amp; Drop an image here or click to select</p>
-      <input type="file" id="ocr-image-input" accept="image/*" style="display: none;">
     </div>
-    <div>
-      <label for="ocr-lang-select">Select OCR Language: </label>
-      <select id="ocr-lang-select">
-        <option value="eng" selected>English</option>
-        <option value="spa">Spanish</option>
-        <option value="fra">French</option>
-        <!-- Additional languages as needed -->
-      </select>
-      <button id="ocr-convert-btn">Convert Image</button>
-      <button id="ocr-copy-btn" style="display:none;">Copy Text</button>
-      <button id="ocr-download-btn" style="display:none;">Download Text</button>
+
+<!-- New OCR Tool Tab (No Amazon Search here) -->
+    <div id="ocr-tool" class="tab-content" role="tabpanel">
+      <h3>Free OCR Tool</h3>
+      <div id="ocr-drop-area">
+        <p>Drag &amp; Drop an image here or click to select</p>
+        <input type="file" id="ocr-image-input" accept="image/*" style="display: none;">
+      </div>
+      <div>
+        <label for="ocr-lang-select">Select OCR Language: </label>
+        <select id="ocr-lang-select">
+          <option value="eng" selected>English</option>
+          <option value="spa">Spanish</option>
+          <option value="fra">French</option>
+        </select>
+        <button id="ocr-convert-btn">Convert Image</button>
+        <button id="ocr-copy-btn" style="display:none;">Copy Text</button>
+        <button id="ocr-download-btn" style="display:none;">Download Text</button>
+      </div>
+      <div id="ocr-progress"></div>
+      <img id="ocr-preview" src="" alt="Image preview">
+      <h4>OCR Result:</h4>
+      <div id="ocr-result"></div>
     </div>
-    <div id="ocr-progress"></div>
-    <img id="ocr-preview" src="" alt="Image preview">
-    <h4>OCR Result:</h4>
-    <div id="ocr-result"></div>
-  </div>
   
   <!-- Scripts for MARC Tools functionality -->
   <script>
