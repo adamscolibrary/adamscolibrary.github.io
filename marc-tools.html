@@ -158,29 +158,34 @@
       </div>
     </div>
 
-<!-- New OCR Tool Tab (No Amazon Search here) -->
-    <div id="ocr-tool" class="tab-content" role="tabpanel">
-      <h3>Free OCR Tool</h3>
-      <div id="ocr-drop-area">
-        <p>Drag &amp; Drop an image here or click to select</p>
-        <input type="file" id="ocr-image-input" accept="image/*" style="display: none;">
-      </div>
-      <div>
-        <label for="ocr-lang-select">Select OCR Language: </label>
-        <select id="ocr-lang-select">
-          <option value="eng" selected>English</option>
-          <option value="spa">Spanish</option>
-          <option value="fra">French</option>
-        </select>
-        <button id="ocr-convert-btn">Convert Image</button>
-        <button id="ocr-copy-btn" style="display:none;">Copy Text</button>
-        <button id="ocr-download-btn" style="display:none;">Download Text</button>
-      </div>
-      <div id="ocr-progress"></div>
-      <img id="ocr-preview" src="" alt="Image preview">
-      <h4>OCR Result:</h4>
-      <div id="ocr-result"></div>
+  <!-- New OCR Tool Tab (No Amazon Search here) -->
+  <div id="ocr-tool" class="tab-content" role="tabpanel">
+    <h3>Free OCR Tool</h3>
+    <div id="ocr-drop-area">
+      <p>Drag &amp; Drop an image here or click to select</p>
+      <input type="file" id="ocr-image-input" accept="image/*" style="display: none;">
     </div>
+    <div>
+      <label for="ocr-lang-select">Select OCR Language: </label>
+      <select id="ocr-lang-select">
+        <option value="eng" selected>English</option>
+        <option value="spa">Spanish</option>
+        <option value="fra">French</option>
+      </select>
+      <button id="ocr-convert-btn">Convert Image</button>
+      <button id="ocr-copy-btn" style="display:none;">Copy Text</button>
+      <button id="ocr-download-btn" style="display:none;">Download Text</button>
+    </div>
+    <div id="ocr-progress"></div>
+    <img id="ocr-preview" src="" alt="Image preview">
+    <h4>OCR Result:</h4>
+    <!-- Editable Textarea for OCR Result -->
+    <textarea id="ocr-result" rows="6" cols="50" style="width: 100%;"></textarea>
+    <h4>Citation:</h4>
+    <!-- Textarea for Citation -->
+    <textarea id="ocr-citation" rows="2" cols="50" placeholder="Enter citation here..." style="width: 100%;"></textarea>
+  </div>
+
   
   <!-- Scripts for MARC Tools functionality -->
   <script>
@@ -399,7 +404,7 @@
   <script>
     // Global OCR dictionary variable for spell-checking
     let ocrDictionary = null;
-  
+
     // Load the English dictionary files for Typo.js
     Promise.all([
       fetch('https://raw.githubusercontent.com/cfinke/Typo.js/master/typo/dictionaries/en_US/en_US.aff').then(res => res.text()),
@@ -412,7 +417,7 @@
     .catch(error => {
       console.error("Error loading OCR dictionary:", error);
     });
-  
+
     // OCR Tool UI elements
     const ocrDropArea = document.getElementById('ocr-drop-area');
     const ocrImageInput = document.getElementById('ocr-image-input');
@@ -420,13 +425,14 @@
     const ocrCopyBtn = document.getElementById('ocr-copy-btn');
     const ocrDownloadBtn = document.getElementById('ocr-download-btn');
     const ocrProgressDiv = document.getElementById('ocr-progress');
-    const ocrResultDiv = document.getElementById('ocr-result');
+    const ocrResultTextarea = document.getElementById('ocr-result');
     const ocrPreviewImg = document.getElementById('ocr-preview');
     const ocrLangSelect = document.getElementById('ocr-lang-select');
-  
+    const ocrCitationTextarea = document.getElementById('ocr-citation');
+
     // Allow clicking the OCR drop area to select a file
     ocrDropArea.addEventListener('click', () => ocrImageInput.click());
-  
+
     // Drag & Drop events for OCR tool
     ocrDropArea.addEventListener('dragover', (e) => {
       e.preventDefault();
@@ -443,7 +449,7 @@
         displayOCRPreview();
       }
     });
-  
+
     // Display preview for OCR image
     function displayOCRPreview() {
       const file = ocrImageInput.files[0];
@@ -456,16 +462,16 @@
         reader.readAsDataURL(file);
       }
     }
-  
+
     ocrImageInput.addEventListener('change', displayOCRPreview);
-  
+
     // Function to clean OCR text: removes single newlines within paragraphs
     function cleanText(text) {
       let paragraphs = text.split(/\n\s*\n/);
       paragraphs = paragraphs.map(paragraph => paragraph.replace(/\n/g, " "));
       return paragraphs.join("\n\n");
     }
-  
+
     // Function to highlight words that might be misrecognized (wraps in <em> with class "misspelled")
     function highlightMisspellings(text) {
       if (!ocrDictionary) return text;
@@ -476,19 +482,19 @@
         return match;
       });
     }
-  
+
     // OCR conversion function
     async function convertOCR() {
-      ocrResultDiv.textContent = "";
+      ocrResultTextarea.value = "";
       ocrProgressDiv.textContent = "";
       ocrCopyBtn.style.display = 'none';
       ocrDownloadBtn.style.display = 'none';
-  
+
       if (!ocrImageInput.files || ocrImageInput.files.length === 0) {
         ocrProgressDiv.textContent = "Please select an image file.";
         return;
       }
-  
+
       const file = ocrImageInput.files[0];
       const reader = new FileReader();
       reader.onload = async function(e) {
@@ -496,59 +502,57 @@
         ocrProgressDiv.textContent = "Initializing OCR...";
         try {
           const { data: { text } } = await Tesseract.recognize(
-            imageData,
-            ocrLangSelect.value,
-            {
-              logger: m => {
-                if (m.status === 'recognizing text') {
-                  ocrProgressDiv.textContent = `Progress: ${(m.progress * 100).toFixed(2)}%`;
-                } else {
-                  ocrProgressDiv.textContent = m.status;
-                }
+          imageData,
+          ocrLangSelect.value,
+          {
+            logger: m => {
+              if (m.status === 'recognizing text') {
+                ocrProgressDiv.textContent = `Progress: ${(m.progress * 100).toFixed(2)}%`;
+              } else {
+                ocrProgressDiv.textContent = m.status;
               }
             }
-          );
-          // Clean and highlight the OCR output.
-          const cleanedText = cleanText(text);
-          const highlightedText = highlightMisspellings(cleanedText);
-          ocrResultDiv.innerHTML = highlightedText;
-          ocrProgressDiv.textContent = "OCR complete.";
-          ocrCopyBtn.style.display = 'inline-block';
-          ocrDownloadBtn.style.display = 'inline-block';
-        } catch (err) {
-          ocrProgressDiv.textContent = "An error occurred: " + err.message;
-        }
-      };
-      reader.readAsDataURL(file);
-    }
-  
-    ocrConvertBtn.addEventListener('click', convertOCR);
-  
-    // Copy OCR result to clipboard (removes HTML tags)
-    ocrCopyBtn.addEventListener('click', () => {
-      const tempDiv = document.createElement('div');
-      tempDiv.innerHTML = ocrResultDiv.innerHTML;
-      const textContent = tempDiv.textContent || tempDiv.innerText;
-      navigator.clipboard.writeText(textContent).then(() => {
-        alert("OCR text copied to clipboard!");
-      });
+          }
+        );
+        // Clean and highlight the OCR output.
+        const cleanedText = cleanText(text);
+        const highlightedText = highlightMisspellings(cleanedText);
+        ocrResultTextarea.value = highlightedText;
+        ocrProgressDiv.textContent = "OCR complete.";
+        ocrCopyBtn.style.display = 'inline-block';
+        ocrDownloadBtn.style.display = 'inline-block';
+      } catch (err) {
+        ocrProgressDiv.textContent = "An error occurred: " + err.message;
+      }
+    };
+    reader.readAsDataURL(file);
+  }
+
+  ocrConvertBtn.addEventListener('click', convertOCR);
+
+  // Copy OCR result to clipboard (formatted as "{edited text}" --{citation})
+  ocrCopyBtn.addEventListener('click', () => {
+    const editedText = ocrResultTextarea.value.trim();
+    const citation = ocrCitationTextarea.value.trim();
+    const formattedText = `"${editedText}" --${citation}`;
+    navigator.clipboard.writeText(formattedText).then(() => {
+      alert("OCR text copied to clipboard!");
     });
-  
-    // Download OCR result as a text file (without HTML tags)
-    ocrDownloadBtn.addEventListener('click', () => {
-      const tempDiv = document.createElement('div');
-      tempDiv.innerHTML = ocrResultDiv.innerHTML;
-      const textContent = tempDiv.textContent || tempDiv.innerText;
-      const blob = new Blob([textContent], { type: 'text/plain' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'ocr-result.txt';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    });
-  </script>
+  });
+
+  // Download OCR result as a text file (without HTML tags)
+  ocrDownloadBtn.addEventListener('click', () => {
+    const textContent = ocrResultTextarea.value.trim();
+    const blob = new Blob([textContent], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'ocr-result.txt';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+</script>
 </body>
 </html>
