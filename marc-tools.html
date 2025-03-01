@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MARC Tools</title>
+  <!-- Existing styles -->
   <style>
     body { font-family: Arial, sans-serif; margin: 20px; }
     /* Tab style */
@@ -34,7 +35,22 @@
     input { padding: 8px; width: 200px; }
     button { padding: 8px; margin-left: 5px; cursor: pointer; }
     #summary { margin-top: 20px; font-style: italic; }
+    
+    /* OCR Tool styles */
+    #ocr-drop-area {
+      border: 2px dashed #ccc; border-radius: 10px; padding: 20px; text-align: center; margin-bottom: 20px; cursor: pointer;
+    }
+    #ocr-result {
+      white-space: pre-wrap; background: #f4f4f4; padding: 10px; border: 1px solid #ddd; margin-top: 10px;
+    }
+    #ocr-progress { margin-top: 10px; font-style: italic; }
+    #ocr-preview { margin-top: 10px; max-width: 100%; max-height: 300px; display: none; }
+    /* Highlight style for potentially misrecognized words */
+    .misspelled { background-color: yellow; font-style: italic; cursor: help; }
   </style>
+  <!-- Include Tesseract.js and Typo.js for OCR functionality -->
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/typo-js/1.1.0/typo.min.js"></script>
 </head>
 <body>
   <h2>MARC Tools</h2>
@@ -45,6 +61,7 @@
     <div class="tab" data-tab="talpa" role="tab" aria-selected="false" tabindex="0">Talpa AI</div>
     <div class="tab" data-tab="marc-builder" role="tab" aria-selected="false" tabindex="0">650 Builder</div>
     <div class="tab" data-tab="book-summary" role="tab" aria-selected="false" tabindex="0">520 Search</div>
+    <div class="tab" data-tab="ocr-tool" role="tab" aria-selected="false" tabindex="0">Free OCR</div>
     <div class="tab" data-url="https://www.librarything.com/mds" role="tab" tabindex="0">MDS</div>
     <div class="tab" data-url="https://www.loc.gov/aba/cataloging/tools/" role="tab" tabindex="0">LCSH</div>
     <div class="tab" data-url="https://authorities.loc.gov/webvoy.htm" role="tab" tabindex="0">LOC Authorities</div>
@@ -116,50 +133,58 @@
       </div>
     </div>
   </div>
-
+  
   <!-- Talpa AI Tab -->
   <div id="talpa" class="tab-content" style="position: relative; height: 80vh; overflow: auto;" role="tabpanel">
-    <iframe id="bib-frame" src="https://www.talpasearch.com/429.669" width="100%" height="100%" style="border: none;"></iframe>
+    <iframe id="talpa-frame" src="https://www.talpasearch.com/429.669" width="100%" height="100%" style="border: none;"></iframe>
   </div>
   
   <!-- Book Summary Finder Tab -->
-  <div id="book-summary" class="tab-content" role="tabpanel">
-    <h3>Google Books ISBN Summary Search</h3>
-    <input type="text" id="isbn" placeholder="Enter ISBN" />
-    <button id="fetchSummary">Search</button>
-    <p id="summary"></p>
-    <button id="copySummaryBtn" style="display:none;">Copy Summary</button>
-  </div>
-  <div>
-  <h3>Amazon Search</h3>
-  <form id="searchForm" action="https://www.amazon.com/s" method="get" target="_blank">
-    <input type="text" id="searchInput" name="k" placeholder="Enter search term" required>
-    <button type="submit">Search</button>
-  </form>
+    <div id="book-summary" class="tab-content" role="tabpanel">
+      <h3>Google Books ISBN Summary Search</h3>
+      <input type="text" id="isbn" placeholder="Enter ISBN" />
+      <button id="fetchSummary">Search</button>
+      <p id="summary"></p>
+      <button id="copySummaryBtn" style="display:none;">Copy Summary</button>
+    </div>
+  
+    <div>
+      <h3>Amazon Search</h3>
+      <form id="searchForm" action="https://www.amazon.com/s" method="get" target="_blank">
+        <input type="text" id="searchInput" name="k" placeholder="Enter search term" required>
+        <button type="submit">Search</button>
+      </form>
+    </div>
   </div>
   
-  <!-- Free OCR Modal Trigger -->
-    <div style="margin-top: 20px; text-align: left;">
-      <button id="openFastModal" style="margin-top: 40px; margin-bottom: 20px;">Free OCR</button>
-      <div>
-        <small>(image to text converter)</small>
-      </div>
+  <!-- New OCR Tool Tab Content -->
+  <div id="ocr-tool" class="tab-content" role="tabpanel">
+    <h3>Free OCR Tool</h3>
+    <div id="ocr-drop-area">
+      <p>Drag &amp; Drop an image here or click to select</p>
+      <input type="file" id="ocr-image-input" accept="image/*" style="display: none;">
     </div>
-    <!-- Free OCR Modal -->
-    <div id="ocrModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="ocrModalTitle">
-      <div class="modal-content" style="width: 80%; height: 80vh; position: relative;">
-        <span class="close-modal" tabindex="0" style="position: absolute; top: 10px; right: 15px; font-size: 24px;">&times;</span>
-        <h3 id="ocrModalTitle" style="text-align: center;">Free OCR</h3>
-        <iframe src="https://www.onlineocr.net/" width="100%" height="90%" style="border: none;"></iframe>
-      </div>
+    <div>
+      <label for="ocr-lang-select">Select OCR Language: </label>
+      <select id="ocr-lang-select">
+        <option value="eng" selected>English</option>
+        <option value="spa">Spanish</option>
+        <option value="fra">French</option>
+        <!-- Additional languages as needed -->
+      </select>
+      <button id="ocr-convert-btn">Convert Image</button>
+      <button id="ocr-copy-btn" style="display:none;">Copy Text</button>
+      <button id="ocr-download-btn" style="display:none;">Download Text</button>
     </div>
+    <div id="ocr-progress"></div>
+    <img id="ocr-preview" src="" alt="Image preview">
+    <h4>OCR Result:</h4>
+    <div id="ocr-result"></div>
   </div>
-    
+  
+  <!-- Scripts for MARC Tools functionality -->
   <script>
-    // Global variable for dropdown index
-    let activeDropdownIndex = null;
-  
-    // Function to switch tabs
+    // Tab switching functionality
     function switchTab(tabId) {
       const tabs = document.querySelectorAll('.tabs .tab');
       const contents = document.querySelectorAll('.tab-content');
@@ -178,9 +203,21 @@
       }
       document.getElementById(tabId).classList.add('active');
     }
-  
+    
+    // Tab click events
+    document.querySelectorAll('.tabs .tab').forEach(tab => {
+      tab.addEventListener('click', function() {
+        const url = this.getAttribute('data-url');
+        if(url) {
+          window.open(url, '_blank');
+        } else {
+          switchTab(this.getAttribute('data-tab'));
+        }
+      });
+    });
+    
     // MARC Builder Functions
-  
+    let activeDropdownIndex = null;
     function searchLOC(inputId) {
       const query = document.getElementById(inputId).value;
       if (!query) return;
@@ -237,13 +274,19 @@
       event.stopPropagation();
     }
   
-    // Close dropdown when clicking an item
     document.getElementById("dropdownMenu").addEventListener("click", function(event) {
       const value = event.target.getAttribute("data-value");
       if (value !== null && activeDropdownIndex !== null) {
         const dropdowns = document.querySelectorAll(".dropdown");
         dropdowns[activeDropdownIndex].textContent = value || "+";
         this.style.display = "none";
+      }
+    });
+  
+    document.addEventListener("click", (e) => {
+      const menu = document.getElementById("dropdownMenu");
+      if (!menu.contains(e.target)) {
+        menu.style.display = "none";
       }
     });
   
@@ -274,7 +317,6 @@
     }
   
     // Google Books Summary Finder Functions
-  
     function fetchSummary() {
       const isbn = document.getElementById("isbn").value.trim();
       if (!isbn) return;
@@ -329,71 +371,184 @@
       iframe.style.height = window.innerHeight * 0.8 + "px";
     }
   
-    // Set up event listeners after DOM is loaded
     document.addEventListener("DOMContentLoaded", function() {
-      // Tab click events
-      document.querySelectorAll('.tabs .tab').forEach(tab => {
-        tab.addEventListener('click', function() {
-          const url = this.getAttribute('data-url');
-          if(url) {
-            window.open(url, '_blank');
-          } else {
-            switchTab(this.getAttribute('data-tab'));
-          }
-        });
-      });
-  
-      // MARC Builder search events
       document.getElementById("searchButton1").addEventListener("click", () => searchLOC("searchInput1"));
       document.getElementById("searchInput1").addEventListener("keydown", (event) => handleSearchKeyPress(event, "searchInput1"));
-  
-      // Bind dropdown click events
       document.querySelectorAll('.builder-container .dropdown').forEach(dropdown => {
         dropdown.addEventListener("click", function(event) {
           const index = parseInt(this.getAttribute("data-index"), 10);
           toggleDropdown(event, index);
         });
       });
-  
-      // Global click to close dropdown if clicking outside
-      document.addEventListener("click", (e) => {
-        const menu = document.getElementById("dropdownMenu");
-        if (!menu.contains(e.target)) {
-          menu.style.display = "none";
-        }
-      });
-  
-      // Copy MARC button event
       document.getElementById("copyMARC").addEventListener("click", copyMARC);
-  
-      // FAST modal trigger event
       document.getElementById("openFastModal").addEventListener("click", openFastModal);
-  
-      // Book Summary events
       document.getElementById("fetchSummary").addEventListener("click", fetchSummary);
       document.getElementById("copySummaryBtn").addEventListener("click", copySummary);
       document.getElementById("isbn").addEventListener("keydown", handleSummaryKeyPress);
-  
-      // Close modal events for any element with class "close-modal"
       document.querySelectorAll('.modal .close-modal').forEach(btn => {
         btn.addEventListener("click", function() {
           this.closest('.modal').style.display = "none";
         });
       });
-  
-      // Adjust iframe height on load and on resize
       adjustIframeHeight();
       window.addEventListener("resize", adjustIframeHeight);
-      });
-    
-      // OCR Modal
-      function openocrModal() {
-        document.getElementById("ocrModal").style.display = "flex";
+    });
+  </script>
+  
+  <!-- Scripts for the Free OCR Tool -->
+  <script>
+    // Global OCR dictionary variable for spell-checking
+    let ocrDictionary = null;
+  
+    // Load the English dictionary files for Typo.js
+    Promise.all([
+      fetch('https://raw.githubusercontent.com/cfinke/Typo.js/master/typo/dictionaries/en_US/en_US.aff').then(res => res.text()),
+      fetch('https://raw.githubusercontent.com/cfinke/Typo.js/master/typo/dictionaries/en_US/en_US.dic').then(res => res.text())
+    ])
+    .then(([affData, dicData]) => {
+      ocrDictionary = new Typo("en_US", affData, dicData, { platform: 'any' });
+      console.log("OCR Dictionary loaded successfully.");
+    })
+    .catch(error => {
+      console.error("Error loading OCR dictionary:", error);
+    });
+  
+    // OCR Tool UI elements
+    const ocrDropArea = document.getElementById('ocr-drop-area');
+    const ocrImageInput = document.getElementById('ocr-image-input');
+    const ocrConvertBtn = document.getElementById('ocr-convert-btn');
+    const ocrCopyBtn = document.getElementById('ocr-copy-btn');
+    const ocrDownloadBtn = document.getElementById('ocr-download-btn');
+    const ocrProgressDiv = document.getElementById('ocr-progress');
+    const ocrResultDiv = document.getElementById('ocr-result');
+    const ocrPreviewImg = document.getElementById('ocr-preview');
+    const ocrLangSelect = document.getElementById('ocr-lang-select');
+  
+    // Allow clicking the OCR drop area to select a file
+    ocrDropArea.addEventListener('click', () => ocrImageInput.click());
+  
+    // Drag & Drop events for OCR tool
+    ocrDropArea.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      ocrDropArea.style.borderColor = "#333";
+    });
+    ocrDropArea.addEventListener('dragleave', () => {
+      ocrDropArea.style.borderColor = "#ccc";
+    });
+    ocrDropArea.addEventListener('drop', (e) => {
+      e.preventDefault();
+      ocrDropArea.style.borderColor = "#ccc";
+      if(e.dataTransfer.files && e.dataTransfer.files.length > 0){
+        ocrImageInput.files = e.dataTransfer.files;
+        displayOCRPreview();
       }
-    
-      // FAST modal trigger event
-      document.getElementById("openocrModal").addEventListener("click", openocrModal);
-    
+    });
+  
+    // Display preview for OCR image
+    function displayOCRPreview() {
+      const file = ocrImageInput.files[0];
+      if(file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          ocrPreviewImg.src = e.target.result;
+          ocrPreviewImg.style.display = 'block';
+        }
+        reader.readAsDataURL(file);
+      }
+    }
+  
+    ocrImageInput.addEventListener('change', displayOCRPreview);
+  
+    // Function to clean OCR text: removes single newlines within paragraphs
+    function cleanText(text) {
+      let paragraphs = text.split(/\n\s*\n/);
+      paragraphs = paragraphs.map(paragraph => paragraph.replace(/\n/g, " "));
+      return paragraphs.join("\n\n");
+    }
+  
+    // Function to highlight words that might be misrecognized (wraps in <em> with class "misspelled")
+    function highlightMisspellings(text) {
+      if (!ocrDictionary) return text;
+      return text.replace(/\b([a-zA-Z']+)\b/g, (match) => {
+        if (!ocrDictionary.check(match)) {
+          return `<em class="misspelled" title="Possibly misrecognized">${match}</em>`;
+        }
+        return match;
+      });
+    }
+  
+    // OCR conversion function
+    async function convertOCR() {
+      ocrResultDiv.textContent = "";
+      ocrProgressDiv.textContent = "";
+      ocrCopyBtn.style.display = 'none';
+      ocrDownloadBtn.style.display = 'none';
+  
+      if (!ocrImageInput.files || ocrImageInput.files.length === 0) {
+        ocrProgressDiv.textContent = "Please select an image file.";
+        return;
+      }
+  
+      const file = ocrImageInput.files[0];
+      const reader = new FileReader();
+      reader.onload = async function(e) {
+        const imageData = e.target.result;
+        ocrProgressDiv.textContent = "Initializing OCR...";
+        try {
+          const { data: { text } } = await Tesseract.recognize(
+            imageData,
+            ocrLangSelect.value,
+            {
+              logger: m => {
+                if (m.status === 'recognizing text') {
+                  ocrProgressDiv.textContent = `Progress: ${(m.progress * 100).toFixed(2)}%`;
+                } else {
+                  ocrProgressDiv.textContent = m.status;
+                }
+              }
+            }
+          );
+          // Clean and highlight the OCR output.
+          const cleanedText = cleanText(text);
+          const highlightedText = highlightMisspellings(cleanedText);
+          ocrResultDiv.innerHTML = highlightedText;
+          ocrProgressDiv.textContent = "OCR complete.";
+          ocrCopyBtn.style.display = 'inline-block';
+          ocrDownloadBtn.style.display = 'inline-block';
+        } catch (err) {
+          ocrProgressDiv.textContent = "An error occurred: " + err.message;
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  
+    ocrConvertBtn.addEventListener('click', convertOCR);
+  
+    // Copy OCR result to clipboard (removes HTML tags)
+    ocrCopyBtn.addEventListener('click', () => {
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = ocrResultDiv.innerHTML;
+      const textContent = tempDiv.textContent || tempDiv.innerText;
+      navigator.clipboard.writeText(textContent).then(() => {
+        alert("OCR text copied to clipboard!");
+      });
+    });
+  
+    // Download OCR result as a text file (without HTML tags)
+    ocrDownloadBtn.addEventListener('click', () => {
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = ocrResultDiv.innerHTML;
+      const textContent = tempDiv.textContent || tempDiv.innerText;
+      const blob = new Blob([textContent], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'ocr-result.txt';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    });
   </script>
 </body>
 </html>
