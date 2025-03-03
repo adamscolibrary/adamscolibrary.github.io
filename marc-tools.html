@@ -63,9 +63,15 @@
     <div class="tab" data-tab="book-summary" role="tab" aria-selected="false" tabindex="0">520 Search</div>
     <div class="tab" data-tab="ocr-tool" role="tab" aria-selected="false" tabindex="0">OCR</div>
     <div class="tab" data-url="https://www.librarything.com/mds" role="tab" tabindex="0">MDS 🔗</div>
-    <div class="tab" data-url="https://www.loc.gov/aba/cataloging/tools/" role="tab" tabindex="0">LCSH 🔗</div>
-    <div class="tab" data-url="https://authorities.loc.gov/webvoy.htm" role="tab" tabindex="0">LOC Authorities 🔗</div>
-    <div class="tab" data-url="https://catalog.loc.gov/vwebv/search" role="tab" tabindex="0">LOC Catalog 🔗</div>
+    <!-- New LOC Tools dropdown tab -->
+    <div class="tab dropdown-tab" role="tab" tabindex="0" data-dropdown="locDropdownMenu">LOC Tools ▼</div>
+  </div>
+  
+  <!-- New LOC Tools Dropdown Menu -->
+  <div id="locDropdownMenu" class="dropdown-menu">
+    <div data-url="https://www.loc.gov/aba/cataloging/tools/">LCSH 🔗</div>
+    <div data-url="https://authorities.loc.gov/webvoy.htm">LOC Authorities 🔗</div>
+    <div data-url="https://catalog.loc.gov/vwebv/search">LOC Catalog 🔗</div>
   </div>
   
   <!-- Bib Formats Tab -->
@@ -209,9 +215,27 @@
       document.getElementById(tabId).classList.add('active');
     }
     
-    // Tab click events
+    // New function to toggle the LOC Tools dropdown
+    function toggleLocDropdown(event) {
+      const menu = document.getElementById("locDropdownMenu");
+      if(menu.style.display === "block") {
+        menu.style.display = "none";
+      } else {
+        const rect = event.target.getBoundingClientRect();
+        menu.style.display = "block";
+        menu.style.left = rect.left + "px";
+        menu.style.top = rect.bottom + "px";
+      }
+      event.stopPropagation();
+    }
+    
+    // Tab click events (updated to handle dropdown tabs)
     document.querySelectorAll('.tabs .tab').forEach(tab => {
-      tab.addEventListener('click', function() {
+      tab.addEventListener('click', function(event) {
+        if(this.hasAttribute('data-dropdown')) {
+          toggleLocDropdown(event);
+          return;
+        }
         const url = this.getAttribute('data-url');
         if(url) {
           window.open(url, '_blank');
@@ -221,7 +245,7 @@
       });
     });
     
-    // MARC Builder Functions
+    // Existing MARC Builder dropdown functionality
     let activeDropdownIndex = null;
     function searchLOC(inputId) {
       const query = document.getElementById(inputId).value;
@@ -288,10 +312,31 @@
       }
     });
   
+    // Hide builder dropdown when clicking outside
     document.addEventListener("click", (e) => {
       const menu = document.getElementById("dropdownMenu");
       if (!menu.contains(e.target)) {
         menu.style.display = "none";
+      }
+    });
+    
+    // Event listeners for the new LOC Tools dropdown items
+    document.querySelectorAll("#locDropdownMenu div").forEach(item => {
+      item.addEventListener("click", function(event) {
+        const url = this.getAttribute("data-url");
+        if(url) {
+          window.open(url, '_blank');
+        }
+        document.getElementById("locDropdownMenu").style.display = "none";
+        event.stopPropagation();
+      });
+    });
+    
+    // Hide LOC Tools dropdown when clicking outside
+    document.addEventListener("click", (e) => {
+      const locMenu = document.getElementById("locDropdownMenu");
+      if (locMenu && !locMenu.contains(e.target)) {
+        locMenu.style.display = "none";
       }
     });
   
