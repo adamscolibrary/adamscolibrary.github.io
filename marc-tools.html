@@ -434,6 +434,9 @@
 
     function openGTNModal() {
       document.getElementById("gtnModal").style.display = "flex";
+      document.getElementById("gtnModal").querySelector("iframe").src = "https://www.getty.edu/research/tools/vocabularies/tgn/";
+      console.log("GTN modal iframe src:", document.getElementById("gtnModal").querySelector("iframe").src);
+
     }
   
     // Adjust iframe height for bib formats
