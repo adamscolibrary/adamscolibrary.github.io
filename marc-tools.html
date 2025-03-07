@@ -602,7 +602,6 @@
       // document.getElementById("ocr-result-raw").value = cleanedText; // Stores plain text in a hidden textarea
       ocrProgressDiv.textContent = "";
       ocrCopyBtn.style.display = 'none';
-      ocrDownloadBtn.style.display = 'none';
 
       if (!ocrImageInput.files || ocrImageInput.files.length === 0) {
         ocrProgressDiv.textContent = "Please select an image file.";
@@ -634,49 +633,48 @@
         document.getElementById("ocr-result").innerHTML = highlightedText;
         ocrProgressDiv.textContent = "OCR complete.";
         ocrCopyBtn.style.display = 'inline-block';
-        ocrDownloadBtn.style.display = 'inline-block';
       } catch (err) {
         ocrProgressDiv.textContent = "An error occurred: " + err.message;
       }
     };
     reader.readAsDataURL(file);
-  }
-
-  ocrConvertBtn.addEventListener('click', convertOCR);
-
-  // Copy OCR result to clipboard (formatted as "{edited text}" --{citation})
-  ocrCopyBtn.addEventListener('click', () => {
-    // Use innerText to get the updated plain text (without HTML tags)
-    const updatedText = document.getElementById("ocr-result").innerText;
-    navigator.clipboard.writeText(updatedText).then(() => {
-      alert("Updated OCR text copied to clipboard!");
-    });
-  });
-
-  // Get references to the modal elements
-  const imageModal = document.getElementById('imageModal');
-  const modalImage = document.getElementById('modalImage');
-  const closeModal = document.querySelector('.image-modal .close-modal');
-
-  // Attach an event listener to the preview image
-  ocrPreviewImg.addEventListener('click', () => {
-    // Set the modal image source to the preview image source
-    modalImage.src = ocrPreviewImg.src;
-    // Show the modal
-    imageModal.style.display = 'flex';
-  });
-
-  // Attach an event listener to the close button
-  closeModal.addEventListener('click', () => {
-    imageModal.style.display = 'none';
-  });
-
-  // Optional: Close the modal when clicking outside the image
-  imageModal.addEventListener('click', (e) => {
-    if (e.target === imageModal) {
-      imageModal.style.display = 'none';
     }
-  });
+
+    ocrConvertBtn.addEventListener('click', convertOCR);
+
+    // Copy OCR result to clipboard (formatted as "{edited text}" --{citation})
+    ocrCopyBtn.addEventListener('click', () => {
+      // Use innerText to get the updated plain text (without HTML tags)
+      const updatedText = document.getElementById("ocr-result").innerText;
+      navigator.clipboard.writeText(updatedText).then(() => {
+        alert("Updated OCR text copied to clipboard!");
+      });
+    });
+
+    // Get references to the modal elements
+    const imageModal = document.getElementById('imageModal');
+    const modalImage = document.getElementById('modalImage');
+    const closeModal = document.querySelector('.image-modal .close-modal');
+
+    // Attach an event listener to the preview image
+    ocrPreviewImg.addEventListener('click', () => {
+      // Set the modal image source to the preview image source
+      modalImage.src = ocrPreviewImg.src;
+      // Show the modal
+      imageModal.style.display = 'flex';
+    });
+
+    // Attach an event listener to the close button
+    closeModal.addEventListener('click', () => {
+      imageModal.style.display = 'none';
+    });
+
+    // Optional: Close the modal when clicking outside the image
+    imageModal.addEventListener('click', (e) => {
+      if (e.target === imageModal) {
+        imageModal.style.display = 'none';
+      }
+    });
 
 </script>
 </body>
