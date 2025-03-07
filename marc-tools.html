@@ -648,7 +648,7 @@
       const updatedText = document.getElementById("ocr-result").innerText;
       const citation = document.getElementById("ocr-citation").value.trim();
       const formattedText = `"${updatedText}" --${citation}`;
-      navigator.clipboard.writeText(updatedText).then(() => {
+      navigator.clipboard.writeText(formattedText).then(() => {
         alert("Updated OCR text copied to clipboard!");
       });
     });
