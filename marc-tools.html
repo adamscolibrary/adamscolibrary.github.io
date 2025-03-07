@@ -47,6 +47,35 @@
     #ocr-preview { margin-top: 10px; max-width: 100%; max-height: 300px; display: none; }
     /* Highlight style for potentially misrecognized words */
     .misspelled { background-color: yellow; font-style: italic; cursor: help; }
+
+    .image-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .image-modal img {
+      max-width: 90%;
+      max-height: 90%;
+      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    }
+
+    .image-modal .close-modal {
+      position: absolute;
+      top: 20px;
+      right: 30px;
+      font-size: 40px;
+      color: white;
+      cursor: pointer;
+    }
+
   </style>
   <!-- Include Tesseract.js and Typo.js for OCR functionality -->
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4"></script>
@@ -218,6 +247,13 @@
     
     <!-- Textarea for Citation -->
     <textarea id="ocr-citation" rows="2" cols="50" placeholder="Enter citation here..." style="width: 100%;"></textarea>
+
+    <!-- Image Modal -->
+    <div id="imageModal" class="image-modal" style="display: none;">
+      <span class="close-modal">&times;</span>
+      <img id="modalImage" src="" alt="Enlarged image">
+    </div>
+
   </div>
 
   
@@ -617,6 +653,32 @@
     navigator.clipboard.writeText(updatedText).then(() => {
       alert("Updated OCR text copied to clipboard!");
     });
+  });
+
+  // Get references to the modal elements
+  const imageModal = document.getElementById('imageModal');
+  const modalImage = document.getElementById('modalImage');
+  const closeModal = document.querySelector('.image-modal .close-modal');
+
+  // Attach an event listener to the preview image
+  const ocrPreviewImg = document.getElementById('ocr-preview');
+  ocrPreviewImg.addEventListener('click', () => {
+    // Set the modal image source to the preview image source
+    modalImage.src = ocrPreviewImg.src;
+    // Show the modal
+    imageModal.style.display = 'flex';
+  });
+
+  // Attach an event listener to the close button
+  closeModal.addEventListener('click', () => {
+    imageModal.style.display = 'none';
+  });
+
+  // Optional: Close the modal when clicking outside the image
+  imageModal.addEventListener('click', (e) => {
+    if (e.target === imageModal) {
+      imageModal.style.display = 'none';
+    }
   });
 
 </script>
