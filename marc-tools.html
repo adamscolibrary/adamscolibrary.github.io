@@ -580,7 +580,7 @@
 
     // Function to clean OCR text: removes single newlines within paragraphs
     function cleanText(text) {
-      let paragraphs = text.split(/\n\s*\n/);
+      let paragraphs = text.split(/\n+/);
       paragraphs = paragraphs.map(paragraph => paragraph.replace(/\n/g, " "));
       return paragraphs.join("\n\n");
     }
