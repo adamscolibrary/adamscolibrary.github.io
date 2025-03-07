@@ -507,8 +507,6 @@
     const ocrCopyBtn = document.getElementById('ocr-copy-btn');
     const ocrDownloadBtn = document.getElementById('ocr-download-btn');
     const ocrProgressDiv = document.getElementById('ocr-progress');
-    document.getElementById("ocr-result").innerHTML = highlightedText; // Displays formatted text in a <div>
-    document.getElementById("ocr-result-raw").value = cleanedText; // Stores plain text in a hidden textarea
     const ocrPreviewImg = document.getElementById('ocr-preview');
     const ocrLangSelect = document.getElementById('ocr-lang-select');
     const ocrCitationTextarea = document.getElementById('ocr-citation');
@@ -568,7 +566,8 @@
 
     // OCR conversion function
     async function convertOCR() {
-      ocrResultTextarea.value = "";
+      document.getElementById("ocr-result").innerHTML = highlightedText; // Displays formatted text in a <div>
+      document.getElementById("ocr-result-raw").value = cleanedText; // Stores plain text in a hidden textarea
       ocrProgressDiv.textContent = "";
       ocrCopyBtn.style.display = 'none';
       ocrDownloadBtn.style.display = 'none';
@@ -624,7 +623,7 @@
 
   // Download OCR result as a text file (without HTML tags)
   ocrDownloadBtn.addEventListener('click', () => {
-    const textContent = ocrResultTextarea.value.trim();
+    const textContent = document.getElementById("ocr-result-raw").value.trim();
     const blob = new Blob([textContent], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -635,6 +634,7 @@
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
   });
+
 </script>
 </body>
 </html>
