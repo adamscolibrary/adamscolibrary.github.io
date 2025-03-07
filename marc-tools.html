@@ -210,7 +210,7 @@
     <img id="ocr-preview" src="" alt="Image preview">
     <h4>OCR Result:</h4>
     <!-- Editable Textarea for OCR Result -->
-    <textarea id="ocr-result" rows="6" cols="50" style="width: 100%;"></textarea>
+    <div id="" contenteditable="true" class="ocr-output"></div>
     <h4>Citation:</h4>
     <!-- Textarea for Citation -->
     <textarea id="ocr-citation" rows="2" cols="50" placeholder="Enter citation here..." style="width: 100%;"></textarea>
@@ -594,7 +594,7 @@
         // Clean and highlight the OCR output.
         const cleanedText = cleanText(text);
         const highlightedText = highlightMisspellings(cleanedText);
-        ocrResultTextarea.value = highlightedText;
+        document.getElementById("ocr-result").innerHTML = highlightedText;
         ocrProgressDiv.textContent = "OCR complete.";
         ocrCopyBtn.style.display = 'inline-block';
         ocrDownloadBtn.style.display = 'inline-block';
