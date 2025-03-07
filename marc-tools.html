@@ -614,12 +614,12 @@
 
   // Copy OCR result to clipboard (formatted as "{edited text}" --{citation})
   ocrCopyBtn.addEventListener('click', () => {
-    const textToCopy = document.getElementById("ocr-result-raw").value; // Copies plain text
-    navigator.clipboard.writeText(textToCopy).then(() => {
-      alert("OCR text copied to clipboard!");
+    // Use innerText to get the updated plain text (without HTML tags)
+    const updatedText = document.getElementById("ocr-result").innerText;
+    navigator.clipboard.writeText(updatedText).then(() => {
+      alert("Updated OCR text copied to clipboard!");
     });
   });
-
 
   // Download OCR result as a text file (without HTML tags)
   ocrDownloadBtn.addEventListener('click', () => {
