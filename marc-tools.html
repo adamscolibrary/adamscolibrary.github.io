@@ -578,11 +578,14 @@
 
     ocrImageInput.addEventListener('change', displayOCRPreview);
 
-    // Function to clean OCR text: removes single newlines within paragraphs
     function cleanText(text) {
-      let paragraphs = text.split(/\n+/);
-      paragraphs = paragraphs.map(paragraph => paragraph.replace(/\n/g, " "));
-      return paragraphs.join("\n\n");
+      // Replace all paragraph breaks (empty lines) with a space
+      let cleanedText = text.replace(/\n\s*\n+/g, " ");  // Remove blank lines
+  
+      // Replace all remaining newlines within paragraphs with a space
+      cleanedText = cleanedText.replace(/\n/g, " "); 
+  
+      return cleanedText;
     }
 
     // Function to highlight words that might be misrecognized (wraps in <em> with class "misspelled")
