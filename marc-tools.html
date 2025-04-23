@@ -94,6 +94,7 @@
     <div class="tab" data-url="https://www.librarything.com/mds" role="tab" tabindex="0">MDS 🔗</div>
     <div class="tab" data-url="https://www.librarything.com/search.php?searchtype=newwork_titles&term=" role="tab" tabindex="0">LibraryThing 🔗</div>
     <!-- New LOC Tools dropdown tab -->
+    <div class="tab dropdown-tab" role="tab" tabindex="0" data-dropdown="ltDropdownMenu">Library Thing ▼</div>
     <div class="tab dropdown-tab" role="tab" tabindex="0" data-dropdown="locDropdownMenu">LOC Tools ▼</div>
   </div>
   
@@ -103,6 +104,12 @@
     <div data-url="https://authorities.loc.gov/webvoy.htm">LOC Authorities 🔗</div>
     <div data-url="https://www.loc.gov/marc/bibliographic/">LOC Bib Format 🔗</div>
     <div data-url="https://catalog.loc.gov/vwebv/search">LOC Catalog 🔗</div>
+  </div>
+
+  <!-- New LT Tools Dropdown Menu -->
+  <div id="ltDropdownMenu" class="dropdown-menu">
+    <div data-url="https://www.librarything.com/search.php?searchtype=newwork_titles&term=">Works 🔗</div>
+    <div data-url="https://www.librarything.com/mds">MDS 🔗</div>
   </div>
   
   <!-- Bib Formats Tab -->
@@ -292,6 +299,20 @@
       }
       event.stopPropagation();
     }
+
+    // New function to toggle the LT Tools dropdown
+    function toggleLocDropdown(event) {
+      const menu = document.getElementById("ltDropdownMenu");
+      if(menu.style.display === "block") {
+        menu.style.display = "none";
+      } else {
+        const rect = event.target.getBoundingClientRect();
+        menu.style.display = "block";
+        menu.style.left = rect.left + "px";
+        menu.style.top = rect.bottom + "px";
+      }
+      event.stopPropagation();
+    }
     
     // Tab click events (updated to handle dropdown tabs)
     document.querySelectorAll('.tabs .tab').forEach(tab => {
@@ -399,6 +420,26 @@
     // Hide LOC Tools dropdown when clicking outside
     document.addEventListener("click", (e) => {
       const locMenu = document.getElementById("locDropdownMenu");
+      if (locMenu && !locMenu.contains(e.target)) {
+        locMenu.style.display = "none";
+      }
+    });
+
+    // Event listeners for the new LOC Tools dropdown items
+    document.querySelectorAll("#ltDropdownMenu div").forEach(item => {
+      item.addEventListener("click", function(event) {
+        const url = this.getAttribute("data-url");
+        if(url) {
+          window.open(url, '_blank');
+        }
+        document.getElementById("ltDropdownMenu").style.display = "none";
+        event.stopPropagation();
+      });
+    });
+    
+    // Hide LOC Tools dropdown when clicking outside
+    document.addEventListener("click", (e) => {
+      const locMenu = document.getElementById("ltDropdownMenu");
       if (locMenu && !locMenu.contains(e.target)) {
         locMenu.style.display = "none";
       }
