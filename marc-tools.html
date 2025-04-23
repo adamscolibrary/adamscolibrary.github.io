@@ -314,31 +314,29 @@
       event.stopPropagation();
     }
     
-    // Tab click events (updated to handle dropdown tabs)
+    // Unified tab/dropdown handler
     document.querySelectorAll('.tabs .tab').forEach(tab => {
       tab.addEventListener('click', function(event) {
-        if(this.hasAttribute('data-dropdown')) {
-          toggleLocDropdown(event);
+        const dropdownId = this.getAttribute('data-dropdown');
+        if (dropdownId) {
+          // toggle the right menu
+          const menu = document.getElementById(dropdownId);
+          const open = menu.style.display === 'block';
+          if (open) {
+            menu.style.display = 'none';
+          } else {
+            const rect = this.getBoundingClientRect();
+            menu.style.display = 'block';
+            menu.style.left = `${rect.left}px`;
+            menu.style.top  = `${rect.bottom}px`;
+          }
+          event.stopPropagation();
           return;
         }
-        const url = this.getAttribute('data-url');
-        if(url) {
-          window.open(url, '_blank');
-        } else {
-          switchTab(this.getAttribute('data-tab'));
-        }
-      });
-    });
 
-    // Tab click events (updated to handle dropdown tabs)
-    document.querySelectorAll('.tabs .tab').forEach(tab => {
-      tab.addEventListener('click', function(event) {
-        if(this.hasAttribute('data-dropdown')) {
-          toggleLTDropdown(event);
-          return;
-        }
+        // non‐dropdown tabs
         const url = this.getAttribute('data-url');
-        if(url) {
+        if (url) {
           window.open(url, '_blank');
         } else {
           switchTab(this.getAttribute('data-tab'));
@@ -415,9 +413,9 @@
   
     // Hide builder dropdown when clicking outside
     document.addEventListener("click", (e) => {
-      const menu = document.getElementById("dropdownMenu");
-      if (!menu.contains(e.target)) {
-        menu.style.display = "none";
+      ['locDropdownMenu','ltDropdownMenu'].forEach(id => {  
+        const menu = document.getElementById("id");
+        if (menu && !menu.contains(e.target)) menu.style.display = 'none';
       }
     });
     
