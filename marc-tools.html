@@ -443,12 +443,14 @@
       });
     });
     
-    // Hide LOC Tools dropdown when clicking outside
+    // Hide both dropdowns when clicking anywhere else
     document.addEventListener("click", (e) => {
-      const locMenu = document.getElementById("ltDropdownMenu");
-      if (locMenu && !locMenu.contains(e.target)) {
-        locMenu.style.display = "none";
-      }
+      ['locDropdownMenu','ltDropdownMenu'].forEach(menuId => {
+        const menu = document.getElementById(menuId);
+        if (menu && !menu.contains(e.target)) {
+          menu.style.display = 'none';
+        }
+      });
     });
   
     function copyMARC() {
