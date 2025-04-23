@@ -301,7 +301,7 @@
     }
 
     // New function to toggle the LT Tools dropdown
-    function toggleLocDropdown(event) {
+    function toggleLTDropdown(event) {
       const menu = document.getElementById("ltDropdownMenu");
       if(menu.style.display === "block") {
         menu.style.display = "none";
@@ -319,6 +319,22 @@
       tab.addEventListener('click', function(event) {
         if(this.hasAttribute('data-dropdown')) {
           toggleLocDropdown(event);
+          return;
+        }
+        const url = this.getAttribute('data-url');
+        if(url) {
+          window.open(url, '_blank');
+        } else {
+          switchTab(this.getAttribute('data-tab'));
+        }
+      });
+    });
+
+    // Tab click events (updated to handle dropdown tabs)
+    document.querySelectorAll('.tabs .tab').forEach(tab => {
+      tab.addEventListener('click', function(event) {
+        if(this.hasAttribute('data-dropdown')) {
+          toggleLTDropdown(event);
           return;
         }
         const url = this.getAttribute('data-url');
