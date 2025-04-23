@@ -430,14 +430,6 @@
         event.stopPropagation();
       });
     });
-    
-    // Hide LOC Tools dropdown when clicking outside
-    document.addEventListener("click", (e) => {
-      const locMenu = document.getElementById("locDropdownMenu");
-      if (locMenu && !locMenu.contains(e.target)) {
-        locMenu.style.display = "none";
-      }
-    });
 
     // Event listeners for the new LOC Tools dropdown items
     document.querySelectorAll("#ltDropdownMenu div").forEach(item => {
