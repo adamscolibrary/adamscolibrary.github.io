@@ -463,10 +463,10 @@
         const sub3 = dropdowns[2].textContent.includes("|") ? dropdowns[2].textContent : "";
 
         // Build the string without the final period.
-        const finalText = `${field1}${sub1}${field2}${sub2}${field3}${sub3}${field4}|vJuvenile literature.`.trim();
+        const finalJText = `${field1}${sub1}${field2}${sub2}${field3}${sub3}${field4}|vJuvenile literature.`.trim();
         
-        navigator.clipboard.writeText(finalText);
-        alert("Copied: " + finalText);
+        navigator.clipboard.writeText(finalJText);
+        alert("Copied: " + finalJText);
     }
   
     function openModal(hit) {
@@ -549,6 +549,7 @@
         });
       });
       document.getElementById("copyMARC").addEventListener("click", copyMARC);
+      document.getElementById("copyJuvMARC").addEventListener("click", copyJuvMARC);
       document.getElementById("openFastModal").addEventListener("click", openFastModal);
       document.getElementById("openGTNModal").addEventListener("click", openGTNModal);
       document.getElementById("fetchSummary").addEventListener("click", fetchSummary);
