@@ -137,6 +137,7 @@
     </div>
     <div>
       <button id="copyMARC" style="margin-bottom: 20px;">Copy 650 MARC Field</button>
+      <button id="copyJuvMARC" style="margin-bottom: 20px;">Copy Juv</button>
     </div>
   
     <!-- Search Bar -->
@@ -448,6 +449,27 @@
       const finalText = `${field1}${sub1}${field2}${sub2}${field3}${sub3}${field4}.`.trim();
       navigator.clipboard.writeText(finalText);
       alert("Copied: " + finalText);
+    }
+
+    function copyJuvMARC() {
+        const field1 = document.getElementById("field1").value;
+        const field2 = document.getElementById("field2").value;
+        const field3 = document.getElementById("field3").value;
+        const field4 = document.getElementById("field4").value;
+        const dropdowns = document.querySelectorAll(".dropdown");
+
+        const sub1 = dropdowns[0].textContent.includes("|") ? dropdowns[0].textContent : "";
+        const sub2 = dropdowns[1].textContent.includes("|") ? dropdowns[1].textContent : "";
+        const sub3 = dropdowns[2].textContent.includes("|") ? dropdowns[2].textContent : "";
+
+        // Build the string without the final period.
+        const baseText = `${field1}${sub1}${field2}${sub2}${field3}${sub3}${field4}`.trim();
+        
+        // Add the juvenile literature part with the final period.
+        const finalText = `${baseText}|vJuvenile literature.`;
+        
+        navigator.clipboard.writeText(finalText);
+        alert("Copied: " + finalText);
     }
   
     function openModal(hit) {
