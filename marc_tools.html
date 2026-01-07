@@ -148,7 +148,7 @@
                 <!-- LOC Tools Accordion -->
                 <div class="mb-1">
                     <button onclick="app.toggleSidebarMenu('loc-menu', this)" class="w-full text-left px-3 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 flex justify-between items-center transition-colors">
-                        <span class="flex items-center gap-3"><i class="ph ph-globe text-lg"></i> LOC Tools</span>
+                        <span class="flex items-center gap-3"><i class="ph ph-gavel text-lg"></i> LOC Tools</span>
                         <i class="ph ph-caret-down text-xs transition-transform transform"></i>
                     </button>
                     <div id="loc-menu" class="hidden pl-9 pr-2 space-y-1 mt-1">
@@ -167,6 +167,19 @@
                     <div id="lt-menu" class="hidden pl-9 pr-2 space-y-1 mt-1">
                         <a href="https://www.librarything.com/search.php?searchtype=newwork_titles&term=" target="_blank" class="block px-2 py-1.5 text-xs text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-slate-700 rounded">Works Search</a>
                         <a href="https://www.librarything.com/mds" target="_blank" class="block px-2 py-1.5 text-xs text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-slate-700 rounded">MDS</a>
+                    </div>
+                </div>
+                
+                <!-- OCLC Accordion -->
+                <div>
+                    <button onclick="app.toggleSidebarMenu('lt-menu', this)" class="w-full text-left px-3 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 flex justify-between items-center transition-colors">
+                        <span class="flex items-center gap-3"><i class="ph ph-globe text-lg"></i> OCLC</span>
+                        <i class="ph ph-caret-down text-xs transition-transform transform"></i>
+                    </button>
+                    <div id="lt-menu" class="hidden pl-9 pr-2 space-y-1 mt-1">
+                        <a href="https://entities.oclc.org/worldcat/ddc/" target="_blank" class="block px-2 py-1.5 text-xs text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-slate-700 rounded">Dewey Linked Data</a>
+                        <a href="https://www.oclc.org/content/dam/oclc/dewey/ddc23-summaries.pdf" target="_blank" class="block px-2 py-1.5 text-xs text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-slate-700 rounded">DDC23 Summaries [PDF]</a>
+
                     </div>
                 </div>
             </div>
