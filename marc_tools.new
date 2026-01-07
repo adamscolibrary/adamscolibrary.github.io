@@ -123,6 +123,9 @@
                     <i class="ph ph-list-dashes text-lg"></i>
                     Bib Formats
                 </button>
+                <button onclick="app.switchTab('ddc23')" class="nav-item group w-full text-left px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 transition-all hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center gap-3" data-tab="ddc23">
+                    <i class="ph ph-magic-wand text-lg"></i>
+                    DDC23
                 <button onclick="app.switchTab('talpa')" class="nav-item group w-full text-left px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 transition-all hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center gap-3" data-tab="talpa">
                     <i class="ph ph-magic-wand text-lg"></i>
                     Talpa AI
@@ -183,6 +186,11 @@
             <!-- Talpa AI (Iframe) -->
             <div id="talpa" class="tab-content hidden h-full w-full bg-white dark:bg-slate-900 fade-in">
                 <iframe src="https://www.talpasearch.com/429.669/search?su_catalog_url=https%3A%2F%2Fohio.ent.sirsi.net%2Fclient%2Fen_US%2Facp%2F" class="w-full h-full border-none"></iframe>
+            </div>
+
+            <!-- DDC23 (Iframe) -->
+            <div id="ddc23" class="tab-content hidden h-full w-full bg-white dark:bg-slate-900 fade-in">
+                <iframe src="https://entities.oclc.org/worldcat/ddc/"></iframe>
             </div>
 
             <!-- MARC Builder -->
