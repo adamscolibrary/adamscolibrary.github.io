@@ -286,23 +286,6 @@
                                 </button>
                             </div>
                         </div>
-
-                        <!-- Bulk Search Fallback -->
-                        <div class="pt-6 border-t border-slate-100 dark:border-slate-700">
-                             <button onclick="app.showBulkLinks()" class="w-full flex items-center justify-center gap-2 text-sm font-medium text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 transition-colors">
-                                <i class="ph ph-stack"></i> Need to open all? Click here to generate links
-                            </button>
-                            
-                            <!-- Generated Links Area -->
-                            <div id="bulk-links-area" class="hidden mt-4 p-4 bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-slate-200 dark:border-slate-700 animate-fade-in">
-                                <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Ready to Open:</h4>
-                                <div class="flex flex-wrap gap-2" id="generated-links-container">
-                                    <!-- Links injected here -->
-                                </div>
-                                <p class="text-[10px] text-slate-400 mt-2 italic">Ctrl+Click (Cmd+Click) these buttons to open in background tabs.</p>
-                            </div>
-                        </div>
-
                     </div>
                 </div>
             </div>
@@ -464,26 +447,6 @@
                                 <button onclick="app.copyBulkResults()" class="text-blue-600 dark:text-blue-400 text-xs font-bold hover:underline">Copy All</button>
                             </div>
                             <textarea id="bulk-output" readonly class="w-full p-3 border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-300 rounded-lg h-64 font-mono text-xs leading-relaxed outline-none resize-y"></textarea>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <!-- WorldCat Search -->
-                        <div class="bg-white dark:bg-slate-800 p-5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm transition-colors">
-                            <h3 class="text-sm font-bold text-slate-700 dark:text-slate-300 mb-3 flex items-center gap-2"><i class="ph ph-globe"></i> WorldCat</h3>
-                            <form action="https://search.worldcat.org/search" method="get" target="_blank" class="flex gap-2">
-                                <input type="text" name="q" placeholder="Title/Keywords" class="flex-1 p-2 border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 text-slate-800 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none">
-                                <button type="submit" class="p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors shadow-sm"><i class="ph ph-magnifying-glass"></i></button>
-                            </form>
-                        </div>
-
-                        <!-- Amazon Search -->
-                        <div class="bg-white dark:bg-slate-800 p-5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm transition-colors">
-                            <h3 class="text-sm font-bold text-slate-700 dark:text-slate-300 mb-3 flex items-center gap-2"><i class="ph ph-amazon-logo"></i> Amazon</h3>
-                            <form action="https://www.amazon.com/s" method="get" target="_blank" class="flex gap-2">
-                                <input type="text" name="k" placeholder="Title/Keywords" class="flex-1 p-2 border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 text-slate-800 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none">
-                                <button type="submit" class="p-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors shadow-sm"><i class="ph ph-magnifying-glass"></i></button>
-                            </form>
                         </div>
                     </div>
                 </div>
