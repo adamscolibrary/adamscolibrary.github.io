@@ -61,7 +61,6 @@
     </style>
 </head>
 
-
 <body>
   <div class="sidebar">
     <h1>MARC Tools</h1>
@@ -94,17 +93,22 @@
     <p><a href="https://www.loc.gov/marc/bibliographic/" target="_blank">LOC Bib Format</a><p>
 
     <p> LibraryThing</p>
-    <p><a href="https://www.librarything.com/search.php?searchtype=newwork_titles&term=" target="_blank">Works Search</a></p>
+    <p><a href="https://www.librarything.com/search.php?searchtype=newwork_titles&ampterm=" target="_blank">Works Search</a></p>
     <p><a href="https://www.librarything.com/mds" target="_blank">MDS</a></p>
 
     <p> OCLC</p>
     <p><a href="https://entities.oclc.org/worldcat/ddc/" target="_blank">Dewey Linked Data</a></p>
     <p><a href="https://www.oclc.org/content/dam/oclc/dewey/ddc23-summaries.pdf" target="_blank">DDC23 Summaries [PDF]</a><p>
-
+  
+  
   </div>
   
   <div id="tabs-7" class="tabContent" style="display:block;">
-    <pre>
+    
+    
+  <pre>
+    
+  
 
 
 888b     d888        d8888 8888888b.   .d8888b.     88888888888 .d88888b.   .d88888b.  888      .d8888b.  
@@ -135,10 +139,10 @@
   ||__|_|__|__|_||_|_| /  \ \  / /  \_|_\___/|_|_|_|_|_|
   |_________________ _/    \/\/\/    \_ /   /__________|                                          -JF
   | _____   _   __  |/      \../      \/   /   __   ___|
-  ||_____|_| |_|##|_||   |   \/ __\       /=|_|++|_|-|||    
-  ||______||=|#|--| |\   \   o     \_____/  |~|  | | |||    
+  ||_____|_| |_|##|_||   |   \/ __\       /=|_|++|_|-|||    P.S. API callouts don't work on Neocities
+  ||______||=|#|--| |\   \   o     \_____/  |~|  | | |||    so go to my github vvv
   ||______||_|_|__|_|_\   \  o     | |_|_|__|_|__|_|_|||
-  |_________ __________\___\_______|____________ ______|
+  |_________ __________\___\_______|____________ ______|    https://adamscolibrary.github.io/marc_tools
   |__    _  /    ________     ______           /| _ _ _|
   |\ \  |=|/   //    /| //   /  /  / |        / ||%|%|%|
   | \/\ |*/  .//____// //   /__/__/ (_)      /  ||=|=|=|
@@ -201,7 +205,7 @@ __|  \/\|/   /(____|/ //                    /  /||~|~|~|__
     <div id="mds-breadcrumbs">
       <button onclick="app.renderMDS()">Top</button>  
     </div>
-    
+    <div id="toast-container"></div>
     <hr>
     
     <div id="mds-grid"></div> 
@@ -227,77 +231,70 @@ __|  \/\|/   /(____|/ //                    /  /||~|~|~|__
       <button onclick="app.copyJuvMARC()" title="Ctrl+J">Copy Juv ^J</button>
       <button onclick="app.clearBuilder()" title="Ctrl+X">Clear ^X</button>
     </div>
-                
+    <div id="toast-container"></div>            
 
                 
-                    <div>
-                        <div>
+    <div>
                        
-                            <p>
-                              <input type="text" id="field1" placeholder="Main Term">
-                            </p>
+      <p>
+        <input type="text" id="field1" placeholder="Main Term">
+      </p>
 
                     
-                            <p>
+      <p>
                                 
-                                    <button onclick="app.selectSeparator(0, '+')">None</button>
-                                    <button onclick="app.selectSeparator(0, '|v')"><span>|v</span> Form</button>
-                                    <button onclick="app.selectSeparator(0, '|x')"><span>|x</span> General</button>
-                                    <button onclick="app.selectSeparator(0, '|y')"><span>|y</span> Chronological</button>
-                                    <button onclick="app.selectSeparator(0, '|z')"><span>|z</span> Geographic</button>
-                            </p>
+        <button onclick="app.selectSeparator(0, '+')">None</button>
+        <button onclick="app.selectSeparator(0, '|v')"><span>|v</span> Form</button>
+        <button onclick="app.selectSeparator(0, '|x')"><span>|x</span> General</button>
+        <button onclick="app.selectSeparator(0, '|y')"><span>|y</span> Chronological</button>
+        <button onclick="app.selectSeparator(0, '|z')"><span>|z</span> Geographic</button>
+      </p>
 
-                            <!-- Field 2 -->
-                            <p>
-                                <span id="sep-0">+</span>
-                                <input type="text" id="field2">
-                            </p>
+ 
+      <p>
+        <span id="sep-0">+</span>
+        <input type="text" id="field2">
+      </p>
 
-                            <!-- Separator 2 -->
-                            <p>
+
+      <p>
                                 
-                                    <button onclick="app.selectSeparator(1, '+')">None</button>
-                                    <button onclick="app.selectSeparator(1, '|v')"><span>|v</span> Form</button>
-                                    <button onclick="app.selectSeparator(1, '|x')"><span>|x</span> General</button>
-                                    <button onclick="app.selectSeparator(1, '|y')"><span>|y</span> Chronological</button>
-                                    <button onclick="app.selectSeparator(1, '|z')"><span>|z</span> Geographic</button>
-                            </p>
+        <button onclick="app.selectSeparator(1, '+')">None</button>
+        <button onclick="app.selectSeparator(1, '|v')"><span>|v</span> Form</button>
+        <button onclick="app.selectSeparator(1, '|x')"><span>|x</span> General</button>
+        <button onclick="app.selectSeparator(1, '|y')"><span>|y</span> Chronological</button>
+        <button onclick="app.selectSeparator(1, '|z')"><span>|z</span> Geographic</button>
+      </p>
 
-                            <!-- Field 3 -->
-                            <p>
-                                <span id="sep-1">+</span>
-                                <input type="text" id="field2">
-                            </p>
+                         
+      <p>
+        <span id="sep-1">+</span>
+        <input type="text" id="field3">
+      </p>
 
-                            
-                        </div>
-                    </div>
+    </div>
 
-                    <hr>
+    <hr>
 
-                    <!-- Search Section -->
-                    <div>
-                        <h3>Library of Congress Search</h3>
-                        <div>
-                            <p><input type="text" id="searchInput1" onkeydown="if(event.key==='Enter') app.searchLOC()"></p>
-                            <button onclick="app.searchLOC()">Search</button>
-                        </div>
+    <div>
+      <h3>Library of Congress Search</h3>
+      <div>
+        <p><input type="text" id="searchInput1" onkeydown="if(event.key==='Enter') app.searchLOC()"></p>
+        <button onclick="app.searchLOC()">Search</button>
+      </div>
                         
-                        <!-- Search Results -->
-                        <div id="results" class="space-y-2 min-h-[100px]"></div>
+      <div id="results" class="space-y-2 min-h-[100px]"></div>
                         
-                        <!-- Additional Search Tools -->
-                        <div>
-                            <h4>External Databases</h4>
-                            <p>
-                                <a href="https://fast.oclc.org/searchfast/?&limit=keywords&facet=topic&query=&sort=usage+desc&start=0" target="_blank" rel="noopener noreferrer"> Search FAST (OCLC)</a>
-                                <a href="https://www.getty.edu/research/tools/vocabularies/tgn/" target="_blank" rel="noopener noreferrer">Search GTN (Getty)</a>
-                                <a href="https://www.loc.gov/aba/publications/FreeLCGFT/freelcgft.html" target="_blank" rel="noopener noreferrer">LCGFT Terms</a>
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
+      <div>
+        <h4>External Databases</h4>
+        <p>
+          <a href="https://fast.oclc.org/searchfast/?&amplimit=keywords&ampfacet=topic&ampquery=&ampsort=usage+desc&ampstart=0" target="_blank" rel="noopener noreferrer"> Search FAST (OCLC)</a>
+          <a href="https://www.getty.edu/research/tools/vocabularies/tgn/" target="_blank" rel="noopener noreferrer">Search GTN (Getty)</a>
+          <a href="https://www.loc.gov/aba/publications/FreeLCGFT/freelcgft.html" target="_blank" rel="noopener noreferrer">LCGFT Terms</a>
+        </p>
+      </div>
+    </div>
+  </div>
 
             <!-- 520 Search (Summaries) -->
             <div id="tabs-3" class="tabContent">
@@ -320,6 +317,7 @@ __|  \/\|/   /(____|/ //                    /  /||~|~|~|__
                                 <i class="ph ph-copy"></i> Copy Summary
                             </button>
                         </div>
+                        <div id="toast-container"></div> 
                     </div>
                     <hr>
                     <!-- Bulk Search Mode -->
@@ -339,16 +337,16 @@ __|  \/\|/   /(____|/ //                    /  /||~|~|~|__
                                 <label class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase">Results</label>
                                 <button onclick="app.copyBulkResults()" class="text-blue-600 dark:text-blue-400 text-xs font-bold hover:underline">Copy All</button>
                             </div>
+                            <div id="toast-container"></div> 
                             <textarea id="bulk-output" readonly class="w-full p-3 border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-300 rounded-lg h-64 font-mono text-xs leading-relaxed outline-none resize-y"></textarea>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
+
 
     <!-- Hidden Textarea for Copy Fallback -->
-    <textarea id="clipboard-helper" class="absolute -left-[9999px] top-0 opacity-100"></textarea>
+    <textarea id="clipboard-helper" class="absolute -left-[9999px] top-0 opacity-0"></textarea>
 
     
     
@@ -423,8 +421,7 @@ const app = {
 
         el.className = `${bg} text-white px-4 py-3 rounded-lg shadow-xl flex items-center gap-3 transform transition-all duration-300 translate-y-10 opacity-0`;
         el.innerHTML = `
-            <i class="ph ${type === 'error' ? 'ph-warning-circle' : 'ph-check-circle'} text-xl"></i>
-            <span class="text-sm font-medium">${message}</span>
+            <span>${message}</span>
         `;
 
         container.appendChild(el);
@@ -527,12 +524,10 @@ const app = {
                         el.className = "flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-700/30 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-white dark:hover:bg-slate-700 transition-colors group";
 
                         el.innerHTML = `
-                            <div class="flex-1 cursor-pointer font-medium text-slate-700 dark:text-slate-200 text-sm" onclick="app.populateBuilder('${hit.suggestLabel.replace(/'/g, "\\'")}')">
+                            <button><div class="flex-1 cursor-pointer font-medium text-slate-700 dark:text-slate-200 text-sm" onclick="app.populateBuilder('${hit.suggestLabel.replace(/'/g, "\\'")}')">
                                 ${hit.suggestLabel}
-                            </div>
-                            <button class="text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 p-1" onclick="app.openInfoModal('${encodeURIComponent(JSON.stringify(hit))}')">
-                                <i class="ph ph-info text-lg"></i>
-                            </button>
+                            </div></button>
+                            
                         `;
                         resultsDiv.appendChild(el);
                     });
@@ -711,13 +706,13 @@ const app = {
               
 
               card.innerHTML = `
-                  <p><div>
+                  <p><div><span>
                           <button onclick="event.stopPropagation(); app.copyMDSCode('${item.code}');" title="Copy code">Copy</button>
                           <button><span>${item.code}</span>
                           <span>${item.label}</span>
                           ${hasChildren ? '>' : ''}</button>
                       
-                  </div></p>
+                  </span></div></p>
               `;
 
               if (hasChildren) {
@@ -1322,5 +1317,6 @@ const app = {
           app.init();
       });
     </script>
+
 </body>
 </html>
