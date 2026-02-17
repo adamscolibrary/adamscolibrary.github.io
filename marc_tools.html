@@ -524,9 +524,9 @@ const app = {
                         el.className = "flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-700/30 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-white dark:hover:bg-slate-700 transition-colors group";
 
                         el.innerHTML = `
-                            <button><div class="flex-1 cursor-pointer font-medium text-slate-700 dark:text-slate-200 text-sm" onclick="app.populateBuilder('${hit.suggestLabel.replace(/'/g, "\\'")}')">
+                            <ul><div class="flex-1 cursor-pointer font-medium text-slate-700 dark:text-slate-200 text-sm" onclick="app.populateBuilder('${hit.suggestLabel.replace(/'/g, "\\'")}')">
                                 ${hit.suggestLabel}
-                            </div></button>
+                            </div></ul>
                             
                         `;
                         resultsDiv.appendChild(el);
