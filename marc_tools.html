@@ -6,69 +6,32 @@
     <title>MARC Tools Suite</title>
     <meta name="description" content="A suite of tools for librarians including MARC building, ISBN summaries, and OCR.">
 
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        slate: {
-                            850: '#1e293b',
-                            900: '#0f172a',
-                        },
-                        library: {
-                            light: '#f8fafc',
-                            dark: '#0f172a',
-                            accent: '#3b82f6'
-                        }
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'system-ui', 'sans-serif'],
-                        mono: ['JetBrains Mono', 'monospace'],
-                    }
-                }
-            }
-        }
-    </script>
-
-    <!-- Phosphor Icons -->
-    <script src="https://unpkg.com/@phosphor-icons/web"></script>
-
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-
     <style>
-        body { font-family: 'Inter', sans-serif; }
         
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-        .dark ::-webkit-scrollbar-track { background: #0f172a; }
-        .dark ::-webkit-scrollbar-thumb { background: #475569; }
-        .dark ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+        iframe {
+          border: 0;
+          width:100%;
+          height: 100%;
+          overflow: auto;
+          }
+        
 
-        /* Loader Animation */
-        .loader {
-            border: 3px solid #f3f3f3;
-            border-radius: 50%;
-            border-top: 3px solid #3b82f6;
-            width: 24px;
-            height: 24px;
-            animation: spin 1s linear infinite;
-        }
-        .dark .loader { border-color: #334155; border-top-color: #60a5fa; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .sidebar {
+          margin: 0;
+          padding: 0;
+          width: 200px;
+          background-color: #f1f1f1;
+          position: fixed;
+          height: 100%;
+          overflow: auto;
+          }
 
-        /* Misspelled word highlight */
-        .misspelled { background-color: #fef08a; border-bottom: 2px dotted #eab308; cursor: help; }
-        .dark .misspelled { background-color: #854d0e; color: #fef08a; border-bottom: 2px dotted #facc15; }
-
-        /* Iframe Dark Mode Filter */
-        .dark-iframe-filter { filter: invert(1) hue-rotate(180deg); transition: filter 0.3s ease; }
+        .tabContent {
+          margin-left: 200px;
+          padding: 1px 16px;
+          height: 1000px;
+          display: none;
+          }
 
         /* Keyboard Shortcut Badge */
         .kbd-badge {
@@ -79,32 +42,7 @@
             background-color: rgba(0,0,0,0.1);
             border: 1px solid rgba(0,0,0,0.1);
         }
-        .dark .kbd-badge { background-color: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.1); }
-        
-        /* Animation Utilities */
-        .fade-in { animation: fadeIn 0.2s ease-in-out; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* Direct Link Button Styles */
-        .provider-btn {
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .provider-btn:active {
-            transform: scale(0.95);
-        }
-        /* When input has text, these buttons 'wake up' */
-        .provider-ready .provider-btn {
-            border-color: #3b82f6;
-            background-color: #eff6ff;
-            color: #1d4ed8;
-            cursor: pointer;
-            box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.1), 0 2px 4px -1px rgba(59, 130, 246, 0.06);
-        }
-        .dark .provider-ready .provider-btn {
-            border-color: #3b82f6;
-            background-color: #1e3a8a;
-            color: #93c5fd;
-        }
         
         /* Disabled/Empty State */
         .provider-empty .provider-btn {
@@ -122,336 +60,251 @@
         }
     </style>
 </head>
-<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 h-screen flex flex-col overflow-hidden transition-colors duration-200">
 
-    <!-- Toast Container -->
-    <div id="toast-container" class="fixed bottom-5 right-5 z-[60] flex flex-col gap-2 pointer-events-none"></div>
 
-    <!-- Header -->
-    <header class="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 h-16 flex items-center justify-between px-4 shrink-0 shadow-sm z-20">
-        <div class="flex items-center gap-3">
-            <div class="bg-blue-600 p-2 rounded-lg text-white shadow-lg shadow-blue-500/30">
-                <i class="ph-fill ph-books text-xl"></i>
-            </div>
-            <div>
-                <h1 class="text-lg font-bold text-slate-800 dark:text-slate-100 leading-tight">MARC Tools</h1>
-                <p class="text-[10px] uppercase tracking-wider font-semibold text-slate-500 dark:text-slate-400">Cataloging Suite</p>
-            </div>
-        </div>
-        
-        <div class="flex items-center gap-2">
-            <button onclick="app.toggleDarkMode()" class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 transition-colors" title="Toggle Dark Mode">
-                <i class="ph ph-moon text-xl dark:hidden"></i>
-                <i class="ph ph-sun text-xl hidden dark:block"></i>
-            </button>
-        </div>
-    </header>
-
-    <div class="flex flex-1 overflow-hidden">
-        <!-- Sidebar -->
-        <nav class="w-64 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 flex flex-col overflow-y-auto shrink-0 transition-colors duration-200 z-10">
-            <div class="p-3 space-y-1">
-                <div class="px-3 py-2">
-                    <p class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Workspace</p>
-                </div>
-
-                <button onclick="app.switchTab('universal-search')" class="nav-item group w-full text-left px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 transition-all hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center gap-3" data-tab="universal-search">
-                    <i class="ph ph-magnifying-glass text-lg"></i>
-                    Item Search
-                </button>
-                <button onclick="app.switchTab('marc-builder')" class="nav-item group w-full text-left px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 transition-all hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center gap-3" data-tab="marc-builder">
-                    <i class="ph ph-wrench text-lg"></i>
-                    650 Builder
-                </button>
-                <button onclick="app.switchTab('book-summary')" class="nav-item group w-full text-left px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 transition-all hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center gap-3" data-tab="book-summary">
-                    <i class="ph ph-list-magnifying-glass text-lg"></i>
-                    520 Search
-                </button>
-                <button onclick="app.switchTab('mds-browser')" class="nav-item group w-full text-left px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 transition-all hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center gap-3" data-tab="mds-browser">
-                    <i class="ph ph-tree-structure text-lg"></i>
-                    MDS Browser
-                </button>
-                <button onclick="app.switchTab('bib-formats')" class="nav-item group w-full text-left px-3 py-2.5 rounded-lg text-sm font-medium transition-all hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center gap-3 bg-blue-50 dark:bg-slate-700/50 text-blue-600 dark:text-blue-400" data-tab="bib-formats">
-                    <i class="ph ph-list-dashes text-lg"></i>
-                    Bib Formats
-                </button>
-                <button onclick="app.switchTab('talpa')" class="nav-item group w-full text-left px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 transition-all hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center gap-3" data-tab="talpa">
-                    <i class="ph ph-magic-wand text-lg"></i>
-                    Talpa AI
-                </button>
-                <button onclick="app.switchTab('ocr-tool')" class="nav-item group w-full text-left px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 transition-all hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center gap-3" data-tab="ocr-tool">
-                    <i class="ph ph-scan text-lg"></i>
-                    OCR Tool
-                </button>
-
-                <div class="border-t border-slate-100 dark:border-slate-700 my-2 pt-2"></div>
-                <div class="px-3 py-2">
-                    <p class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">External Tools</p>
-                </div>
-
-                <!-- LOC Tools Accordion -->
-                <div class="mb-1">
-                    <button onclick="app.toggleSidebarMenu('loc-menu', this)" class="w-full text-left px-3 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 flex justify-between items-center transition-colors">
-                        <span class="flex items-center gap-3"><i class="ph ph-gavel text-lg"></i> LOC Tools</span>
-                        <i class="ph ph-caret-down text-xs transition-transform transform"></i>
-                    </button>
-                    <div id="loc-menu" class="hidden pl-9 pr-2 space-y-1 mt-1">
-                        <a href="https://www.loc.gov/aba/cataloging/tools/" target="_blank" class="block px-2 py-1.5 text-xs text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-slate-700 rounded">LCSH Headers</a>
-                        <a href="https://authorities.loc.gov/" target="_blank" class="block px-2 py-1.5 text-xs text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-slate-700 rounded">LOC Authorities</a>
-                        <a href="https://www.loc.gov/marc/bibliographic/" target="_blank" class="block px-2 py-1.5 text-xs text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-slate-700 rounded">LOC Bib Format</a>
-                    </div>
-                </div>
-
-                <!-- Library Thing Accordion -->
-                <div>
-                    <button onclick="app.toggleSidebarMenu('lt-menu', this)" class="w-full text-left px-3 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 flex justify-between items-center transition-colors">
-                        <span class="flex items-center gap-3"><i class="ph ph-books text-lg"></i> LibraryThing</span>
-                        <i class="ph ph-caret-down text-xs transition-transform transform"></i>
-                    </button>
-                    <div id="lt-menu" class="hidden pl-9 pr-2 space-y-1 mt-1">
-                        <a href="https://www.librarything.com/search.php?searchtype=newwork_titles&term=" target="_blank" class="block px-2 py-1.5 text-xs text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-slate-700 rounded">Works Search</a>
-                        <a href="https://www.librarything.com/mds" target="_blank" class="block px-2 py-1.5 text-xs text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-slate-700 rounded">MDS</a>
-                    </div>
-                </div>
+<body>
+  <div class="sidebar">
+    <h1>MARC Tools</h1>
+    <b>Workspace</b>
+    
+    <hr>
+    
+    <p><button id="tabs1" onclick="app.showStuff(this)">Item Search</button></p>        
                 
-                <!-- OCLC Accordion -->
-                <div>
-                    <button onclick="app.toggleSidebarMenu('oclc-menu', this)" class="w-full text-left px-3 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 flex justify-between items-center transition-colors">
-                        <span class="flex items-center gap-3"><i class="ph ph-globe text-lg"></i> OCLC</span>
-                        <i class="ph ph-caret-down text-xs transition-transform transform"></i>
-                    </button>
-                    <div id="oclc-menu" class="hidden pl-9 pr-2 space-y-1 mt-1">
-                        <a href="https://entities.oclc.org/worldcat/ddc/" target="_blank" class="block px-2 py-1.5 text-xs text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-slate-700 rounded">Dewey Linked Data</a>
-                        <a href="https://www.oclc.org/content/dam/oclc/dewey/ddc23-summaries.pdf" target="_blank" class="block px-2 py-1.5 text-xs text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-slate-700 rounded">DDC23 Summaries [PDF]</a>
+    <p><button id="tabs2" onclick="app.showStuff(this)">650 Builder</button></P>
+      
+    <p><button id="tabs3" onclick="app.showStuff(this)">520 Search</button></p>
+    
+    <p><button id="tabs4" onclick="app.showStuff(this)">MDS Browser</button></p>
+    
+    <p><button id="tabs5" onclick="app.showStuff(this)">Bib Formats</button></p>
+                
+    <p><button id="tabs6" onclick="app.showStuff(this)">Talpa AI</button></p>
+    
+    <br>
 
-                    </div>
-                </div>
-            </div>
-        </nav>
+    <b>External Tools</b>
+    
+    <hr>
+    
+    <p> Library of Congress</p>
+    
+    <p><a href="https://www.loc.gov/aba/cataloging/tools/" target="_blank">LCSH Headers</a></p>
+    <p><a href="https://authorities.loc.gov/" target="_blank">LOC Authorities</a></p>
+    <p><a href="https://www.loc.gov/marc/bibliographic/" target="_blank">LOC Bib Format</a><p>
 
-        <!-- Main Content -->
-        <main class="flex-1 bg-slate-50 dark:bg-slate-900 overflow-hidden relative">
-            
-            <!-- Bib Formats (Iframe) -->
-            <div id="bib-formats" class="tab-content h-full w-full bg-white dark:bg-slate-900 fade-in">
-                <iframe src="https://www.oclc.org/bibformats/en/0xx.html" class="w-full h-full border-none"></iframe>
-            </div>
+    <p> LibraryThing</p>
+    <p><a href="https://www.librarything.com/search.php?searchtype=newwork_titles&term=" target="_blank">Works Search</a></p>
+    <p><a href="https://www.librarything.com/mds" target="_blank">MDS</a></p>
 
-            <!-- MDS Browser -->
-            <div id="mds-browser" class="tab-content hidden h-full overflow-y-auto p-4 md:p-8 fade-in">
-                <div class="max-w-6xl mx-auto flex flex-col h-full">
-                    <div class="mb-6 flex justify-between items-end">
-                        <div>
-                            <h2 class="text-3xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-3">
-                                <i class="ph-fill ph-tree-structure text-blue-600 dark:text-blue-400"></i> MDS Browser
-                            </h2>
-                            <p class="text-slate-500 dark:text-slate-400 mt-2">Browse the DDC23 Summaries hierarchy to find classification numbers.</p>
-                        </div>
-                        <div class="relative w-64">
-                            <input type="text" id="mds-filter" oninput="app.filterMDS()" placeholder="Filter current view..." class="w-full pl-9 pr-4 py-2 text-sm border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                            <i class="ph ph-funnel absolute left-3 top-2.5 text-slate-400"></i>
-                        </div>
-                    </div>
+    <p> OCLC</p>
+    <p><a href="https://entities.oclc.org/worldcat/ddc/" target="_blank">Dewey Linked Data</a></p>
+    <p><a href="https://www.oclc.org/content/dam/oclc/dewey/ddc23-summaries.pdf" target="_blank">DDC23 Summaries [PDF]</a><p>
 
-                    <!-- Breadcrumbs -->
-                    <div id="mds-breadcrumbs" class="flex flex-wrap items-center gap-2 mb-6 text-sm text-slate-500 dark:text-slate-400">
-                        <button onclick="app.renderMDS()" class="hover:text-blue-600 dark:hover:text-blue-400 font-semibold px-2 py-1 rounded hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors">Top</button>
-                    </div>
+  </div>
+  
+  <div id="tabs-7" class="tabContent" style="display:block;">
+    <pre>
 
-                    <!-- Content Grid -->
-                    <div id="mds-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pb-12">
-                        <!-- Items injected by JS -->
-                    </div>
-                </div>
-            </div>
 
-            <!-- Universal Search (Revised) -->
-            <div id="universal-search" class="tab-content hidden h-full overflow-y-auto p-4 md:p-8 fade-in">
-                <div class="max-w-4xl mx-auto space-y-8 mt-4">
-                    <div class="text-center mb-8">
-                        <h2 class="text-3xl font-bold text-slate-800 dark:text-slate-100">Item Search</h2>
-                        <p class="text-slate-500 dark:text-slate-400 mt-2">Type a title or ISBN, then click a database to open.</p>
-                    </div>
+888b     d888        d8888 8888888b.   .d8888b.     88888888888 .d88888b.   .d88888b.  888      .d8888b.  
+8888b   d8888       d88888 888   Y88b d88P  Y88b        888    d88P" "Y88b d88P" "Y88b 888     d88P  Y88b 
+88888b.d88888      d88P888 888    888 888    888        888    888     888 888     888 888     Y88b.      
+888Y88888P888     d88P 888 888   d88P 888               888    888     888 888     888 888      "Y888b.   
+888 Y888P 888    d88P  888 8888888P"  888               888    888     888 888     888 888         "Y88b. 
+888  Y8P  888   d88P   888 888 T88b   888    888        888    888     888 888     888 888           "888 
+888   "   888  d8888888888 888  T88b  Y88b  d88P        888    Y88b. .d88P Y88b. .d88P 888     Y88b  d88P 
+888       888 d88P     888 888   T88b  "Y8888P"         888     "Y88888P"   "Y88888P"  88888888 "Y8888P"  
 
-                    <div class="bg-white dark:bg-slate-800 p-8 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xl shadow-slate-200/50 dark:shadow-none transition-colors">
-                        
-                        <!-- Search Bar -->
-                        <div class="relative mb-6">
-                            <input type="text" id="univ-search-input" 
-                                class="w-full pl-12 pr-4 py-4 text-lg border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white rounded-xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all shadow-inner" 
-                                placeholder="Enter book title, ISBN, or keywords..." 
-                                oninput="app.updateSearchLinks()"
-                                onkeydown="if(event.key==='Enter') app.showBulkLinks()">
-                            <i class="ph ph-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-2xl"></i>
-                        </div>
+   ____________________________________________________
+  |____________________________________________________|
+  | __     __   ____   ___ ||  ____    ____     _  __  |    This started as a way to learn cataloging
+  ||  |__ |--|_| || |_|   |||_|**|*|__|+|+||___| ||  | |    for work, and got way out of hand.
+  ||==|^^||--| |=||=| |=*=||| |~~|~|  |=|=|| | |~||==| |                                          
+  ||  |##||  | | || | |JRO|||-|  | |==|+|+||-|-|~||__| |    If you stumble upon this, please don't 
+  ||__|__||__|_|_||_|_|___|||_|__|_|__|_|_||_|_|_||__|_|    abuse the Lemmy tool. The link is public
+  ||_______________________||__________________________|    information, but it's not meant for
+  | _____________________  ||      __   __  _  __    _ |    overuse.
+  ||=|=|=|=|=|=|=|=|=|=|=| __..\/ |  |_|  ||#||==|  / /|
+  || | | | | | | | | | | |/\ \  \\|++|=|  || ||==| / / |    This tool is built on a single HTML doc,
+  ||_|_|_|_|_|_|_|_|_|_|_/_/\_.___\__|_|__||_||__|/_/__|    and uses minimal styling, JS, and API's.
+  |____________________ /\~()/()~//\ __________________|                                          
+  | __   __    _  _     \_  (_ .  _/ _      _     _____|    Please use and change it however you want.
+  ||~~|_|..|__| || |_ _   \ //\\ /  |=|_  /) |___| | | |
+  ||--|+|^^|==|1||2| | |__/\ __ /\__| |(\/((\ +|+|=|=|=|    Hopefully I can get back to work now.
+  ||__|_|__|__|_||_|_| /  \ \  / /  \_|_\___/|_|_|_|_|_|
+  |_________________ _/    \/\/\/    \_ /   /__________|                                          -JF
+  | _____   _   __  |/      \../      \/   /   __   ___|
+  ||_____|_| |_|##|_||   |   \/ __\       /=|_|++|_|-|||    P.S. API callouts don't work on Neocities
+  ||______||=|#|--| |\   \   o     \_____/  |~|  | | |||    so go to my github
+  ||______||_|_|__|_|_\   \  o     | |_|_|__|_|__|_|_|||
+  |_________ __________\___\_______|____________ ______|
+  |__    _  /    ________     ______           /| _ _ _|
+  |\ \  |=|/   //    /| //   /  /  / |        / ||%|%|%|
+  | \/\ |*/  .//____// //   /__/__/ (_)      /  ||=|=|=|
+__|  \/\|/   /(____|/ //                    /  /||~|~|~|__
+  |___\_/   /________//   ________         /  / ||_|_|_|
+  |___ /   (|________/   |\_______\       /  /| |______|
+      /                  \|________)     /  / | |
 
-                        <!-- Database Buttons (Direct Links) -->
-                        <div id="provider-grid" class="space-y-3 mb-8 provider-empty">
-                            <label class="text-xs font-bold text-slate-400 uppercase tracking-wider ml-1">Click to Open Database</label>
-                            <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+                                                                                                                                                                                                                  
+    </pre>
+  </div> 
+  
+  
+  
+  <!-- Universal Search -->
+  
+  <div id="tabs-1" class="tabContent">
+    <h2>Item Search</h2>
+    <p>Type a title or ISBN, then click a database to open.</p>
+
+    <div>
+      <input type="text" id="univ-search-input" 
+                                 
+      placeholder="Enter book title, ISBN, or keywords..." 
+      oninput="app.updateSearchLinks()"
+      onkeydown="if(event.key==='Enter') app.showBulkLinks()">
+                            
+    </div>                  
+    
+    <div id="provider-grid">
+      <p>Click to Open Database</p>
                                 
-                                <button onclick="app.launchProvider('worldcat')" class="provider-btn group relative p-4 rounded-xl border border-slate-200 dark:border-slate-600 flex flex-col items-center justify-center gap-2 bg-white dark:bg-slate-800 hover:border-blue-300 dark:hover:border-blue-700">
-                                    <div class="bg-blue-100 dark:bg-slate-700 p-2 rounded-full text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform">
-                                        <i class="ph-fill ph-globe text-xl"></i>
-                                    </div>
-                                    <span class="text-sm font-medium">WorldCat</span>
-                                </button>
+      <button onclick="app.launchProvider('worldcat')" class="provider-btn">WorldCat</button>
 
-                                <button onclick="app.launchProvider('amazon')" class="provider-btn group relative p-4 rounded-xl border border-slate-200 dark:border-slate-600 flex flex-col items-center justify-center gap-2 bg-white dark:bg-slate-800 hover:border-blue-300 dark:hover:border-blue-700">
-                                    <div class="bg-orange-100 dark:bg-slate-700 p-2 rounded-full text-orange-600 dark:text-orange-400 group-hover:scale-110 transition-transform">
-                                        <i class="ph-fill ph-shopping-cart text-xl"></i>
-                                    </div>
-                                    <span class="text-sm font-medium">Amazon</span>
-                                </button>
+      <button onclick="app.launchProvider('amazon')" class="provider-btn">Amazon</button>
 
-                                <button onclick="app.launchProvider('librarything')" class="provider-btn group relative p-4 rounded-xl border border-slate-200 dark:border-slate-600 flex flex-col items-center justify-center gap-2 bg-white dark:bg-slate-800 hover:border-blue-300 dark:hover:border-blue-700">
-                                    <div class="bg-amber-100 dark:bg-slate-700 p-2 rounded-full text-amber-700 dark:text-amber-500 group-hover:scale-110 transition-transform">
-                                        <i class="ph-fill ph-books text-xl"></i>
-                                    </div>
-                                    <span class="text-sm font-medium">LibraryThing</span>
-                                </button>
+      <button onclick="app.launchProvider('librarything')" class="provider-btn">LibraryThing</button>
 
-                                <button onclick="app.launchProvider('googlebooks')" class="provider-btn group relative p-4 rounded-xl border border-slate-200 dark:border-slate-600 flex flex-col items-center justify-center gap-2 bg-white dark:bg-slate-800 hover:border-blue-300 dark:hover:border-blue-700">
-                                    <div class="bg-blue-100 dark:bg-slate-700 p-2 rounded-full text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform">
-                                        <i class="ph-fill ph-google-logo text-xl"></i>
-                                    </div>
-                                    <span class="text-sm font-medium">Google Books</span>
-                                </button>
+      <button onclick="app.launchProvider('googlebooks')" class="provider-btn">Google Books</button>
 
-                                <button onclick="app.launchProvider('abebooks')" class="provider-btn group relative p-4 rounded-xl border border-slate-200 dark:border-slate-600 flex flex-col items-center justify-center gap-2 bg-white dark:bg-slate-800 hover:border-blue-300 dark:hover:border-blue-700">
-                                    <div class="bg-red-100 dark:bg-slate-700 p-2 rounded-full text-red-600 dark:text-red-400 group-hover:scale-110 transition-transform">
-                                        <i class="ph-fill ph-book-open text-xl"></i>
-                                    </div>
-                                    <span class="text-sm font-medium">AbeBooks</span>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+      <button onclick="app.launchProvider('abebooks')" class="provider-btn">AbeBooks</button>
+                          
+    </div>
+  </div>
+ 
+ 
+ <!-- Bib Formats -->
+ 
+  <div id="tabs-5" class="tabContent">
+    <iframe  src="https://www.oclc.org/bibformats/en/0xx.html"></iframe>
+  </div>
 
-            <!-- Talpa AI (Iframe) -->
-            <div id="talpa" class="tab-content hidden h-full w-full bg-white dark:bg-slate-900 fade-in">
-                <iframe src="https://www.talpasearch.com/429.669/search?su_catalog_url=https%3A%2F%2Fohio.ent.sirsi.net%2Fclient%2Fen_US%2Facp%2F" class="w-full h-full border-none"></iframe>
-            </div>
 
-            <!-- MARC Builder -->
-            <div id="marc-builder" class="tab-content hidden h-full overflow-y-auto p-4 md:p-8 fade-in">
-                <div class="max-w-5xl mx-auto space-y-6">
-                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
+ <!-- MDS Browser -->
+            
+  <div id="tabs-4" class="tabContent">
+    <h2> MDS Browser</h2>
+    <p>Browse the DDC23 Summaries hierarchy to find classification numbers.</p>                  
+    <p><input type="text" id="mds-filter" oninput="app.filterMDS()" placeholder="Filter current view..."></p>
+    <div id="mds-breadcrumbs">
+      <button onclick="app.renderMDS()">Top</button>  
+    </div>
+    
+    <hr>
+    
+    <div id="mds-grid"></div> 
+  </div>
+           
+
+  <!-- Talpa AI (Iframe) -->
+            
+  <div id="tabs-6" class="tabContent">
+    <iframe src="https://www.talpasearch.com/429.669/search?su_catalog_url=https%3A%2F%2Fohio.ent.sirsi.net%2Fclient%2Fen_US%2Facp%2F" class="w-full h-full border-none"></iframe>
+  </div>
+
+
+  <!-- MARC Builder -->
+            
+  <div id="tabs-2" class="tabContent">
+
+    <h2>LCSH 650 MARC Builder</h2>
+    <p>Construct subject headings with subfield codes.</p>
+                    
+    <div>
+      <button onclick="app.copyMARC()" title="Ctrl+C">Copy 650 ^C</button>
+      <button onclick="app.copyJuvMARC()" title="Ctrl+J">Copy Juv ^J</button>
+      <button onclick="app.clearBuilder()" title="Ctrl+X">Clear ^X</button>
+    </div>
+                
+
+                
+                    <div>
                         <div>
-                            <h2 class="text-2xl font-bold text-slate-800 dark:text-slate-100">LCSH 650 MARC Builder</h2>
-                            <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">Construct complex subject headings with correct subfield codes.</p>
-                        </div>
-                        <div class="flex gap-2">
-                            <button onclick="app.copyMARC()" class="btn-primary flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium shadow-sm transition-all" title="Ctrl+C">
-                                <i class="ph ph-copy"></i> Copy 650 <span class="kbd-badge text-white/80 border-white/20">^C</span>
-                            </button>
-                            <button onclick="app.copyJuvMARC()" class="btn-secondary flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg text-sm font-medium shadow-sm transition-all" title="Ctrl+J">
-                                <i class="ph ph-baby"></i> Copy Juv <span class="kbd-badge">^J</span>
-                            </button>
-                            <button onclick="app.clearBuilder()" class="btn-danger flex items-center gap-2 px-4 py-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg text-sm font-medium transition-all" title="Ctrl+X">
-                                Clear <span class="kbd-badge">^X</span>
-                            </button>
-                        </div>
-                    </div>
+                       
+                            <p>
+                              <input type="text" id="field1" placeholder="Main Term">
+                            </p>
 
-                    <!-- Builder Interface -->
-                    <div class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm transition-colors">
-                        <div class="flex flex-wrap gap-2 items-center">
-                            <!-- Field 1 -->
-                            <div class="flex-1 min-w-[200px]">
-                                <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 ml-1">Main Term</label>
-                                <input type="text" id="field1" class="w-full p-3 border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 text-slate-800 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors" placeholder="e.g. History">
-                            </div>
-
-                            <!-- Separator 1 -->
-                            <div class="relative pt-6 dropdown-wrapper">
-                                <button type="button" class="w-10 h-10 rounded-full border border-slate-300 dark:border-slate-600 flex items-center justify-center bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors dropdown-trigger" onclick="app.toggleDropdown(0)">
-                                    <span id="sep-0" class="font-mono text-sm font-bold text-slate-600 dark:text-slate-300">+</span>
-                                </button>
-                                <div id="dropdown-menu-0" class="dropdown-menu hidden absolute top-full left-1/2 -translate-x-1/2 mt-2 w-48 bg-white dark:bg-slate-700 rounded-lg shadow-xl border border-slate-200 dark:border-slate-600 py-1 z-30">
-                                    <button class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-600" onclick="app.selectSeparator(0, '')">None</button>
-                                    <button class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-600" onclick="app.selectSeparator(0, '|v')"><span class="font-mono text-blue-500">|v</span> Form</button>
-                                    <button class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-600" onclick="app.selectSeparator(0, '|x')"><span class="font-mono text-blue-500">|x</span> General</button>
-                                    <button class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-600" onclick="app.selectSeparator(0, '|y')"><span class="font-mono text-blue-500">|y</span> Chronological</button>
-                                    <button class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-600" onclick="app.selectSeparator(0, '|z')"><span class="font-mono text-blue-500">|z</span> Geographic</button>
-                                </div>
-                            </div>
+                    
+                            <p>
+                                
+                                    <button onclick="app.selectSeparator(0, '+')">None</button>
+                                    <button onclick="app.selectSeparator(0, '|v')"><span>|v</span> Form</button>
+                                    <button onclick="app.selectSeparator(0, '|x')"><span>|x</span> General</button>
+                                    <button onclick="app.selectSeparator(0, '|y')"><span>|y</span> Chronological</button>
+                                    <button onclick="app.selectSeparator(0, '|z')"><span>|z</span> Geographic</button>
+                            </p>
 
                             <!-- Field 2 -->
-                            <div class="flex-1 min-w-[200px]">
-                                <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 ml-1">Subdivision</label>
-                                <input type="text" id="field2" class="w-full p-3 border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 text-slate-800 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors">
-                            </div>
+                            <p>
+                                <span id="sep-0">+</span>
+                                <input type="text" id="field2">
+                            </p>
 
                             <!-- Separator 2 -->
-                            <div class="relative pt-6 dropdown-wrapper">
-                                <button type="button" class="w-10 h-10 rounded-full border border-slate-300 dark:border-slate-600 flex items-center justify-center bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors dropdown-trigger" onclick="app.toggleDropdown(1)">
-                                    <span id="sep-1" class="font-mono text-sm font-bold text-slate-600 dark:text-slate-300">+</span>
-                                </button>
-                                <div id="dropdown-menu-1" class="dropdown-menu hidden absolute top-full left-1/2 -translate-x-1/2 mt-2 w-48 bg-white dark:bg-slate-700 rounded-lg shadow-xl border border-slate-200 dark:border-slate-600 py-1 z-30">
-                                    <button class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-600" onclick="app.selectSeparator(1, '')">None</button>
-                                    <button class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-600" onclick="app.selectSeparator(1, '|v')"><span class="font-mono text-blue-500">|v</span> Form</button>
-                                    <button class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-600" onclick="app.selectSeparator(1, '|x')"><span class="font-mono text-blue-500">|x</span> General</button>
-                                    <button class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-600" onclick="app.selectSeparator(1, '|y')"><span class="font-mono text-blue-500">|y</span> Chronological</button>
-                                    <button class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-600" onclick="app.selectSeparator(1, '|z')"><span class="font-mono text-blue-500">|z</span> Geographic</button>
-                                </div>
-                            </div>
+                            <p>
+                                
+                                    <button onclick="app.selectSeparator(1, '+')">None</button>
+                                    <button onclick="app.selectSeparator(1, '|v')"><span>|v</span> Form</button>
+                                    <button onclick="app.selectSeparator(1, '|x')"><span>|x</span> General</button>
+                                    <button onclick="app.selectSeparator(1, '|y')"><span>|y</span> Chronological</button>
+                                    <button onclick="app.selectSeparator(1, '|z')"><span>|z</span> Geographic</button>
+                            </p>
 
                             <!-- Field 3 -->
-                            <div class="flex-1 min-w-[200px]">
-                                <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 ml-1">Subdivision</label>
-                                <input type="text" id="field3" class="w-full p-3 border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 text-slate-800 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors">
-                            </div>
+                            <p>
+                                <span id="sep-1">+</span>
+                                <input type="text" id="field2">
+                            </p>
+
+                            
                         </div>
                     </div>
 
+                    <hr>
+
                     <!-- Search Section -->
-                    <div class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
-                        <h3 class="text-lg font-bold text-slate-800 dark:text-slate-100 mb-4 flex items-center gap-2">
-                            <i class="ph-fill ph-magnifying-glass text-blue-500"></i> Library of Congress Search
-                        </h3>
-                        <div class="flex gap-2 mb-4">
-                            <div class="relative flex-1">
-                                <input type="text" id="searchInput1" class="w-full pl-10 pr-4 py-3 border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-colors" placeholder="Search Subject Headings... (Ctrl+K)" onkeydown="if(event.key==='Enter') app.searchLOC()">
-                                <i class="ph ph-magnifying-glass absolute left-3 top-3.5 text-slate-400 text-lg"></i>
-                            </div>
-                            <button onclick="app.searchLOC()" class="px-6 py-3 bg-slate-800 dark:bg-slate-700 text-white font-medium rounded-lg hover:bg-slate-900 dark:hover:bg-slate-600 transition-colors shadow-sm">
-                                Search
-                            </button>
+                    <div>
+                        <h3>Library of Congress Search</h3>
+                        <div>
+                            <p><input type="text" id="searchInput1" onkeydown="if(event.key==='Enter') app.searchLOC()"></p>
+                            <button onclick="app.searchLOC()">Search</button>
                         </div>
                         
                         <!-- Search Results -->
                         <div id="results" class="space-y-2 min-h-[100px]"></div>
                         
                         <!-- Additional Search Tools -->
-                        <div class="mt-8 pt-6 border-t border-slate-100 dark:border-slate-700">
-                            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">External Databases</h4>
-                            <div class="flex flex-wrap gap-3">
-                                <button onclick="document.getElementById('fastModal').style.display='flex'" class="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center gap-2">
-                                    <i class="ph ph-database"></i> Search FAST (OCLC)
-                                </button>
-                                <button onclick="document.getElementById('gtnModal').style.display='flex'" class="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center gap-2">
-                                    <i class="ph ph-map-pin"></i> Search GTN (Getty)
-                                </button>
-                                <a href="https://www.loc.gov/aba/publications/FreeLCGFT/freelcgft.html" target="_blank" rel="noopener noreferrer" class="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center gap-2">
-                                    <i class="ph ph-arrow-square-out"></i> LCGFT Terms
-                                </a>
-                            </div>
+                        <div>
+                            <h4>External Databases</h4>
+                            <p>
+                                <a href="https://fast.oclc.org/searchfast/?&limit=keywords&facet=topic&query=&sort=usage+desc&start=0" target="_blank" rel="noopener noreferrer"> Search FAST (OCLC)</a>
+                                <a href="https://www.getty.edu/research/tools/vocabularies/tgn/" target="_blank" rel="noopener noreferrer">Search GTN (Getty)</a>
+                                <a href="https://www.loc.gov/aba/publications/FreeLCGFT/freelcgft.html" target="_blank" rel="noopener noreferrer">LCGFT Terms</a>
+                            </p>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- 520 Search (Summaries) -->
-            <div id="book-summary" class="tab-content hidden h-full overflow-y-auto p-4 md:p-8 fade-in">
+            <div id="tabs-3" class="tabContent">
                 <div class="max-w-3xl mx-auto">
                     <div class="flex justify-between items-center mb-6">
                         <h2 class="text-2xl font-bold text-slate-800 dark:text-slate-100">Summary Search</h2>
-                        <button onclick="app.toggleBulkMode()" class="text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1">
-                            <i class="ph ph-arrows-left-right"></i> <span id="mode-text">Switch to Bulk Mode</span>
-                        </button>
+                        
                     </div>
 
                     <!-- Single Search Mode -->
@@ -468,11 +321,11 @@
                             </button>
                         </div>
                     </div>
-
+                    <hr>
                     <!-- Bulk Search Mode -->
                     <div id="summary-bulk-mode" class="hidden bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm mb-6 transition-colors">
-                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Bulk ISBN Search (One per line)</label>
-                        <textarea id="bulk-isbn-input" rows="5" class="w-full p-3 border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 text-slate-800 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-colors mb-4 font-mono text-sm" placeholder="9780062457714&#10;9781982181284"></textarea>
+                        <p class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Bulk ISBN Search (One per line)</p>
+                        <p><textarea id="bulk-isbn-input" rows="5" class="w-full p-3 border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 text-slate-800 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-colors mb-4 font-mono text-sm" placeholder="9780062457714&#10;9781982181284"></textarea></p>
                         
                         <div class="flex items-center gap-3 mb-4">
                             <button onclick="app.processBulkISBNs()" id="bulk-btn" class="px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm">
@@ -491,812 +344,477 @@
                     </div>
                 </div>
             </div>
-
-            <!-- OCR Tool -->
-            <div id="ocr-tool" class="tab-content hidden h-full flex flex-col overflow-hidden fade-in">
-                <div class="h-full flex flex-col p-4 md:p-8 max-w-7xl mx-auto w-full">
-                    <div class="flex justify-between items-center mb-6 shrink-0">
-                        <h2 class="text-2xl font-bold text-slate-800 dark:text-slate-100">Smart OCR</h2>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1 min-h-0">
-                        <!-- Left: Input -->
-                        <div class="flex flex-col gap-4 h-full min-h-0">
-                            <div id="ocr-drop-area" class="flex-1 border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl flex flex-col items-center justify-center p-6 transition-all hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-slate-800 cursor-pointer bg-slate-50 dark:bg-slate-800/50 relative group min-h-[200px]">
-                                <input type="file" id="ocr-image-input" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
-                                <div id="ocr-placeholder" class="text-center pointer-events-none">
-                                    <i class="ph ph-image text-5xl text-slate-400 dark:text-slate-500 mb-3 group-hover:text-blue-500 transition-colors"></i>
-                                    <p class="text-slate-500 dark:text-slate-400 font-medium group-hover:text-blue-600 dark:group-hover:text-blue-400">Click to upload or drag image</p>
-                                    <p class="text-slate-400 text-xs mt-1">Supports PNG, JPG, BMP</p>
-                                </div>
-                                <img id="ocr-preview" class="hidden absolute inset-0 w-full h-full object-contain p-2 rounded-xl bg-slate-100 dark:bg-slate-800">
-                                <button id="ocr-clear-btn" class="hidden absolute top-2 right-2 z-20 bg-slate-800/80 text-white p-1 rounded-full hover:bg-slate-900" onclick="app.clearOCRImage(event)"><i class="ph ph-x"></i></button>
-                            </div>
-                            
-                            <!-- Control Footer (Left) -->
-                            <div class="shrink-0 md:h-24 flex flex-col justify-end space-y-2">
-                                <button id="ocr-convert-btn" class="w-full py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
-                                    <i class="ph ph-scan"></i> Extract Text
-                                </button>
-                                <div id="ocr-status" class="text-sm text-center text-slate-500 dark:text-slate-400 h-5"></div>
-                            </div>
-                        </div>
-
-                        <!-- Right: Output -->
-                        <div class="flex flex-col gap-4 h-full min-h-0">
-                            <div class="flex-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl flex flex-col shadow-sm overflow-hidden min-h-0">
-                                <div class="p-3 border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 flex justify-between items-center shrink-0">
-                                    <span class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Extracted Text</span>
-                                    <button onclick="app.copyOCR()" id="ocr-copy-btn" class="hidden text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 px-3 py-1.5 rounded-md transition-colors flex items-center gap-2 shadow-sm">
-                                        <i class="ph ph-copy"></i> Copy with Citation
-                                    </button>
-                                </div>
-                                <div id="ocr-result" contenteditable="true" class="flex-1 p-4 outline-none overflow-y-auto text-slate-700 dark:text-slate-300 font-serif text-lg leading-relaxed" placeholder="Result will appear here..."></div>
-                            </div>
-                            
-                            <!-- Control Footer (Right) -->
-                            <div class="shrink-0 md:h-24 flex flex-col justify-end">
-                                <label class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase ml-1 mb-1">Citation Source</label>
-                                <div class="relative">
-                                    <input id="ocr-citation" type="text" class="w-full py-3 pl-9 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g. New York Times, 2024...">
-                                    <i class="ph ph-quotes absolute left-3 top-3.5 text-slate-400"></i>
-                                </div>
-                                <div class="h-5 mt-2 flex items-center justify-end">
-                                     <span class="text-[10px] text-blue-600 dark:text-blue-400 italic">Included when copying</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-        </main>
+        </div>
     </div>
 
     <!-- Hidden Textarea for Copy Fallback -->
-    <textarea id="clipboard-helper" class="absolute -left-[9999px] top-0 opacity-0"></textarea>
+    <textarea id="clipboard-helper" class="absolute -left-[9999px] top-0 opacity-100"></textarea>
 
-    <!-- Info Modal -->
-    <div id="infoModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center z-50 p-4 transition-opacity duration-200" onclick="if(event.target===this) this.style.display='none'">
-        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden transform transition-all scale-100">
-            <div class="p-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-700/50">
-                <h3 id="modalTitle" class="font-bold text-lg text-slate-800 dark:text-slate-100">Details</h3>
-                <button onclick="document.getElementById('infoModal').style.display='none'" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"><i class="ph ph-x text-xl"></i></button>
-            </div>
-            <div class="p-6 space-y-4">
-                <div class="grid grid-cols-[100px_1fr] gap-2 text-sm">
-                    <span class="font-semibold text-slate-500 dark:text-slate-400">Scope Note:</span>
-                    <span id="modalScope" class="text-slate-800 dark:text-slate-200"></span>
-                    
-                    <span class="font-semibold text-slate-500 dark:text-slate-400">Broader:</span>
-                    <span id="modalBroader" class="text-slate-800 dark:text-slate-200"></span>
-                    
-                    <span class="font-semibold text-slate-500 dark:text-slate-400">Type:</span>
-                    <span id="modalType" class="text-slate-800 dark:text-slate-200"></span>
-                </div>
-            </div>
-            <div class="p-4 border-t border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-700/50 text-right">
-                <a id="infoLink" href="#" target="_blank" class="text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline">View Source &rarr;</a>
-            </div>
-        </div>
-    </div>
+    
+    
+    
 
-    <!-- Fullscreen Iframe Modals -->
-    <div id="fastModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm hidden items-center justify-center z-50 p-4" onclick="if(event.target===this) this.style.display='none'">
-        <div class="bg-white w-full h-full max-w-6xl max-h-[90vh] rounded-2xl overflow-hidden shadow-2xl relative flex flex-col">
-            <div class="bg-slate-100 p-2 flex justify-end shrink-0 border-b">
-                 <button onclick="document.getElementById('fastModal').style.display='none'" class="text-slate-500 hover:text-slate-800 p-1"><i class="ph ph-x text-2xl"></i></button>
-            </div>
-            <iframe src="https://fast.oclc.org/searchfast/?&limit=keywords&facet=topic&query=&sort=usage+desc&start=0" class="w-full flex-1 border-none"></iframe>
-        </div>
-    </div>
+    
 
-    <div id="gtnModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm hidden items-center justify-center z-50 p-4" onclick="if(event.target===this) this.style.display='none'">
-        <div class="bg-white w-full h-full max-w-6xl max-h-[90vh] rounded-2xl overflow-hidden shadow-2xl relative flex flex-col">
-            <div class="bg-slate-100 p-2 flex justify-end shrink-0 border-b">
-                 <button onclick="document.getElementById('gtnModal').style.display='none'" class="text-slate-500 hover:text-slate-800 p-1"><i class="ph ph-x text-2xl"></i></button>
-            </div>
-            <iframe src="https://www.getty.edu/research/tools/vocabularies/tgn/" class="w-full flex-1 border-none"></iframe>
-        </div>
-    </div>
+
 
     <script>
-        const app = {
-            state: {
-                ocrLoaded: false,
-                ocrDictionary: null,
-                isBulkMode: false,
-                theme: 'light',
-                mdsStack: [], // Nav history for MDS
-                currentMdsLevel: 'root'
-            },
+const app = {
+    state: {
+        isBulkMode: false,
+        theme: 'light',
+        mdsStack: [],
+        currentMdsLevel: 'root'
+    },
 
-            init() {
-                // Dropdown close listener
-                document.addEventListener('click', (e) => {
-                    if (!e.target.closest('.dropdown-wrapper')) {
-                        document.querySelectorAll('.dropdown-menu').forEach(el => el.classList.add('hidden'));
-                    }
-                });
+    showStuff(element) {
+        var tabContents = document.getElementsByClassName('tabContent');
+        for (var i = 0; i < tabContents.length; i++) {
+            tabContents[i].style.display = 'none';
+        }
 
-                // File inputs
-                const dropArea = document.getElementById('ocr-drop-area');
-                const fileInput = document.getElementById('ocr-image-input');
-                
-                if (dropArea) {
-                    dropArea.addEventListener('dragover', (e) => { 
-                        e.preventDefault(); 
-                        dropArea.classList.add('border-blue-500', 'bg-blue-50', 'dark:bg-slate-700');
-                    });
-                    
-                    dropArea.addEventListener('dragleave', (e) => { 
-                        e.preventDefault(); 
-                        dropArea.classList.remove('border-blue-500', 'bg-blue-50', 'dark:bg-slate-700'); 
-                    });
-                    
-                    dropArea.addEventListener('drop', (e) => {
-                        e.preventDefault();
-                        dropArea.classList.remove('border-blue-500', 'bg-blue-50', 'dark:bg-slate-700');
-                        if(e.dataTransfer.files.length) {
-                            fileInput.files = e.dataTransfer.files;
-                            this.handleImageUpload();
-                        }
-                    });
-                }
+        var tabContentIdToShow = element.id.replace(/(\d)/g, '-$1');
+        document.getElementById(tabContentIdToShow).style.display = 'block';
+    },
 
-                if (fileInput) fileInput.addEventListener('change', this.handleImageUpload.bind(this));
-                const ocrBtn = document.getElementById('ocr-convert-btn');
-                if (ocrBtn) ocrBtn.addEventListener('click', this.runOCR.bind(this));
-
-                // Theme Logic
-                const storedTheme = localStorage.getItem('theme');
-                const sysDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                
-                if (storedTheme === 'dark' || (!storedTheme && sysDark)) {
-                    document.documentElement.classList.add('dark');
-                    this.state.theme = 'dark';
-                    this.applyIframeFilters(true);
-                }
-
-                // Global Shortcuts
-                document.addEventListener('keydown', (e) => {
-                    if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
-                        e.preventDefault();
-                        this.switchTab('marc-builder');
-                        document.getElementById('searchInput1').focus();
-                    }
-                    if ((e.ctrlKey || e.metaKey) && e.key === 'c' && !window.getSelection().toString()) {
-                        e.preventDefault();
-                        this.copyMARC();
-                    }
-                    if ((e.ctrlKey || e.metaKey) && e.key === 'j') {
-                        e.preventDefault();
-                        this.copyJuvMARC();
-                    }
-                    if ((e.ctrlKey || e.metaKey) && e.key === 'x') {
-                        e.preventDefault();
-                        this.clearBuilder();
-                    }
-                });
-
-                // Input Key Listeners
-                const isbnInput = document.getElementById('isbn');
-                if (isbnInput) {
-                    isbnInput.addEventListener('keydown', (e) => {
-                        if (e.key === 'Enter') this.fetchSummary();
-                    });
-                }
-                
-                // Initialize MDS
-                this.renderMDS();
-            },
-
-            // --- Theme ---
-            toggleDarkMode() {
-                const isDark = document.documentElement.classList.toggle('dark');
-                this.state.theme = isDark ? 'dark' : 'light';
-                localStorage.setItem('theme', this.state.theme);
-                this.applyIframeFilters(isDark);
-            },
-
-            applyIframeFilters(isDark) {
-                const iframes = document.querySelectorAll('iframe');
-                iframes.forEach(iframe => {
-                    // Only filter local/tool iframes, not external sites that might break
-                    if (!iframe.src.includes('google')) { 
-                       isDark ? iframe.classList.add('dark-iframe-filter') : iframe.classList.remove('dark-iframe-filter');
-                    }
-                });
-            },
-
-            // --- Navigation ---
-            switchTab(tabId) {
-                document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-                document.querySelectorAll('.nav-item').forEach(el => {
-                    el.classList.remove('bg-blue-50', 'text-blue-600', 'dark:bg-slate-700/50', 'dark:text-blue-400');
-                    el.classList.add('text-slate-600', 'dark:text-slate-300');
-                });
-
-                document.getElementById(tabId).classList.remove('hidden');
-                
-                const activeBtn = document.querySelector(`button[data-tab="${tabId}"]`);
-                if(activeBtn) {
-                    activeBtn.classList.remove('text-slate-600', 'dark:text-slate-300');
-                    activeBtn.classList.add('bg-blue-50', 'text-blue-600', 'dark:bg-slate-700/50', 'dark:text-blue-400');
-                }
-
-                if (tabId === 'ocr-tool' && !this.state.ocrLoaded) {
-                    this.loadOCRLibs();
-                }
-                
-                // Focus specific inputs
-                if (tabId === 'universal-search') {
-                    setTimeout(() => document.getElementById('univ-search-input').focus(), 100);
-                }
-            },
-
-            toggleSidebarMenu(menuId, btn) {
-                const menu = document.getElementById(menuId);
-                menu.classList.toggle('hidden');
-                const icon = btn.querySelector('.ph-caret-down');
-                icon.style.transform = menu.classList.contains('hidden') ? 'rotate(0deg)' : 'rotate(180deg)';
-            },
-
-            // --- MDS Browser Logic ---
-            filterMDS() {
-                this.renderMDS(this.state.currentMdsLevel, this.state.currentDepth, true);
-            },
-
-            renderMDS(levelCode = 'root', depth = 0, isFilter = false) {
-                if (!isFilter) {
-                    this.state.currentMdsLevel = levelCode;
-                    this.state.currentDepth = depth;
-                    
-                    // Manage Stack based on depth
-                    if (depth === 0) {
-                        this.state.mdsStack = [];
-                    } else {
-                        const item = MDS_DATA.find(i => i.code === levelCode);
-                        // If we are deeper than current stack, push.
-                        if (depth > this.state.mdsStack.length) {
-                             if(item) this.state.mdsStack.push({...item, depth});
-                        } else {
-                             // If we went back (depth <= stack len), slice stack
-                             this.state.mdsStack = this.state.mdsStack.slice(0, depth);
-                             // Update last item if needed (case of switching branches at same depth)
-                             if (this.state.mdsStack.length > 0) {
-                                  this.state.mdsStack[this.state.mdsStack.length - 1] = {...item, depth};
-                             }
-                        }
-                    }
-                }
-
-                const container = document.getElementById('mds-grid');
-                const crumbs = document.getElementById('mds-breadcrumbs');
-                const filterVal = document.getElementById('mds-filter').value.toLowerCase();
-                
-                container.innerHTML = '';
-
-                // 1. Determine items to show based on Depth
-                let items = [];
-                
-                if (depth === 0) {
-                    // Depth 0: Main Classes (000, 100... 900)
-                    items = MDS_DATA.filter(i => i.code.endsWith('00'));
-                } else if (depth === 1) {
-                    // Depth 1: Divisions (X00, X10... X90)
-                    // We must include X00 here (e.g. 500 is a division of 500 main class)
-                    const prefix = levelCode.substring(0, 1);
-                    items = MDS_DATA.filter(i => 
-                        i.code.startsWith(prefix) && 
-                        i.code.endsWith('0')
-                    );
-                } else {
-                    // Depth 2: Sections (XYZ) e.g. 500, 501, 502...
-                    // Everything starting with the division prefix (e.g. 50 for 500-509, 51 for 510-519)
-                    const prefix = levelCode.substring(0, 2);
-                    items = MDS_DATA.filter(i => i.code.startsWith(prefix));
-                }
-
-                // 2. Filter logic (search bar)
-                if (filterVal) {
-                    // Global search if filter exists
-                    items = MDS_DATA.filter(i => 
-                        i.code.includes(filterVal) || 
-                        i.label.toLowerCase().includes(filterVal)
-                    ).slice(0, 50); // limit results
-                }
-
-                // 3. Render Breadcrumbs
-                if (!filterVal) {
-                    let crumbHtml = `<button onclick="app.renderMDS('root', 0)" class="hover:text-blue-600 dark:hover:text-blue-400 font-semibold px-2 py-1 rounded hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors">Top</button>`;
-                    this.state.mdsStack.forEach((s, i) => {
-                        crumbHtml += ` <span class="text-slate-300">/</span> `;
-                        // Since multiple levels share same code (500), we must pass depth
-                        if (i === this.state.mdsStack.length - 1) {
-                            crumbHtml += `<span class="font-bold text-slate-800 dark:text-slate-200 px-2 py-1">${s.code}</span>`;
-                        } else {
-                            crumbHtml += `<button onclick="app.renderMDS('${s.code}', ${s.depth})" class="hover:text-blue-600 dark:hover:text-blue-400 font-medium px-2 py-1 rounded hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors">${s.code}</button>`;
-                        }
-                    });
-                    crumbs.innerHTML = crumbHtml;
-                    crumbs.classList.remove('hidden');
-                } else {
-                    crumbs.classList.add('hidden');
-                }
-
-                // 4. Render Grid Items
-                if (items.length === 0) {
-                     container.innerHTML = `<div class="col-span-full text-center p-8 text-slate-400">
-                        <i class="ph ph-empty text-4xl mb-2"></i>
-                        <p>No subdivisions found.</p>
-                     </div>`;
-                     return;
-                }
-
-                items.forEach(item => {
-                    const el = document.createElement('div');
-                    
-                    // Logic: Is it a leaf?
-                    // In this 3-tier system, Depth 2 are leaves.
-                    // Or if filtered, we check manually.
-                    const isLeaf = (depth === 2) || (filterVal && !item.code.endsWith('0')); 
-                    
-                    el.className = `mds-card bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-4 rounded-xl shadow-sm cursor-pointer hover:border-blue-400 dark:hover:border-blue-500 group flex flex-col justify-between h-32`;
-                    
-                    if (!isLeaf) {
-                        el.onclick = () => {
-                            document.getElementById('mds-filter').value = ''; 
-                            // Go deeper. Depth 0 -> 1, Depth 1 -> 2.
-                            app.renderMDS(item.code, depth + 1);
-                        };
-                    }
-
-                    // Card Content
-                    let content = `
-                        <div>
-                            <div class="flex justify-between items-start mb-2">
-                                <span class="text-2xl font-black text-slate-200 dark:text-slate-700 group-hover:text-blue-100 dark:group-hover:text-blue-900/30 transition-colors">${item.code}</span>
-                                ${!isLeaf ? '<i class="ph-bold ph-caret-right text-slate-300 dark:text-slate-600 group-hover:text-blue-500"></i>' : ''}
-                            </div>
-                            <h3 class="font-semibold text-slate-700 dark:text-slate-200 leading-snug group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2">${item.label}</h3>
-                        </div>
-                    `;
-
-                    // Action buttons for leaf nodes
-                    if (isLeaf) {
-                        content += `
-                            <div class="pt-2 mt-auto border-t border-slate-100 dark:border-slate-700 flex gap-2">
-                                <button onclick="app.searchMDSItem('${item.label}')" class="text-xs font-medium text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 flex items-center gap-1 px-2 py-1 rounded hover:bg-blue-50 dark:hover:bg-slate-700 transition-colors">
-                                    <i class="ph-bold ph-magnifying-glass"></i> Search Catalog
-                                </button>
-                            </div>
-                        `;
-                    } else {
-                        content += `<div class="text-xs text-slate-400 mt-auto pt-2">Click to drill down</div>`;
-                    }
-
-                    el.innerHTML = content;
-                    container.appendChild(el);
-                });
-            },
-
-            searchMDSItem(term) {
-                // Switch tab and populate search
-                this.switchTab('universal-search');
-                const input = document.getElementById('univ-search-input');
-                input.value = term;
-                input.focus();
-                this.updateSearchLinks(); // Trigger UI update
-                this.toast(`Searching for: ${term}`);
-            },
-
-
-            // --- Notifications ---
-            toast(message, type = 'success') {
-                const container = document.getElementById('toast-container');
-                const el = document.createElement('div');
-                const bg = type === 'error' ? 'bg-red-500' : 'bg-slate-800 dark:bg-slate-700';
-                
-                el.className = `${bg} text-white px-4 py-3 rounded-lg shadow-xl flex items-center gap-3 transform transition-all duration-300 translate-y-10 opacity-0`;
-                el.innerHTML = `
-                    <i class="ph ${type === 'error' ? 'ph-warning-circle' : 'ph-check-circle'} text-xl"></i>
-                    <span class="text-sm font-medium">${message}</span>
-                `;
-                
-                container.appendChild(el);
-                requestAnimationFrame(() => el.classList.remove('translate-y-10', 'opacity-0'));
-                setTimeout(() => {
-                    el.classList.add('translate-y-10', 'opacity-0');
-                    setTimeout(() => el.remove(), 300);
-                }, 3000);
-            },
-
-            // --- Clipboard Helper (Iframe safe) ---
-            safeCopy(text) {
-                const textarea = document.getElementById('clipboard-helper');
-                textarea.value = text;
-                textarea.select();
-                try {
-                    document.execCommand('copy');
-                    return true;
-                } catch (err) {
-                    // Fallback to clipboard API if available
-                    if (navigator.clipboard) {
-                        navigator.clipboard.writeText(text);
-                        return true;
-                    }
-                    console.error('Copy failed', err);
-                    return false;
-                }
-            },
-            
-            // --- Universal Search (Direct Link Logic) ---
-            updateSearchLinks() {
-                const query = document.getElementById('univ-search-input').value.trim();
-                const grid = document.getElementById('provider-grid');
-                
-                if (query.length > 0) {
-                    grid.classList.remove('provider-empty');
-                    grid.classList.add('provider-ready');
-                } else {
-                    grid.classList.add('provider-empty');
-                    grid.classList.remove('provider-ready');
-                    document.getElementById('bulk-links-area')?.classList.add('hidden');
-                }
-            },
-
-            getUrlForProvider(provider, query) {
-                const encoded = encodeURIComponent(query);
-                switch(provider) {
-                    case 'worldcat': return `https://search.worldcat.org/search?q=${encoded}`;
-                    case 'amazon': return `https://www.amazon.com/s?k=${encoded}`;
-                    case 'librarything': return `https://www.librarything.com/search.php?term=${encoded}&searchtype=work`;
-                    case 'googlebooks': return `https://www.google.com/search?tbm=bks&q=${encoded}`;
-                    case 'abebooks': return `https://www.abebooks.com/servlet/SearchResults?sts=t&tn=${encoded}`;
-                    default: return '#';
-                }
-            },
-
-            launchProvider(provider) {
-                const query = document.getElementById('univ-search-input').value.trim();
-                if (!query) {
-                    this.toast("Please enter a search term first", "error");
-                    document.getElementById('univ-search-input').focus();
-                    return;
-                }
-                const url = this.getUrlForProvider(provider, query);
-                window.open(url, '_blank');
-            },
-
-            showBulkLinks() {
-                const query = document.getElementById('univ-search-input').value.trim();
-                if (!query) return this.toast("Please enter a search term", "error");
-                // ... logic removed for brevity as it wasn't core to request
-            },
-
-            // --- MARC Builder ---
-            toggleDropdown(index) {
-                const menu = document.getElementById(`dropdown-menu-${index}`);
-                const isHidden = menu.classList.contains('hidden');
+    init() {
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.dropdown-wrapper')) {
                 document.querySelectorAll('.dropdown-menu').forEach(el => el.classList.add('hidden'));
-                if(isHidden) menu.classList.remove('hidden');
-            },
-
-            selectSeparator(index, value) {
-                document.getElementById(`sep-${index}`).textContent = value || "+";
-                document.getElementById(`dropdown-menu-${index}`).classList.add('hidden');
-            },
-
-            searchLOC() {
-                const query = document.getElementById("searchInput1").value;
-                if (!query) return;
-
-                const resultsDiv = document.getElementById("results");
-                resultsDiv.innerHTML = '<div class="flex justify-center py-6"><div class="loader"></div></div>';
-
-                // Using ID.LOC.GOV suggest API
-                fetch(`https://id.loc.gov/authorities/subjects/suggest2/?q=${encodeURIComponent(query)}`)
-                    .then(res => res.json())
-                    .then(data => {
-                        resultsDiv.innerHTML = "";
-                        if (!data.hits || data.hits.length === 0) {
-                            resultsDiv.innerHTML = '<p class="text-center text-slate-500 py-4">No results found.</p>';
-                            return;
-                        }
-                        
-                        data.hits.forEach(hit => {
-                            const el = document.createElement("div");
-                            el.className = "flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-700/30 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-white dark:hover:bg-slate-700 transition-colors group";
-                            
-                            el.innerHTML = `
-                                <div class="flex-1 cursor-pointer font-medium text-slate-700 dark:text-slate-200 text-sm" onclick="app.populateBuilder('${hit.suggestLabel.replace(/'/g, "\\'")}')">
-                                    ${hit.suggestLabel}
-                                </div>
-                                <button class="text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 p-1" onclick="app.openInfoModal('${encodeURIComponent(JSON.stringify(hit))}')">
-                                    <i class="ph ph-info text-lg"></i>
-                                </button>
-                            `;
-                            resultsDiv.appendChild(el);
-                        });
-                    })
-                    .catch(() => {
-                        resultsDiv.innerHTML = '<p class="text-red-500 text-center text-sm">Error connecting to LOC.</p>';
-                    });
-            },
-
-            populateBuilder(subject) {
-                const parts = subject.split("--");
-                document.getElementById("field1").value = parts[0] || "";
-                document.getElementById("field2").value = parts[1] || "";
-                document.getElementById("field3").value = parts[2] || "";
-                
-                // Reset separators
-                ['sep-0', 'sep-1'].forEach(id => document.getElementById(id).textContent = '+');
-                this.toast("Builder populated");
-            },
-
-            clearBuilder() {
-                ['field1', 'field2', 'field3'].forEach(id => document.getElementById(id).value = '');
-                ['sep-0', 'sep-1'].forEach(id => document.getElementById(id).textContent = '+');
-                this.toast("Cleared");
-            },
-
-            getBuilderString() {
-                const f1 = document.getElementById("field1").value;
-                const f2 = document.getElementById("field2").value;
-                const f3 = document.getElementById("field3").value;
-                
-                const s0 = document.getElementById("sep-0").textContent;
-                const s1 = document.getElementById("sep-1").textContent;
-                
-                const sep0 = s0.includes("|") ? s0 : "";
-                const sep1 = s1.includes("|") ? s1 : "";
-
-                return `${f1}${sep0}${f2}${sep1}${f3}`.trim();
-            },
-
-            copyMARC() {
-                const text = this.getBuilderString() + ".";
-                this.safeCopy(text);
-                this.toast("Copied MARC string");
-            },
-
-            copyJuvMARC() {
-                const text = this.getBuilderString() + "|vJuvenile literature.";
-                this.safeCopy(text);
-                this.toast("Copied Juvenile string");
-            },
-
-            openInfoModal(hitStr) {
-                const hit = JSON.parse(decodeURIComponent(hitStr));
-                document.getElementById("modalTitle").innerText = hit.suggestLabel;
-                document.getElementById("modalScope").innerText = hit.more?.scopenote || "-";
-                document.getElementById("modalBroader").innerText = hit.more?.broader || "-";
-                document.getElementById("modalType").innerText = hit.more?.rdftype || "-";
-                document.getElementById("infoLink").href = hit.uri;
-                document.getElementById("infoModal").style.display = "flex";
-            },
-
-            // --- Book Summaries ---
-            toggleBulkMode() {
-                this.state.isBulkMode = !this.state.isBulkMode;
-                document.getElementById('mode-text').textContent = this.state.isBulkMode ? "Switch to Single Mode" : "Switch to Bulk Mode";
-                document.getElementById('summary-single-mode').classList.toggle('hidden');
-                document.getElementById('summary-bulk-mode').classList.toggle('hidden');
-            },
-
-            async getGoogleBook(isbn) {
-                try {
-                    const res = await fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${encodeURIComponent(isbn)}`);
-                    const data = await res.json();
-                    const book = data.items?.find(item => item.volumeInfo.industryIdentifiers?.some(id => id.identifier === isbn)) || data.items?.[0];
-                    
-                    if (book && book.volumeInfo.description) {
-                        let text = book.volumeInfo.description.trim();
-                        // formatting
-                        text = text.replace(/<[^>]*>?/gm, ''); // strip html
-                        if (!text.startsWith('"')) text = `"${text}"`;
-                        return text + " --Google Books";
-                    }
-                    return null;
-                } catch(e) {
-                    return null;
-                }
-            },
-
-            async fetchSummary() {
-                const isbn = document.getElementById("isbn").value.trim();
-                if(!isbn) return this.toast("Enter an ISBN", "error");
-
-                const btn = document.querySelector('#summary-single-mode button');
-                const prev = btn.innerHTML;
-                btn.innerHTML = '<div class="loader w-4 h-4 border-white border-t-transparent"></div>';
-                btn.disabled = true;
-
-                const text = await this.getGoogleBook(isbn);
-                btn.innerHTML = prev;
-                btn.disabled = false;
-
-                const container = document.getElementById("summary-result-container");
-                const sumEl = document.getElementById("summary");
-                
-                if(text) {
-                    sumEl.innerText = text;
-                    container.classList.remove('hidden');
-                } else {
-                    sumEl.innerText = "No summary found.";
-                    container.classList.remove('hidden');
-                }
-            },
-
-            copySummary() {
-                const text = document.getElementById("summary").innerText;
-                this.safeCopy(text);
-                this.toast("Summary copied");
-            },
-
-            async processBulkISBNs() {
-                const input = document.getElementById('bulk-isbn-input').value;
-                const isbns = input.split('\n').map(s => s.trim()).filter(s => s.length > 0);
-                
-                if(!isbns.length) return this.toast("No ISBNs to process", "error");
-
-                const btn = document.getElementById('bulk-btn');
-                const progress = document.getElementById('bulk-progress');
-                const resultsArea = document.getElementById('bulk-results');
-                const output = document.getElementById('bulk-output');
-
-                btn.disabled = true;
-                resultsArea.classList.remove('hidden');
-                output.value = "";
-                
-                let resultStr = "";
-                
-                for(let i=0; i<isbns.length; i++) {
-                    progress.textContent = `Processing ${i+1} of ${isbns.length}...`;
-                    const isbn = isbns[i];
-                    await new Promise(r => setTimeout(r, 400)); // Rate limit
-                    const sum = await this.getGoogleBook(isbn);
-                    
-                    resultStr += `ISBN: ${isbn}\n${sum || "[No summary found]"}\n\n-------------------\n\n`;
-                    output.value = resultStr;
-                    output.scrollTop = output.scrollHeight;
-                }
-
-                progress.textContent = "Done!";
-                btn.disabled = false;
-                this.toast("Bulk processing complete");
-            },
-
-            copyBulkResults() {
-                const output = document.getElementById('bulk-output');
-                this.safeCopy(output.value);
-                this.toast("All results copied");
-            },
-
-            // --- OCR ---
-            async loadOCRLibs() {
-                const status = document.getElementById('ocr-status');
-                status.textContent = "Loading OCR Engine...";
-                
-                try {
-                    // Load Tesseract
-                    if (!window.Tesseract) {
-                        await this.loadScript("https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js");
-                    }
-                    // Load Typo
-                    if (!window.Typo) {
-                        await this.loadScript("https://cdn.jsdelivr.net/npm/typo-js@1.1.0/typo.min.js");
-                        const [aff, dic] = await Promise.all([
-                            fetch('https://raw.githubusercontent.com/cfinke/Typo.js/master/typo/dictionaries/en_US/en_US.aff').then(r => r.text()),
-                            fetch('https://raw.githubusercontent.com/cfinke/Typo.js/master/typo/dictionaries/en_US/en_US.dic').then(r => r.text())
-                        ]);
-                        this.state.ocrDictionary = new Typo("en_US", aff, dic);
-                    }
-                    this.state.ocrLoaded = true;
-                    status.textContent = "";
-                } catch(e) {
-                    status.textContent = "Failed to load OCR libraries. Check connection.";
-                    console.error(e);
-                }
-            },
-
-            loadScript(src) {
-                return new Promise((resolve, reject) => {
-                    const s = document.createElement('script');
-                    s.src = src;
-                    s.onload = resolve;
-                    s.onerror = reject;
-                    document.head.appendChild(s);
-                });
-            },
-
-            handleImageUpload(event) {
-                const file = (event && event.target.files[0]) || document.getElementById('ocr-image-input').files[0];
-                if(file) {
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        const img = document.getElementById('ocr-preview');
-                        img.src = e.target.result;
-                        img.classList.remove('hidden');
-                        document.getElementById('ocr-placeholder').classList.add('hidden');
-                        document.getElementById('ocr-clear-btn').classList.remove('hidden');
-                    };
-                    reader.readAsDataURL(file);
-                }
-            },
-
-            clearOCRImage(e) {
-                e.stopPropagation();
-                document.getElementById('ocr-image-input').value = "";
-                document.getElementById('ocr-preview').classList.add('hidden');
-                document.getElementById('ocr-placeholder').classList.remove('hidden');
-                document.getElementById('ocr-clear-btn').classList.add('hidden');
-                document.getElementById('ocr-result').innerText = "";
-                document.getElementById('ocr-copy-btn').classList.add('hidden');
-            },
-
-            async runOCR() {
-                if(!this.state.ocrLoaded) await this.loadOCRLibs();
-                
-                const file = document.getElementById('ocr-image-input').files[0];
-                if(!file) return this.toast("Upload an image first", "error");
-
-                const btn = document.getElementById('ocr-convert-btn');
-                const status = document.getElementById('ocr-status');
-                const resultDiv = document.getElementById('ocr-result');
-                const lang = 'eng'; // Default to English
-
-                btn.disabled = true;
-                const prevBtnContent = btn.innerHTML;
-                btn.innerHTML = '<div class="loader w-5 h-5 border-white border-t-transparent"></div> Processing...';
-                
-                try {
-                    const { data: { text } } = await Tesseract.recognize(file, lang, {
-                        logger: m => {
-                            if(m.status === 'recognizing text') {
-                                status.textContent = `Scanning... ${Math.round(m.progress * 100)}%`;
-                            }
-                        }
-                    });
-
-                    // Formatting
-                    let clean = text.replace(/\n\s*\n/g, "||P||").replace(/\n/g, " ").replace(/\|\|P\|\|/g, "\n\n");
-                    
-                    // Simple spell check highlight if English
-                    if(lang === 'eng' && this.state.ocrDictionary) {
-                        clean = clean.split(' ').map(word => {
-                             const w = word.replace(/[^a-zA-Z']/g, "");
-                             if(w && !this.state.ocrDictionary.check(w)) {
-                                 return `<span class="misspelled" title="Possible typo">${word}</span>`;
-                             }
-                             return word;
-                        }).join(' ');
-                    }
-
-                    resultDiv.innerHTML = clean;
-                    document.getElementById('ocr-copy-btn').classList.remove('hidden');
-                    status.textContent = "Extraction complete";
-                    this.toast("Text extracted");
-
-                } catch(e) {
-                    status.textContent = "Error extracting text";
-                    console.error(e);
-                } finally {
-                    btn.disabled = false;
-                    btn.innerHTML = prevBtnContent;
-                }
-            },
-
-            copyOCR() {
-                const text = document.getElementById('ocr-result').innerText;
-                const cit = document.getElementById('ocr-citation').value;
-                const final = cit ? `"${text}" --${cit}` : text;
-                this.safeCopy(final);
-                this.toast("Copied to clipboard");
             }
-        };
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                e.preventDefault();
+                document.getElementById('searchInput1').focus();
+            }
+            if ((e.ctrlKey || e.metaKey) && e.key === 'c' && !window.getSelection().toString()) {
+                e.preventDefault();
+                this.copyMARC();
+            }
+            if ((e.ctrlKey || e.metaKey) && e.key === 'j') {
+                e.preventDefault();
+                this.copyJuvMARC();
+            }
+            if ((e.ctrlKey || e.metaKey) && e.key === 'x') {
+                e.preventDefault();
+                this.clearBuilder();
+            }
+        });
+
+        const isbnInput = document.getElementById('isbn');
+        if (isbnInput) {
+            isbnInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') this.fetchSummary();
+            });
+        }
+        
+        const mdsFilter = document.getElementById('mds-filter');
+          if (mdsFilter) {
+              this.renderMDS();
+        }
+    },
+
+    toast(message, type = 'success') {
+        const container = document.getElementById('toast-container');
+        const el = document.createElement('div');
+        const bg = type === 'error' ? 'bg-red-500' : 'bg-slate-800 dark:bg-slate-700';
+
+        el.className = `${bg} text-white px-4 py-3 rounded-lg shadow-xl flex items-center gap-3 transform transition-all duration-300 translate-y-10 opacity-0`;
+        el.innerHTML = `
+            <i class="ph ${type === 'error' ? 'ph-warning-circle' : 'ph-check-circle'} text-xl"></i>
+            <span class="text-sm font-medium">${message}</span>
+        `;
+
+        container.appendChild(el);
+        requestAnimationFrame(() => el.classList.remove('translate-y-10', 'opacity-0'));
+        setTimeout(() => {
+            el.classList.add('translate-y-10', 'opacity-0');
+            setTimeout(() => el.remove(), 300);
+        }, 3000);
+    },
+
+    safeCopy(text) {
+        const textarea = document.getElementById('clipboard-helper');
+        textarea.value = text;
+        textarea.select();
+        try {
+            document.execCommand('copy');
+            return true;
+        } catch (err) {
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(text);
+                return true;
+            }
+            console.error('Copy failed', err);
+            return false;
+        }
+    },
+
+    updateSearchLinks() {
+        const query = document.getElementById('univ-search-input').value.trim();
+        const grid = document.getElementById('provider-grid');
+
+        if (query.length > 0) {
+            grid.classList.remove('provider-empty');
+            grid.classList.add('provider-ready');
+        } else {
+            grid.classList.add('provider-empty');
+            grid.classList.remove('provider-ready');
+            document.getElementById('bulk-links-area')?.classList.add('hidden');
+        }
+    },
+
+    getUrlForProvider(provider, query) {
+        const encoded = encodeURIComponent(query);
+        switch (provider) {
+            case 'worldcat': return `https://search.worldcat.org/search?q=${encoded}`;
+            case 'amazon': return `https://www.amazon.com/s?k=${encoded}`;
+            case 'librarything': return `https://www.librarything.com/search.php?term=${encoded}&searchtype=work`;
+            case 'googlebooks': return `https://www.google.com/search?tbm=bks&q=${encoded}`;
+            case 'abebooks': return `https://www.abebooks.com/servlet/SearchResults?sts=t&tn=${encoded}`;
+            default: return '#';
+        }
+    },
+
+    launchProvider(provider) {
+        const query = document.getElementById('univ-search-input').value.trim();
+        if (!query) {
+            this.toast("Please enter a search term first", "error");
+            document.getElementById('univ-search-input').focus();
+            return;
+        }
+        const url = this.getUrlForProvider(provider, query);
+        window.open(url, '_blank');
+    },
+
+    showBulkLinks() {
+        const query = document.getElementById('univ-search-input').value.trim();
+        if (!query) return this.toast("Please enter a search term", "error");
+    },
+
+    toggleDropdown(index) {
+        const menu = document.getElementById(`dropdown-menu-${index}`);
+        const isHidden = menu.classList.contains('hidden');
+        document.querySelectorAll('.dropdown-menu').forEach(el => el.classList.add('hidden'));
+        if (isHidden) menu.classList.remove('hidden');
+    },
+
+    selectSeparator(index, value) {
+        document.getElementById(`sep-${index}`).textContent = value || "+";
+        document.getElementById(`dropdown-menu-${index}`).classList.add('hidden');
+    },
+
+    searchLOC() {
+        const query = document.getElementById("searchInput1").value;
+        if (!query) return;
+
+            const resultsDiv = document.getElementById("results");
+            resultsDiv.innerHTML = '<div class="flex justify-center py-6"><div class="loader"></div></div>';
+
+            fetch(`https://id.loc.gov/authorities/subjects/suggest2?q=${encodeURIComponent(query)}`)
+                .then(res => res.json())
+                .then(data => {
+                  resultsDiv.innerHTML = "";
+                    if (!data.hits || data.hits.length === 0) {
+                        resultsDiv.innerHTML = '<p class="text-center text-slate-500 py-4">No results found.</p>';
+                        return;
+                    }
+
+                    data.hits.forEach(hit => {
+                        const el = document.createElement("div");
+                        el.className = "flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-700/30 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-white dark:hover:bg-slate-700 transition-colors group";
+
+                        el.innerHTML = `
+                            <div class="flex-1 cursor-pointer font-medium text-slate-700 dark:text-slate-200 text-sm" onclick="app.populateBuilder('${hit.suggestLabel.replace(/'/g, "\\'")}')">
+                                ${hit.suggestLabel}
+                            </div>
+                            <button class="text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 p-1" onclick="app.openInfoModal('${encodeURIComponent(JSON.stringify(hit))}')">
+                                <i class="ph ph-info text-lg"></i>
+                            </button>
+                        `;
+                        resultsDiv.appendChild(el);
+                    });
+                })
+                .catch(() => {
+                    resultsDiv.innerHTML = '<p class="text-red-500 text-center text-sm">Error connecting to LOC.</p>';
+                });
+    },
+
+    populateBuilder(subject) {
+        const parts = subject.split("--");
+        document.getElementById("field1").value = parts[0] || "";
+        document.getElementById("field2").value = parts[1] || "";
+        document.getElementById("field3").value = parts[2] || "";
+
+        ['sep-0', 'sep-1'].forEach(id => document.getElementById(id).textContent = '+');
+        this.toast("Builder populated");
+    },
+
+    clearBuilder() {
+        ['field1', 'field2', 'field3'].forEach(id => document.getElementById(id).value = '');
+        ['sep-0', 'sep-1'].forEach(id => document.getElementById(id).textContent = '+');
+        this.toast("Cleared");
+    },
+
+    getBuilderString() {
+        const f1 = document.getElementById("field1").value;
+        const f2 = document.getElementById("field2").value;
+        const f3 = document.getElementById("field3").value;
+
+        const s0 = document.getElementById("sep-0").textContent;
+        const s1 = document.getElementById("sep-1").textContent;
+
+        const sep0 = s0.includes("|") ? s0 : "";
+        const sep1 = s1.includes("|") ? s1 : "";
+
+        return `${f1}${sep0}${f2}${sep1}${f3}`.trim();
+    },
+
+    copyMARC() {
+        const text = this.getBuilderString() + ".";
+        this.safeCopy(text);
+        this.toast("Copied MARC string");
+    },
+
+    copyJuvMARC() {
+        const text = this.getBuilderString() + "|vJuvenile literature.";
+        this.safeCopy(text);
+        this.toast("Copied Juvenile string");
+    },
+
+    openInfoModal(hitStr) {
+        const hit = JSON.parse(decodeURIComponent(hitStr));
+        document.getElementById("modalTitle").innerText = hit.suggestLabel;
+        document.getElementById("modalScope").innerText = hit.more?.scopenote || "-";
+        document.getElementById("modalBroader").innerText = hit.more?.broader || "-";
+        document.getElementById("modalType").innerText = hit.more?.rdftype || "-";
+        document.getElementById("infoLink").href = hit.uri;
+        document.getElementById("infoModal").style.display = "flex";
+    },
+
+    toggleBulkMode() {
+        this.state.isBulkMode = !this.state.isBulkMode;
+        document.getElementById('mode-text').textContent = this.state.isBulkMode ? "Switch to Single Mode" : "Switch to Bulk Mode";
+        document.getElementById('summary-single-mode').classList.toggle('hidden');
+        document.getElementById('summary-bulk-mode').classList.toggle('hidden');
+    },
+
+    async getGoogleBook(isbn) {
+        try {
+            const res = await fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${encodeURIComponent(isbn)}`);
+            const data = await res.json();
+            const book = data.items?.find(item => item.volumeInfo.industryIdentifiers?.some(id => id.identifier === isbn)) || data.items?.[0];
+
+            if (book && book.volumeInfo.description) {
+                let text = book.volumeInfo.description.trim();
+                text = text.replace(/<[^>]*>?/gm, '');
+                if (!text.startsWith('"')) text = `"${text}"`;
+                return text + " --Google Books";
+            }
+            return null;
+        } catch (e) {
+            return null;
+        }
+    },
+
+    async fetchSummary() {
+        const isbn = document.getElementById("isbn").value.trim();
+        if (!isbn) return this.toast("Enter an ISBN", "error");
+
+        const btn = document.querySelector('#summary-single-mode button');
+        const prev = btn.innerHTML;
+        btn.innerHTML = '<div class="loader w-4 h-4 border-white border-t-transparent"></div>';
+        btn.disabled = true;
+
+        const text = await this.getGoogleBook(isbn);
+        btn.innerHTML = prev;
+        btn.disabled = false;
+
+        const container = document.getElementById("summary-result-container");
+        const sumEl = document.getElementById("summary");
+
+        if (text) {
+            sumEl.innerText = text;
+            container.classList.remove('hidden');
+        } else {
+            sumEl.innerText = "No summary found.";
+            container.classList.remove('hidden');
+        }
+    },
+
+    copySummary() {
+        const text = document.getElementById("summary").innerText;
+        this.safeCopy(text);
+        this.toast("Summary copied");
+    },
+
+    async processBulkISBNs() {
+        const input = document.getElementById('bulk-isbn-input').value;
+        const isbns = input.split('\n').map(s => s.trim()).filter(s => s.length > 0);
+
+        if (!isbns.length) return this.toast("No ISBNs to process", "error");
+
+        const btn = document.getElementById('bulk-btn');
+        const progress = document.getElementById('bulk-progress');
+        const resultsArea = document.getElementById('bulk-results');
+        const output = document.getElementById('bulk-output');
+
+        btn.disabled = true;
+        resultsArea.classList.remove('hidden');
+        output.value = "";
+
+        let resultStr = "";
+
+        for (let i = 0; i < isbns.length; i++) {
+            progress.textContent = `Processing ${i + 1} of ${isbns.length}...`;
+            const isbn = isbns[i];
+            await new Promise(r => setTimeout(r, 400));
+            const sum = await this.getGoogleBook(isbn);
+
+            resultStr += `ISBN: ${isbn}\n${sum || "[No summary found]"}\n\n-------------------\n\n`;
+            output.value = resultStr;
+            output.scrollTop = output.scrollHeight;
+        }
+
+        progress.textContent = "Done!";
+        btn.disabled = false;
+        this.toast("Bulk processing complete");
+    },
+
+    copyBulkResults() {
+        const output = document.getElementById('bulk-output');
+        this.safeCopy(output.value);
+        this.toast("All results copied");
+    },
+    
+    
+    renderMDS(level = 'root') {
+          this.state.currentMdsLevel = level;
+
+          if (level === 'root') {
+             this.state.mdsStack = [];
+          }
+
+          const grid = document.getElementById('mds-grid');
+          const filter = document.getElementById('mds-filter').value.toLowerCase();
+          const children = this.getMDSChildren(level);
+
+          grid.innerHTML = '';
+
+          children.forEach(item => {
+              if (filter && !item.code.includes(filter) && !item.label.toLowerCase().includes(filter)) return;
+
+              const hasChildren = this.getMDSChildren(item.code).length > 0;
+              const card = document.createElement('div');
+              
+
+              card.innerHTML = `
+                  <p><div>
+                          <button onclick="event.stopPropagation(); app.copyMDSCode('${item.code}');" title="Copy code">Copy</button>
+                          <button><span>${item.code}</span>
+                          <span>${item.label}</span>
+                          ${hasChildren ? '>' : ''}</button>
+                      
+                  </div></p>
+              `;
+
+              if (hasChildren) {
+                  card.addEventListener('click', () => {
+                      this.state.mdsStack.push(level);
+                      document.getElementById('mds-filter').value = '';
+                      this.renderMDS(item.code);
+                  });
+              }
+
+              grid.appendChild(card);
+          });
+
+          this.renderBreadcrumbs();
+      },
+
+      getMDSChildren(parentCode) {
+          if (parentCode === 'root') {
+              return MDS_DATA.filter(item => item.code.endsWith('00'));
+          }
+
+          if (parentCode.endsWith('00')) {
+              const prefix = parentCode[0];
+              return MDS_DATA.filter(item => {
+                  if (item.code === parentCode) return false;
+                  if (item.code[0] !== prefix) return false;
+                  if (item.code.endsWith('0')) return true;
+                  return false;
+              });
+          }
+
+          if (parentCode.endsWith('0')) {
+              const prefix = parentCode.substring(0, 2);
+              return MDS_DATA.filter(item => {
+                  if (item.code === parentCode) return false;
+                  if (item.code.substring(0, 2) !== prefix) return false;
+                  if (!item.code.endsWith('0')) return true;
+                  return false;
+              });
+          }
+
+          return [];
+      },
+
+      renderBreadcrumbs() {
+          const container = document.getElementById('mds-breadcrumbs');
+          container.innerHTML = '';
+
+          const topBtn = document.createElement('button');
+          topBtn.textContent = 'Top';
+          topBtn.className = 'hover:text-blue-600 dark:hover:text-blue-400 transition-colors font-medium';
+          topBtn.addEventListener('click', () => {
+              document.getElementById('mds-filter').value = '';
+              this.renderMDS('root');
+          });
+          container.appendChild(topBtn);
+
+          const trail = [...this.state.mdsStack, this.state.currentMdsLevel].filter(l => l !== 'root');
+
+          trail.forEach((level, i) => {
+              const sep = document.createElement('span');
+              sep.textContent = ' > ';
+              sep.className = 'text-slate-400';
+              container.appendChild(sep);
+
+              const item = MDS_DATA.find(d => d.code === level);
+              const label = item ? item.label : level;
+
+              const btn = document.createElement('button');
+              btn.textContent = `${level} - ${label}`;
+
+              if (i < trail.length - 1) {
+                  btn.addEventListener('click', () => {
+                      document.getElementById('mds-filter').value = '';
+                      this.state.mdsStack = this.state.mdsStack.slice(0, i);
+                      this.renderMDS(level);
+                  });
+              } else {
+                  btn.className += ' font-medium text-slate-700 dark:text-slate-200';
+              }
+
+              container.appendChild(btn);
+          });
+      },
+
+      filterMDS() {
+          this.renderMDS(this.state.currentMdsLevel);
+      },
+
+      copyMDSCode(code) {
+          this.safeCopy(code);
+          this.toast(`Copied: ${code}`);
+      },
+    
+    
+};
+
 
         // --- Data: MDS / Dewey ---
         const MDS_DATA = [
@@ -1800,7 +1318,9 @@
         ];
 
         // Boot
-        document.addEventListener('DOMContentLoaded', () => app.init());
+      document.addEventListener('DOMContentLoaded', () => {
+          app.init();
+      });
     </script>
 </body>
 </html>
