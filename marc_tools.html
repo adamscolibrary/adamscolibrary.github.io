@@ -68,16 +68,11 @@
     
     <hr>
     
-    <p><button id="tabs1" onclick="app.showStuff(this)">Item Search</button></p>        
-                
+    <p><button id="tabs1" onclick="app.showStuff(this)">Item Search</button></p>                  
     <p><button id="tabs2" onclick="app.showStuff(this)">650 Builder</button></P>
-      
     <p><button id="tabs3" onclick="app.showStuff(this)">520 Search</button></p>
-    
     <p><button id="tabs4" onclick="app.showStuff(this)">MDS Browser</button></p>
-    
-    <p><button id="tabs5" onclick="app.showStuff(this)">Bib Formats</button></p>
-                
+    <p><button id="tabs5" onclick="app.showStuff(this)">Bib Formats</button></p>              
     <p><button id="tabs6" onclick="app.showStuff(this)">Talpa AI</button></p>
     
     <br>
@@ -86,30 +81,20 @@
     
     <hr>
     
-    <p> Library of Congress</p>
-    
+    <p> Library of Congress</p> 
     <p><a href="https://www.loc.gov/aba/cataloging/tools/" target="_blank">LCSH Headers</a></p>
     <p><a href="https://authorities.loc.gov/" target="_blank">LOC Authorities</a></p>
     <p><a href="https://www.loc.gov/marc/bibliographic/" target="_blank">LOC Bib Format</a><p>
-
     <p> LibraryThing</p>
     <p><a href="https://www.librarything.com/search.php?searchtype=newwork_titles&ampterm=" target="_blank">Works Search</a></p>
     <p><a href="https://www.librarything.com/mds" target="_blank">MDS</a></p>
-
     <p> OCLC</p>
     <p><a href="https://entities.oclc.org/worldcat/ddc/" target="_blank">Dewey Linked Data</a></p>
     <p><a href="https://www.oclc.org/content/dam/oclc/dewey/ddc23-summaries.pdf" target="_blank">DDC23 Summaries [PDF]</a><p>
-  
-  
   </div>
-  
-  <div id="tabs-7" class="tabContent" style="display:block;">
-    
+  <div id="tabs-7" class="tabContent" style="display:block;">  
     
   <pre>
-    
-  
-
 
 888b     d888        d8888 8888888b.   .d8888b.     88888888888 .d88888b.   .d88888b.  888      .d8888b.  
 8888b   d8888       d88888 888   Y88b d88P  Y88b        888    d88P" "Y88b d88P" "Y88b 888     d88P  Y88b 
@@ -151,53 +136,35 @@ __|  \/\|/   /(____|/ //                    /  /||~|~|~|__
   |___ /   (|________/   |\_______\       /  /| |______|
       /                  \|________)     /  / | |
 
-                                                                                                                                                                                                                  
     </pre>
   </div> 
-  
-  
-  
+
   <!-- Universal Search -->
-  
   <div id="tabs-1" class="tabContent">
     <h2>Item Search</h2>
     <p>Type a title or ISBN, then click a database to open.</p>
-
     <div>
-      <input type="text" id="univ-search-input" 
-                                 
+      <input type="text" id="univ-search-input"                           
       placeholder="Enter book title, ISBN, or keywords..." 
       oninput="app.updateSearchLinks()"
-      onkeydown="if(event.key==='Enter') app.showBulkLinks()">
-                            
-    </div>                  
-    
+      onkeydown="if(event.key==='Enter') app.showBulkLinks()">                       
+    </div>                   
     <div id="provider-grid">
-      <p>Click to Open Database</p>
-                                
+      <p>Click to Open Database</p>                        
       <button onclick="app.launchProvider('worldcat')" class="provider-btn">WorldCat</button>
-
       <button onclick="app.launchProvider('amazon')" class="provider-btn">Amazon</button>
-
       <button onclick="app.launchProvider('librarything')" class="provider-btn">LibraryThing</button>
-
       <button onclick="app.launchProvider('googlebooks')" class="provider-btn">Google Books</button>
-
-      <button onclick="app.launchProvider('abebooks')" class="provider-btn">AbeBooks</button>
-                          
+      <button onclick="app.launchProvider('abebooks')" class="provider-btn">AbeBooks</button>                     
     </div>
   </div>
  
- 
  <!-- Bib Formats -->
- 
   <div id="tabs-5" class="tabContent">
     <iframe  src="https://www.oclc.org/bibformats/en/0xx.html"></iframe>
   </div>
 
-
- <!-- MDS Browser -->
-            
+ <!-- MDS Browser -->          
   <div id="tabs-4" class="tabContent">
     <h2> MDS Browser</h2>
     <p>Browse the DDC23 Summaries hierarchy to find classification numbers.</p>                  
@@ -206,85 +173,64 @@ __|  \/\|/   /(____|/ //                    /  /||~|~|~|__
       <button onclick="app.renderMDS()">Top</button>  
     </div>
     <div id="toast-container"></div>
+    
     <hr>
     
     <div id="mds-grid"></div> 
-  </div>
-           
+  </div>         
 
-  <!-- Talpa AI (Iframe) -->
-            
+  <!-- Talpa AI (Iframe) -->          
   <div id="tabs-6" class="tabContent">
     <iframe src="https://www.talpasearch.com/429.669/search?su_catalog_url=https%3A%2F%2Fohio.ent.sirsi.net%2Fclient%2Fen_US%2Facp%2F" class="w-full h-full border-none"></iframe>
   </div>
 
-
-  <!-- MARC Builder -->
-            
+  <!-- MARC Builder -->        
   <div id="tabs-2" class="tabContent">
-
     <h2>LCSH 650 MARC Builder</h2>
-    <p>Construct subject headings with subfield codes.</p>
-                    
+    <p>Construct subject headings with subfield codes.</p>               
     <div>
       <button onclick="app.copyMARC()" title="Ctrl+C">Copy 650 ^C</button>
       <button onclick="app.copyJuvMARC()" title="Ctrl+J">Copy Juv ^J</button>
       <button onclick="app.clearBuilder()" title="Ctrl+X">Clear ^X</button>
     </div>
-    <div id="toast-container"></div>            
-
-                
-    <div>
-                       
+    <div id="toast-container"></div>                         
+    <div>                 
       <p>
         <input type="text" id="field1" placeholder="Main Term">
-      </p>
-
-                    
-      <p>
-                                
+      </p>              
+      <p>                         
         <button onclick="app.selectSeparator(0, '+')">None</button>
         <button onclick="app.selectSeparator(0, '|v')"><span>|v</span> Form</button>
         <button onclick="app.selectSeparator(0, '|x')"><span>|x</span> General</button>
         <button onclick="app.selectSeparator(0, '|y')"><span>|y</span> Chronological</button>
         <button onclick="app.selectSeparator(0, '|z')"><span>|z</span> Geographic</button>
       </p>
-
- 
       <p>
         <span id="sep-0">+</span>
         <input type="text" id="field2">
       </p>
-
-
-      <p>
-                                
+      <p>                        
         <button onclick="app.selectSeparator(1, '+')">None</button>
         <button onclick="app.selectSeparator(1, '|v')"><span>|v</span> Form</button>
         <button onclick="app.selectSeparator(1, '|x')"><span>|x</span> General</button>
         <button onclick="app.selectSeparator(1, '|y')"><span>|y</span> Chronological</button>
         <button onclick="app.selectSeparator(1, '|z')"><span>|z</span> Geographic</button>
-      </p>
-
-                         
+      </p>                   
       <p>
         <span id="sep-1">+</span>
         <input type="text" id="field3">
-      </p>
-
+      </p>  
     </div>
-
+    
     <hr>
-
+    
     <div>
       <h3>Library of Congress Search</h3>
       <div>
         <p><input type="text" id="searchInput1" onkeydown="if(event.key==='Enter') app.searchLOC()"></p>
         <button onclick="app.searchLOC()">Search</button>
-      </div>
-                        
-      <div id="results" class="space-y-2 min-h-[100px]"></div>
-                        
+      </div>                
+      <div id="results" class="space-y-2 min-h-[100px]"></div>                
       <div>
         <h4>External Databases</h4>
         <p>
@@ -296,71 +242,30 @@ __|  \/\|/   /(____|/ //                    /  /||~|~|~|__
     </div>
   </div>
 
-            <!-- 520 Search (Summaries) -->
-            <div id="tabs-3" class="tabContent">
-                <div class="max-w-3xl mx-auto">
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-2xl font-bold text-slate-800 dark:text-slate-100">Summary Search</h2>
-                        
-                    </div>
-
-                    <!-- Single Search Mode -->
-                    <div id="summary-single-mode" class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm mb-6 transition-colors">
-                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Google Books ISBN Search</label>
-                        <div class="flex gap-2">
-                            <input type="text" id="isbn" placeholder="Enter ISBN (e.g. 9780123456789)" class="flex-1 p-3 border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 text-slate-800 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-colors">
-                            <button onclick="app.fetchSummary()" class="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm">Find</button>
-                        </div>
-                        <div id="summary-result-container" class="hidden mt-4 bg-slate-50 dark:bg-slate-900 p-4 rounded-lg border border-slate-200 dark:border-slate-700">
-                            <p id="summary" class="text-slate-600 dark:text-slate-300 italic text-sm leading-relaxed mb-3"></p>
-                            <button onclick="app.copySummary()" class="text-blue-600 dark:text-blue-400 text-sm font-medium hover:underline flex items-center gap-1">
-                                <i class="ph ph-copy"></i> Copy Summary
-                            </button>
-                        </div>
-                        <div id="toast-container"></div> 
-                    </div>
-                    <hr>
-                    <!-- Bulk Search Mode -->
-                    <div id="summary-bulk-mode" class="hidden bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm mb-6 transition-colors">
-                        <p class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Bulk ISBN Search (One per line)</p>
-                        <p><textarea id="bulk-isbn-input" rows="5" class="w-full p-3 border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 text-slate-800 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-colors mb-4 font-mono text-sm" placeholder="9780062457714&#10;9781982181284"></textarea></p>
-                        
-                        <div class="flex items-center gap-3 mb-4">
-                            <button onclick="app.processBulkISBNs()" id="bulk-btn" class="px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm">
-                                Process All
-                            </button>
-                            <span id="bulk-progress" class="text-sm text-slate-500 dark:text-slate-400 font-medium"></span>
-                        </div>
-
-                        <div id="bulk-results" class="hidden">
-                            <div class="flex justify-between items-center mb-1">
-                                <label class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase">Results</label>
-                                <button onclick="app.copyBulkResults()" class="text-blue-600 dark:text-blue-400 text-xs font-bold hover:underline">Copy All</button>
-                            </div>
-                            <div id="toast-container"></div> 
-                            <textarea id="bulk-output" readonly class="w-full p-3 border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-300 rounded-lg h-64 font-mono text-xs leading-relaxed outline-none resize-y"></textarea>
-                        </div>
-                    </div>
-                </div>
-            </div>
+  <!-- 520 Search (Summaries) -->
+  <div id="tabs-3" class="tabContent">
+    <h2>Summary Search</h2>
+    <div id="summary-single-mode">
+      <label>Google Books ISBN Search</label>
+      <div class="flex gap-2">
+        <input type="text" id="isbn" placeholder="Enter ISBN (e.g. 9780123456789)">
+        <button onclick="app.fetchSummary()">Find</button>
+      </div>
+      <div id="summary-result-container" class="hidden mt-4 bg-slate-50 dark:bg-slate-900 p-4 rounded-lg border border-slate-200 dark:border-slate-700">
+        <p id="summary"></p>
+        <button onclick="app.copySummary()">Copy Summary</button>
+      </div>
+      <div id="toast-container"></div> 
+    </div>
+  </div>
+  
+  <!-- Hidden Textarea for Copy Fallback -->
+  <textarea id="clipboard-helper" class="absolute -left-[9999px] top-0 opacity-0"></textarea>
 
 
-    <!-- Hidden Textarea for Copy Fallback -->
-    <textarea id="clipboard-helper" class="absolute -left-[9999px] top-0 opacity-0"></textarea>
-
-    
-    
-    
-
-    
-
-
-
-    <script>
-const app = {
+  <script>
+  const app = {
     state: {
-        isBulkMode: false,
-        theme: 'light',
         mdsStack: [],
         currentMdsLevel: 'root'
     },
@@ -486,18 +391,6 @@ const app = {
         window.open(url, '_blank');
     },
 
-    showBulkLinks() {
-        const query = document.getElementById('univ-search-input').value.trim();
-        if (!query) return this.toast("Please enter a search term", "error");
-    },
-
-    toggleDropdown(index) {
-        const menu = document.getElementById(`dropdown-menu-${index}`);
-        const isHidden = menu.classList.contains('hidden');
-        document.querySelectorAll('.dropdown-menu').forEach(el => el.classList.add('hidden'));
-        if (isHidden) menu.classList.remove('hidden');
-    },
-
     selectSeparator(index, value) {
         document.getElementById(`sep-${index}`).textContent = value || "+";
         document.getElementById(`dropdown-menu-${index}`).classList.add('hidden');
@@ -524,9 +417,9 @@ const app = {
                         el.className = "flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-700/30 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-white dark:hover:bg-slate-700 transition-colors group";
 
                         el.innerHTML = `
-                            <ul><div class="flex-1 cursor-pointer font-medium text-slate-700 dark:text-slate-200 text-sm" onclick="app.populateBuilder('${hit.suggestLabel.replace(/'/g, "\\'")}')">
+                            <u><div class="flex-1 cursor-pointer font-medium text-slate-700 dark:text-slate-200 text-sm" onclick="app.populateBuilder('${hit.suggestLabel.replace(/'/g, "\\'")}')">
                                 ${hit.suggestLabel}
-                            </div></ul>
+                            </div></u>
                             
                         `;
                         resultsDiv.appendChild(el);
@@ -589,13 +482,6 @@ const app = {
         document.getElementById("infoModal").style.display = "flex";
     },
 
-    toggleBulkMode() {
-        this.state.isBulkMode = !this.state.isBulkMode;
-        document.getElementById('mode-text').textContent = this.state.isBulkMode ? "Switch to Single Mode" : "Switch to Bulk Mode";
-        document.getElementById('summary-single-mode').classList.toggle('hidden');
-        document.getElementById('summary-bulk-mode').classList.toggle('hidden');
-    },
-
     async getGoogleBook(isbn) {
         try {
             const res = await fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${encodeURIComponent(isbn)}`);
@@ -644,46 +530,6 @@ const app = {
         this.safeCopy(text);
         this.toast("Summary copied");
     },
-
-    async processBulkISBNs() {
-        const input = document.getElementById('bulk-isbn-input').value;
-        const isbns = input.split('\n').map(s => s.trim()).filter(s => s.length > 0);
-
-        if (!isbns.length) return this.toast("No ISBNs to process", "error");
-
-        const btn = document.getElementById('bulk-btn');
-        const progress = document.getElementById('bulk-progress');
-        const resultsArea = document.getElementById('bulk-results');
-        const output = document.getElementById('bulk-output');
-
-        btn.disabled = true;
-        resultsArea.classList.remove('hidden');
-        output.value = "";
-
-        let resultStr = "";
-
-        for (let i = 0; i < isbns.length; i++) {
-            progress.textContent = `Processing ${i + 1} of ${isbns.length}...`;
-            const isbn = isbns[i];
-            await new Promise(r => setTimeout(r, 400));
-            const sum = await this.getGoogleBook(isbn);
-
-            resultStr += `ISBN: ${isbn}\n${sum || "[No summary found]"}\n\n-------------------\n\n`;
-            output.value = resultStr;
-            output.scrollTop = output.scrollHeight;
-        }
-
-        progress.textContent = "Done!";
-        btn.disabled = false;
-        this.toast("Bulk processing complete");
-    },
-
-    copyBulkResults() {
-        const output = document.getElementById('bulk-output');
-        this.safeCopy(output.value);
-        this.toast("All results copied");
-    },
-    
     
     renderMDS(level = 'root') {
           this.state.currentMdsLevel = level;
@@ -808,7 +654,7 @@ const app = {
       },
     
     
-};
+  };
 
 
         // --- Data: MDS / Dewey ---
@@ -1316,7 +1162,7 @@ const app = {
       document.addEventListener('DOMContentLoaded', () => {
           app.init();
       });
-    </script>
+  </script>
 
 </body>
 </html>
