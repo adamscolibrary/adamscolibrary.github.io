@@ -124,10 +124,10 @@
   ||__|_|__|__|_||_|_| /  \ \  / /  \_|_\___/|_|_|_|_|_|
   |_________________ _/    \/\/\/    \_ /   /__________|                                          -JF
   | _____   _   __  |/      \../      \/   /   __   ___|
-  ||_____|_| |_|##|_||   |   \/ __\       /=|_|++|_|-|||    
-  ||______||=|#|--| |\   \   o     \_____/  |~|  | | |||    
+  ||_____|_| |_|##|_||   |   \/ __\       /=|_|++|_|-|||    P.S. API callouts don't work on Neocities
+  ||______||=|#|--| |\   \   o     \_____/  |~|  | | |||    so go to my github vvv
   ||______||_|_|__|_|_\   \  o     | |_|_|__|_|__|_|_|||
-  |_________ __________\___\_______|____________ ______|    
+  |_________ __________\___\_______|____________ ______|    https://adamscolibrary.github.io/marc_tools
   |__    _  /    ________     ______           /| _ _ _|
   |\ \  |=|/   //    /| //   /  /  / |        / ||%|%|%|
   | \/\ |*/  .//____// //   /__/__/ (_)      /  ||=|=|=|
@@ -172,7 +172,6 @@ __|  \/\|/   /(____|/ //                    /  /||~|~|~|__
     <div id="mds-breadcrumbs">
       <button onclick="app.renderMDS()">Top</button>  
     </div>
-    <div id="toast-container"></div>
     
     <hr>
     
@@ -192,8 +191,7 @@ __|  \/\|/   /(____|/ //                    /  /||~|~|~|__
       <button onclick="app.copyMARC()" title="Ctrl+C">Copy 650 ^C</button>
       <button onclick="app.copyJuvMARC()" title="Ctrl+J">Copy Juv ^J</button>
       <button onclick="app.clearBuilder()" title="Ctrl+X">Clear ^X</button>
-    <div id="toast-container"></div>
-    </div>                         
+    </div>
     <div>                 
       <p>
         <input type="text" id="field1" placeholder="Main Term">
@@ -255,7 +253,6 @@ __|  \/\|/   /(____|/ //                    /  /||~|~|~|__
         <p id="summary"></p>
         <button onclick="app.copySummary()">Copy Summary</button>
       </div>
-      <div id="toast-container"></div> 
     </div>
   </div>
   
@@ -281,11 +278,6 @@ __|  \/\|/   /(____|/ //                    /  /||~|~|~|__
     },
 
     init() {
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('.dropdown-wrapper')) {
-                document.querySelectorAll('.dropdown-menu').forEach(el => el.classList.add('hidden'));
-            }
-        });
 
         document.addEventListener('keydown', (e) => {
             if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
@@ -319,24 +311,6 @@ __|  \/\|/   /(____|/ //                    /  /||~|~|~|__
         }
     },
 
-    toast(message, type = 'success') {
-        const container = document.getElementById('toast-container');
-        const el = document.createElement('div');
-        const bg = type === 'error' ? 'bg-red-500' : 'bg-slate-800 dark:bg-slate-700';
-
-        el.className = `${bg} text-white px-4 py-3 rounded-lg shadow-xl flex items-center gap-3 transform transition-all duration-300 translate-y-10 opacity-0`;
-        el.innerHTML = `
-            <span>${message}</span>
-        `;
-
-        container.appendChild(el);
-        requestAnimationFrame(() => el.classList.remove('translate-y-10', 'opacity-0'));
-        setTimeout(() => {
-            el.classList.add('translate-y-10', 'opacity-0');
-            setTimeout(() => el.remove(), 300);
-        }, 3000);
-    },
-
     safeCopy(text) {
         const textarea = document.getElementById('clipboard-helper');
         textarea.value = text;
@@ -351,20 +325,6 @@ __|  \/\|/   /(____|/ //                    /  /||~|~|~|__
             }
             console.error('Copy failed', err);
             return false;
-        }
-    },
-
-    updateSearchLinks() {
-        const query = document.getElementById('univ-search-input').value.trim();
-        const grid = document.getElementById('provider-grid');
-
-        if (query.length > 0) {
-            grid.classList.remove('provider-empty');
-            grid.classList.add('provider-ready');
-        } else {
-            grid.classList.add('provider-empty');
-            grid.classList.remove('provider-ready');
-            document.getElementById('bulk-links-area')?.classList.add('hidden');
         }
     },
 
@@ -470,16 +430,6 @@ __|  \/\|/   /(____|/ //                    /  /||~|~|~|__
         const text = this.getBuilderString() + "|vJuvenile literature.";
         this.safeCopy(text);
         this.toast("Copied Juvenile string");
-    },
-
-    openInfoModal(hitStr) {
-        const hit = JSON.parse(decodeURIComponent(hitStr));
-        document.getElementById("modalTitle").innerText = hit.suggestLabel;
-        document.getElementById("modalScope").innerText = hit.more?.scopenote || "-";
-        document.getElementById("modalBroader").innerText = hit.more?.broader || "-";
-        document.getElementById("modalType").innerText = hit.more?.rdftype || "-";
-        document.getElementById("infoLink").href = hit.uri;
-        document.getElementById("infoModal").style.display = "flex";
     },
 
     async getGoogleBook(isbn) {
