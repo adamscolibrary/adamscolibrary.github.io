@@ -72,8 +72,8 @@
     <p><button id="tabs2" onclick="app.showStuff(this)">650 Builder</button></P>
     <p><button id="tabs3" onclick="app.showStuff(this)">520 Search</button></p>
     <p><button id="tabs4" onclick="app.showStuff(this)">MDS Browser</button></p>
-    <p><button id="tabs5" onclick="app.showStuff(this)">Bib Formats</button></p>              
-    <p><button id="tabs6" onclick="app.showStuff(this)">Talpa AI</button></p>
+    <p><button id="tabs5" onclick="app.showStuff(this)">Bib Formats (External)</button></p>              
+    <p><button id="tabs6" onclick="app.showStuff(this)">Talpa AI (External)</button></p>
     
     <br>
 
@@ -180,7 +180,7 @@ __|  \/\|/   /(____|/ //                    /  /||~|~|~|__
 
   <!-- Talpa AI (Iframe) -->          
   <div id="tabs-6" class="tabContent">
-    <iframe src="https://www.talpasearch.com/429.669/search?su_catalog_url=https%3A%2F%2Fohio.ent.sirsi.net%2Fclient%2Fen_US%2Facp%2F" class="w-full h-full border-none"></iframe>
+    <iframe src="https://www.talpasearch.com/429.669/search?su_catalog_url=https%3A%2F%2Fohio.ent.sirsi.net%2Fclient%2Fen_US%2Facp%2F"></iframe>
   </div>
 
   <!-- MARC Builder -->        
@@ -228,7 +228,7 @@ __|  \/\|/   /(____|/ //                    /  /||~|~|~|__
         <p><input type="text" id="searchInput1" onkeydown="if(event.key==='Enter') app.searchLOC()"></p>
         <button onclick="app.searchLOC()">Search</button>
       </div>                
-      <div id="results" class="space-y-2 min-h-[100px]"></div>                
+      <div id="results"></div>                
       <div>
         <h4>External Databases</h4>
         <p>
@@ -245,11 +245,9 @@ __|  \/\|/   /(____|/ //                    /  /||~|~|~|__
     <h2>Summary Search</h2>
     <div id="summary-single-mode">
       <label>Google Books ISBN Search</label>
-      <div class="flex gap-2">
-        <input type="text" id="isbn" placeholder="Enter ISBN (e.g. 9780123456789)">
-        <button onclick="app.fetchSummary()">Find</button>
-      </div>
-      <div id="summary-result-container" class="hidden mt-4 bg-slate-50 dark:bg-slate-900 p-4 rounded-lg border border-slate-200 dark:border-slate-700">
+      <input type="text" id="isbn" placeholder="Enter ISBN (e.g. 9780123456789)">
+      <button onclick="app.fetchSummary()">Find</button>
+      <div id="summary-result-container">
         <p id="summary"></p>
         <button onclick="app.copySummary()">Copy Summary</button>
       </div>
@@ -361,23 +359,23 @@ __|  \/\|/   /(____|/ //                    /  /||~|~|~|__
         if (!query) return;
 
             const resultsDiv = document.getElementById("results");
-            resultsDiv.innerHTML = '<div class="flex justify-center py-6"><div class="loader"></div></div>';
+            resultsDiv.innerHTML = '<div class="loader"></div>';
 
             fetch(`https://id.loc.gov/authorities/subjects/suggest2?q=${encodeURIComponent(query)}`)
                 .then(res => res.json())
                 .then(data => {
                   resultsDiv.innerHTML = "";
                     if (!data.hits || data.hits.length === 0) {
-                        resultsDiv.innerHTML = '<p class="text-center text-slate-500 py-4">No results found.</p>';
+                        resultsDiv.innerHTML = '<p>No results found.</p>';
                         return;
                     }
 
                     data.hits.forEach(hit => {
                         const el = document.createElement("div");
-                        el.className = "flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-700/30 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-white dark:hover:bg-slate-700 transition-colors group";
+    
 
                         el.innerHTML = `
-                            <u><div class="flex-1 cursor-pointer font-medium text-slate-700 dark:text-slate-200 text-sm" onclick="app.populateBuilder('${hit.suggestLabel.replace(/'/g, "\\'")}')">
+                            <u><div onclick="app.populateBuilder('${hit.suggestLabel.replace(/'/g, "\\'")}')">
                                 ${hit.suggestLabel}
                             </div></u>
                             
@@ -386,7 +384,7 @@ __|  \/\|/   /(____|/ //                    /  /||~|~|~|__
                     });
                 })
                 .catch(() => {
-                    resultsDiv.innerHTML = '<p class="text-red-500 text-center text-sm">Error connecting to LOC.</p>';
+                    resultsDiv.innerHTML = '<p>Error connecting to LOC.</p>';
                 });
     },
 
@@ -456,7 +454,7 @@ __|  \/\|/   /(____|/ //                    /  /||~|~|~|__
 
         const btn = document.querySelector('#summary-single-mode button');
         const prev = btn.innerHTML;
-        btn.innerHTML = '<div class="loader w-4 h-4 border-white border-t-transparent"></div>';
+        btn.innerHTML = '<div class="loader"></div>';
         btn.disabled = true;
 
         const text = await this.getGoogleBook(isbn);
@@ -559,7 +557,6 @@ __|  \/\|/   /(____|/ //                    /  /||~|~|~|__
 
           const topBtn = document.createElement('button');
           topBtn.textContent = 'Top';
-          topBtn.className = 'hover:text-blue-600 dark:hover:text-blue-400 transition-colors font-medium';
           topBtn.addEventListener('click', () => {
               document.getElementById('mds-filter').value = '';
               this.renderMDS('root');
@@ -586,8 +583,6 @@ __|  \/\|/   /(____|/ //                    /  /||~|~|~|__
                       this.state.mdsStack = this.state.mdsStack.slice(0, i);
                       this.renderMDS(level);
                   });
-              } else {
-                  btn.className += ' font-medium text-slate-700 dark:text-slate-200';
               }
 
               container.appendChild(btn);
