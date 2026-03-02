@@ -4,17 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MARC Tools Suite</title>
-    <meta name="description" content="A suite of tools for librarians including MARC building, ISBN summaries, and OCR.">
+    <meta name="description" content="A suite of tools for librarians including MARC building, ISBN summaries, and Database Search.">
 
     <style>
-        
-        iframe {
-          border: 0;
-          width:100%;
-          height: 100%;
-          overflow: auto;
-          }
-        
 
         .sidebar {
           margin: 0;
@@ -50,14 +42,7 @@
             cursor: not-allowed;
             filter: grayscale(100%);
         }
-
-        /* MDS Grid Card */
-        .mds-card {
-            transition: all 0.2s ease;
-        }
-        .mds-card:hover {
-            transform: translateY(-2px);
-        }
+        
     </style>
 </head>
 
@@ -70,10 +55,7 @@
     
     <p><button id="tabs1" onclick="app.showStuff(this)">Item Search</button></p>                  
     <p><button id="tabs2" onclick="app.showStuff(this)">650 Builder</button></P>
-    <p><button id="tabs3" onclick="app.showStuff(this)">520 Search</button></p>
-    <p><button id="tabs4" onclick="app.showStuff(this)">MDS Browser</button></p>
-    <p><button id="tabs5" onclick="app.showStuff(this)">Bib Formats (External)</button></p>              
-    <p><button id="tabs6" onclick="app.showStuff(this)">Talpa AI (External)</button></p>
+    <p><button id="tabs3" onclick="app.showStuff(this)">520 Search</button></p>              
     
     <br>
 
@@ -84,11 +66,13 @@
     <p> Library of Congress</p> 
     <p><a href="https://www.loc.gov/aba/cataloging/tools/" target="_blank">LCSH Headers</a></p>
     <p><a href="https://authorities.loc.gov/" target="_blank">LOC Authorities</a></p>
-    <p><a href="https://www.loc.gov/marc/bibliographic/" target="_blank">LOC Bib Format</a><p>
+    <p><a href="https://www.oclc.org/bibformats/en/0xx.html" target="_blank">Bib Format</a><p>
     <p> LibraryThing</p>
     <p><a href="https://www.librarything.com/search.php?searchtype=newwork_titles&ampterm=" target="_blank">Works Search</a></p>
     <p><a href="https://www.librarything.com/mds" target="_blank">MDS</a></p>
+    <p><a href="https://www.talpasearch.com/429.669/search?su_catalog_url=https%3A%2F%2Fohio.ent.sirsi.net%2Fclient%2Fen_US%2Facp%2F" target="_blank">Talpa AI (SEO)</a></p>
     <p> OCLC</p>
+    <p><a href="https://entities.oclc.org/worldcat/ddc/" target="_blank">Bib Formats</a></p>
     <p><a href="https://entities.oclc.org/worldcat/ddc/" target="_blank">Dewey Linked Data</a></p>
     <p><a href="https://www.oclc.org/content/dam/oclc/dewey/ddc23-summaries.pdf" target="_blank">DDC23 Summaries [PDF]</a><p>
   </div>
@@ -124,10 +108,10 @@
   ||__|_|__|__|_||_|_| /  \ \  / /  \_|_\___/|_|_|_|_|_|
   |_________________ _/    \/\/\/    \_ /   /__________|                                          -JF
   | _____   _   __  |/      \../      \/   /   __   ___|
-  ||_____|_| |_|##|_||   |   \/ __\       /=|_|++|_|-|||    P.S. API callouts don't work on Neocities
-  ||______||=|#|--| |\   \   o     \_____/  |~|  | | |||    so go to my github vvv
+  ||_____|_| |_|##|_||   |   \/ __\       /=|_|++|_|-|||    
+  ||______||=|#|--| |\   \   o     \_____/  |~|  | | |||    
   ||______||_|_|__|_|_\   \  o     | |_|_|__|_|__|_|_|||
-  |_________ __________\___\_______|____________ ______|    https://adamscolibrary.github.io/marc_tools
+  |_________ __________\___\_______|____________ ______|    
   |__    _  /    ________     ______           /| _ _ _|
   |\ \  |=|/   //    /| //   /  /  / |        / ||%|%|%|
   | \/\ |*/  .//____// //   /__/__/ (_)      /  ||=|=|=|
@@ -159,30 +143,6 @@ __|  \/\|/   /(____|/ //                    /  /||~|~|~|__
     </div>
   </div>
  
- <!-- Bib Formats -->
-  <div id="tabs-5" class="tabContent">
-    <iframe  src="https://www.oclc.org/bibformats/en/0xx.html"></iframe>
-  </div>
-
- <!-- MDS Browser -->          
-  <div id="tabs-4" class="tabContent">
-    <h2> MDS Browser</h2>
-    <p>Browse the DDC23 Summaries hierarchy to find classification numbers.</p>                  
-    <p><input type="text" id="mds-filter" oninput="app.filterMDS()" placeholder="Filter current view..."></p>
-    <div id="mds-breadcrumbs">
-      <button onclick="app.renderMDS()">Top</button>  
-    </div>
-    
-    <hr>
-    
-    <div id="mds-grid"></div> 
-  </div>         
-
-  <!-- Talpa AI (Iframe) -->          
-  <div id="tabs-6" class="tabContent">
-    <iframe src="https://www.talpasearch.com/429.669/search?su_catalog_url=https%3A%2F%2Fohio.ent.sirsi.net%2Fclient%2Fen_US%2Facp%2F"></iframe>
-  </div>
-
   <!-- MARC Builder -->        
   <div id="tabs-2" class="tabContent">
     <h2>LCSH 650 MARC Builder</h2>
@@ -260,11 +220,7 @@ __|  \/\|/   /(____|/ //                    /  /||~|~|~|__
 
   <script>
   const app = {
-    state: {
-        mdsStack: [],
-        currentMdsLevel: 'root'
-    },
-
+      
     showStuff(element) {
         var tabContents = document.getElementsByClassName('tabContent');
         for (var i = 0; i < tabContents.length; i++) {
@@ -479,634 +435,11 @@ __|  \/\|/   /(____|/ //                    /  /||~|~|~|__
         this.toast("Summary copied");
     },
     
-    renderMDS(level = 'root') {
-          this.state.currentMdsLevel = level;
-
-          if (level === 'root') {
-             this.state.mdsStack = [];
-          }
-
-          const grid = document.getElementById('mds-grid');
-          const filter = document.getElementById('mds-filter').value.toLowerCase();
-          const children = this.getMDSChildren(level);
-
-          grid.innerHTML = '';
-
-          children.forEach(item => {
-              if (filter && !item.code.includes(filter) && !item.label.toLowerCase().includes(filter)) return;
-
-              const hasChildren = this.getMDSChildren(item.code).length > 0;
-              const card = document.createElement('div');
-              
-
-              card.innerHTML = `
-                  <p><div><span>
-                          <button onclick="event.stopPropagation(); app.copyMDSCode('${item.code}');" title="Copy code">Copy</button>
-                          <button><span>${item.code}</span>
-                          <span>${item.label}</span>
-                          ${hasChildren ? '>' : ''}</button>
-                      
-                  </span></div></p>
-              `;
-
-              if (hasChildren) {
-                  card.addEventListener('click', () => {
-                      this.state.mdsStack.push(level);
-                      document.getElementById('mds-filter').value = '';
-                      this.renderMDS(item.code);
-                  });
-              }
-
-              grid.appendChild(card);
-          });
-
-          this.renderBreadcrumbs();
-      },
-
-      getMDSChildren(parentCode) {
-          if (parentCode === 'root') {
-              return MDS_DATA.filter(item => item.code.endsWith('00'));
-          }
-
-          if (parentCode.endsWith('00')) {
-              const prefix = parentCode[0];
-              return MDS_DATA.filter(item => {
-                  if (item.code === parentCode) return false;
-                  if (item.code[0] !== prefix) return false;
-                  if (item.code.endsWith('0')) return true;
-                  return false;
-              });
-          }
-
-          if (parentCode.endsWith('0')) {
-              const prefix = parentCode.substring(0, 2);
-              return MDS_DATA.filter(item => {
-                  if (item.code === parentCode) return false;
-                  if (item.code.substring(0, 2) !== prefix) return false;
-                  if (!item.code.endsWith('0')) return true;
-                  return false;
-              });
-          }
-
-          return [];
-      },
-
-      renderBreadcrumbs() {
-          const container = document.getElementById('mds-breadcrumbs');
-          container.innerHTML = '';
-
-          const topBtn = document.createElement('button');
-          topBtn.textContent = 'Top';
-          topBtn.addEventListener('click', () => {
-              document.getElementById('mds-filter').value = '';
-              this.renderMDS('root');
-          });
-          container.appendChild(topBtn);
-
-          const trail = [...this.state.mdsStack, this.state.currentMdsLevel].filter(l => l !== 'root');
-
-          trail.forEach((level, i) => {
-              const sep = document.createElement('span');
-              sep.textContent = ' > ';
-              sep.className = 'text-slate-400';
-              container.appendChild(sep);
-
-              const item = MDS_DATA.find(d => d.code === level);
-              const label = item ? item.label : level;
-
-              const btn = document.createElement('button');
-              btn.textContent = `${level} - ${label}`;
-
-              if (i < trail.length - 1) {
-                  btn.addEventListener('click', () => {
-                      document.getElementById('mds-filter').value = '';
-                      this.state.mdsStack = this.state.mdsStack.slice(0, i);
-                      this.renderMDS(level);
-                  });
-              }
-
-              container.appendChild(btn);
-          });
-      },
-
-      filterMDS() {
-          this.renderMDS(this.state.currentMdsLevel);
-      },
-
-      copyMDSCode(code) {
-          this.safeCopy(code);
-          this.toast(`Copied: ${code}`);
-      },
-    
-    
-  };
-
-
-        // --- Data: MDS / Dewey ---
-        const MDS_DATA = [
-            // 000
-            {code:"000",label:"Computer science, information & general works"},
-            {code:"001",label:"Knowledge"},
-            {code:"002",label:"The book"},
-            {code:"003",label:"Systems"},
-            {code:"004",label:"Computer science"},
-            {code:"005",label:"Computer programming, programs, & data"},
-            {code:"006",label:"Special computer methods"},
-            {code:"010",label:"Bibliography"},
-            {code:"011",label:"Bibliographies and catalogs"},
-            {code:"012",label:"Bibliographies and catalogs of individuals"},
-            {code:"014",label:"Of anonymous & pseudonymous works"},
-            {code:"015",label:"Of works from specific places"},
-            {code:"016",label:"Of works on specific subjects"},
-            {code:"017",label:"General subject catalogs"},
-            {code:"020",label:"Library and information sciences"},
-            {code:"021",label:"Relationships of libraries and archives"},
-            {code:"022",label:"Administration of physical plant"},
-            {code:"023",label:"Personnel management"},
-            {code:"025",label:"Operations of libraries and archives"},
-            {code:"026",label:"Libraries and archives devoted to specific subjects"},
-            {code:"027",label:"General libraries and archives"},
-            {code:"028",label:"Reading and use of other information media"},
-            {code:"030",label:"General encyclopedic works"},
-            {code:"031",label:"General encyclopedic works in American English"},
-            {code:"032",label:"General encyclopedic works in English"},
-            {code:"033",label:"Encyclopedias in other Germanic languages"},
-            {code:"034",label:"Encyclopedias in French, Occitan & Catalan"},
-            {code:"035",label:"Encyclopedias in Italian, Romanian & related languages"},
-            {code:"036",label:"Encyclopedias in Spanish, Portuguese & Galician"},
-            {code:"037",label:"General encyclopedic works in Slavic languages"},
-            {code:"038",label:"General encyclopedic works in Scandinavian languages"},
-            {code:"039",label:"General encyclopedic works in other languages"},
-            {code:"050",label:"General serial publications"},
-            {code:"051",label:"General serial publications in American English"},
-            {code:"052",label:"General serial publications in English"},
-            {code:"053",label:"Serials in other Germanic languages"},
-            {code:"054",label:"Serials in French, Occitan & Catalan"},
-            {code:"055",label:"Serials in Italian, Romanian & related languages"},
-            {code:"056",label:"Serials in Spanish, Portuguese & Galician"},
-            {code:"057",label:"General serial publications in Slavic languages"},
-            {code:"058",label:"Serials in Scandinavian languages"},
-            {code:"059",label:"General serial publications in other languages"},
-            {code:"060",label:"General organizations & museum science"},
-            {code:"061",label:"General organizations in North America"},
-            {code:"062",label:"General organizations in British Isles"},
-            {code:"063",label:"General organizations in Germany; in Central Europe"},
-            {code:"064",label:"General organizations in France and Monaco"},
-            {code:"065",label:"General organizations in Italy"},
-            {code:"066",label:"General organizations in Spain"},
-            {code:"067",label:"General organizations in Russia; in Eastern Europe"},
-            {code:"068",label:"General organizations in other geographic areas"},
-            {code:"069",label:"Museology (Museum science)"},
-            {code:"070",label:"Documentary, educational, news media; journalism"},
-            {code:"071",label:"Journalism and newspapers in North America"},
-            {code:"072",label:"Journalism and newspapers in British Isles"},
-            {code:"073",label:"Journalism and newspapers in Germany"},
-            {code:"074",label:"Journalism and newspapers in France and Monaco"},
-            {code:"075",label:"Journalism and newspapers in Italy"},
-            {code:"076",label:"Journalism and newspapers in Spain"},
-            {code:"077",label:"Journalism and newspapers in Russia"},
-            {code:"078",label:"Journalism and newspapers in Scandinavia"},
-            {code:"079",label:"Newspapers in other geographic areas"},
-            {code:"080",label:"General collections"},
-            {code:"081",label:"General collections in American English"},
-            {code:"082",label:"General collections in English"},
-            {code:"083",label:"General collections in other Germanic languages"},
-            {code:"084",label:"General collections in French, Occitan & Catalan"},
-            {code:"085",label:"Collections in Italian, Romanian & related languages"},
-            {code:"086",label:"Collections in Spanish, Portuguese & Galician"},
-            {code:"087",label:"General collections in Slavic languages"},
-            {code:"088",label:"General collections in Scandinavian languages"},
-            {code:"089",label:"General collections in other languages"},
-            {code:"090",label:"Manuscripts and rare books"},
-            {code:"091",label:"Manuscripts"},
-            {code:"092",label:"Block books"},
-            {code:"093",label:"Incunabula"},
-            {code:"094",label:"Printed books"},
-            {code:"095",label:"Books notable for bindings"},
-            {code:"096",label:"Books notable for illustrations and materials"},
-            {code:"097",label:"Books notable for ownership or origin"},
-            {code:"098",label:"Prohibited works, forgeries, hoaxes"},
-            {code:"099",label:"Books notable for format"},
-            
-            // 100
-            {code:"100",label:"Philosophy & psychology"},
-            {code:"101",label:"Theory of philosophy"},
-            {code:"102",label:"Miscellany of philosophy"},
-            {code:"103",label:"Dictionaries & encyclopedias"},
-            {code:"110",label:"Metaphysics"},
-            {code:"111",label:"Ontology"},
-            {code:"113",label:"Cosmology (Philosophy of nature)"},
-            {code:"114",label:"Space"},
-            {code:"115",label:"Time"},
-            {code:"120",label:"Epistemology, causation, humankind"},
-            {code:"121",label:"Epistemology (Theory of knowledge)"},
-            {code:"122",label:"Causation"},
-            {code:"123",label:"Determinism and indeterminism"},
-            {code:"126",label:"The self"},
-            {code:"130",label:"Parapsychology and occultism"},
-            {code:"131",label:"Parapsychological and occult methods"},
-            {code:"133",label:"Specific topics in parapsychology & occultism"},
-            {code:"135",label:"Dreams and mysteries"},
-            {code:"140",label:"Specific philosophical schools"},
-            {code:"141",label:"Idealism and related systems"},
-            {code:"142",label:"Critical philosophy"},
-            {code:"144",label:"Humanism and related systems"},
-            {code:"150",label:"Psychology"},
-            {code:"152",label:"Perception, movement, emotions & drives"},
-            {code:"153",label:"Conscious mental processes & intelligence"},
-            {code:"154",label:"Subconscious & altered states"},
-            {code:"155",label:"Differential & developmental psychology"},
-            {code:"156",label:"Comparative psychology"},
-            {code:"158",label:"Applied psychology"},
-            {code:"160",label:"Philosophical logic"},
-            {code:"170",label:"Ethics (Moral philosophy)"},
-            {code:"171",label:"Ethical systems"},
-            {code:"172",label:"Political ethics"},
-            {code:"173",label:"Ethics of family relationships"},
-            {code:"174",label:"Occupational ethics"},
-            {code:"175",label:"Ethics of recreation & leisure"},
-            {code:"176",label:"Ethics of sex & reproduction"},
-            {code:"180",label:"Ancient, medieval & eastern philosophy"},
-            {code:"190",label:"Modern western philosophy"},
-            {code:"191",label:"Philosophy of United States and Canada"},
-
-            // 200
-            {code:"200",label:"Religion"},
-            {code:"201",label:"Religious mythology & social theology"},
-            {code:"204",label:"Religious experience, life, practice"},
-            {code:"210",label:"Philosophy and theory of religion"},
-            {code:"211",label:"Concepts of God"},
-            {code:"213",label:"Creation"},
-            {code:"215",label:"Science and religion"},
-            {code:"220",label:"Bible"},
-            {code:"221",label:"Old Testament (Tanakh)"},
-            {code:"225",label:"New Testament"},
-            {code:"226",label:"Gospels and Acts"},
-            {code:"230",label:"Christianity"},
-            {code:"231",label:"God"},
-            {code:"232",label:"Jesus Christ and his family"},
-            {code:"240",label:"Christian moral and devotional theology"},
-            {code:"250",label:"Local Christian church and religious orders"},
-            {code:"260",label:"Christian social and ecclesiastical theology"},
-            {code:"261",label:"Social theology and interreligious relations"},
-            {code:"270",label:"History of Christianity"},
-            {code:"280",label:"Denominations & sects of Christian church"},
-            {code:"282",label:"Roman Catholic Church"},
-            {code:"283",label:"Anglican churches"},
-            {code:"290",label:"Other religions"},
-            {code:"292",label:"Classical religion (Greek & Roman)"},
-            {code:"294",label:"Religions of Indic origin"},
-            {code:"296",label:"Judaism"},
-            {code:"297",label:"Islam"},
-
-            // 300
-            {code:"300",label:"Social sciences"},
-            {code:"301",label:"Sociology and anthropology"},
-            {code:"302",label:"Social interaction"},
-            {code:"303",label:"Social processes"},
-            {code:"304",label:"Factors affecting social behavior"},
-            {code:"305",label:"Groups of people"},
-            {code:"306",label:"Culture and institutions"},
-            {code:"307",label:"Communities"},
-            {code:"310",label:"Collections of general statistics"},
-            {code:"320",label:"Political science"},
-            {code:"321",label:"Systems of governments and states"},
-            {code:"322",label:"Relation of state to organized groups"},
-            {code:"323",label:"Civil and political rights"},
-            {code:"324",label:"The political process"},
-            {code:"325",label:"International migration and colonization"},
-            {code:"327",label:"International relations"},
-            {code:"328",label:"The legislative process"},
-            {code:"330",label:"Economics"},
-            {code:"331",label:"Labor economics"},
-            {code:"332",label:"Financial economics"},
-            {code:"333",label:"Economics of land and energy"},
-            {code:"334",label:"Cooperatives"},
-            {code:"335",label:"Socialism and related systems"},
-            {code:"336",label:"Public finance"},
-            {code:"338",label:"Production"},
-            {code:"339",label:"Macroeconomics"},
-            {code:"340",label:"Law"},
-            {code:"341",label:"Law of nations"},
-            {code:"342",label:"Constitutional and administrative law"},
-            {code:"345",label:"Criminal law"},
-            {code:"350",label:"Public administration and military science"},
-            {code:"351",label:"Public administration"},
-            {code:"355",label:"Military science"},
-            {code:"359",label:"Naval forces and warfare"},
-            {code:"360",label:"Social problems and services; associations"},
-            {code:"361",label:"Social problems and services"},
-            {code:"362",label:"Social problems and services to groups"},
-            {code:"363",label:"Other social problems and services"},
-            {code:"364",label:"Criminology"},
-            {code:"366",label:"Secret associations and societies"},
-            {code:"368",label:"Insurance"},
-            {code:"370",label:"Education"},
-            {code:"371",label:"Schools and their activities"},
-            {code:"372",label:"Primary education"},
-            {code:"373",label:"Secondary education"},
-            {code:"374",label:"Adult education"},
-            {code:"378",label:"Higher education"},
-            {code:"380",label:"Commerce, communications, transportation"},
-            {code:"381",label:"Commerce (Trade)"},
-            {code:"382",label:"International commerce"},
-            {code:"384",label:"Communications"},
-            {code:"385",label:"Railroad transportation"},
-            {code:"388",label:"Transportation"},
-            {code:"390",label:"Customs, etiquette, folklore"},
-            {code:"391",label:"Costume and personal appearance"},
-            {code:"392",label:"Customs of life cycle and domestic life"},
-            {code:"394",label:"General customs"},
-            {code:"395",label:"Etiquette"},
-            {code:"398",label:"Folklore"},
-
-            // 400
-            {code:"400",label:"Language"},
-            {code:"401",label:"Philosophy and theory; international languages"},
-            {code:"403",label:"Dictionaries & encyclopedias"},
-            {code:"410",label:"Linguistics"},
-            {code:"411",label:"Writing systems"},
-            {code:"414",label:"Phonology & phonetics"},
-            {code:"415",label:"Grammar"},
-            {code:"419",label:"Sign languages"},
-            {code:"420",label:"English & Old English"},
-            {code:"421",label:"Writing system, phonology, phonetics (English)"},
-            {code:"422",label:"Etymology of standard English"},
-            {code:"423",label:"Dictionaries of standard English"},
-            {code:"425",label:"Grammar of standard English"},
-            {code:"429",label:"Old English (Anglo-Saxon)"},
-            {code:"430",label:"German & related languages"},
-            {code:"440",label:"French & related Romance languages"},
-            {code:"450",label:"Italian, Romanian & related languages"},
-            {code:"460",label:"Spanish, Portuguese, Galician"},
-            {code:"470",label:"Latin and related Italic languages"},
-            {code:"480",label:"Classical Greek; Hellenic languages"},
-            {code:"490",label:"Other languages"},
-            {code:"491",label:"East Indo-European and Celtic languages"},
-            {code:"492",label:"Afro-Asiatic languages"},
-            {code:"495",label:"Languages of east and southeast Asia"},
-
-            // 500
-            {code:"500",label:"Natural sciences and mathematics"},
-            {code:"501",label:"Philosophy and theory"},
-            {code:"507",label:"Education, research, related topics"},
-            {code:"508",label:"Natural history"},
-            {code:"509",label:"History, geographic treatment, biography"},
-            {code:"510",label:"Mathematics"},
-            {code:"511",label:"General principles of mathematics"},
-            {code:"512",label:"Algebra"},
-            {code:"513",label:"Arithmetic"},
-            {code:"514",label:"Topology"},
-            {code:"515",label:"Analysis"},
-            {code:"516",label:"Geometry"},
-            {code:"519",label:"Probabilities and applied mathematics"},
-            {code:"520",label:"Astronomy and allied sciences"},
-            {code:"523",label:"Specific celestial bodies and phenomena"},
-            {code:"525",label:"Earth (Astronomical geography)"},
-            {code:"529",label:"Chronology"},
-            {code:"530",label:"Physics"},
-            {code:"531",label:"Classical mechanics"},
-            {code:"532",label:"Fluid mechanics"},
-            {code:"534",label:"Sound and related vibrations"},
-            {code:"535",label:"Light and related radiation"},
-            {code:"536",label:"Heat"},
-            {code:"537",label:"Electricity and electronics"},
-            {code:"538",label:"Magnetism"},
-            {code:"539",label:"Modern physics"},
-            {code:"540",label:"Chemistry and allied sciences"},
-            {code:"541",label:"Physical chemistry"},
-            {code:"543",label:"Analytical chemistry"},
-            {code:"546",label:"Inorganic chemistry"},
-            {code:"547",label:"Organic chemistry"},
-            {code:"548",label:"Crystallography"},
-            {code:"549",label:"Mineralogy"},
-            {code:"550",label:"Earth sciences"},
-            {code:"551",label:"Geology, hydrology, meteorology"},
-            {code:"552",label:"Petrology"},
-            {code:"553",label:"Economic geology"},
-            {code:"560",label:"Paleontology"},
-            {code:"561",label:"Paleobotany"},
-            {code:"562",label:"Fossil invertebrates"},
-            {code:"567",label:"Fossil cold-blooded vertebrates"},
-            {code:"568",label:"Fossil Aves (birds)"},
-            {code:"569",label:"Fossil Mammalia"},
-            {code:"570",label:"Biology"},
-            {code:"571",label:"Physiology & related subjects"},
-            {code:"572",label:"Biochemistry"},
-            {code:"575",label:"Specific parts of & systems in plants"},
-            {code:"576",label:"Genetics and evolution"},
-            {code:"577",label:"Ecology"},
-            {code:"579",label:"Microorganisms, fungi & algae"},
-            {code:"580",label:"Plants"},
-            {code:"581",label:"Specific topics in natural history of plants"},
-            {code:"582",label:"Plants noted for characteristics & flowers"},
-            {code:"590",label:"Animals"},
-            {code:"592",label:"Invertebrates"},
-            {code:"595",label:"Arthropoda"},
-            {code:"597",label:"Cold-blooded vertebrates"},
-            {code:"598",label:"Aves"},
-            {code:"599",label:"Mammalia"},
-
-            // 600
-            {code:"600",label:"Technology (Applied sciences)"},
-            {code:"601",label:"Philosophy and theory"},
-            {code:"608",label:"Patents"},
-            {code:"609",label:"History, geographic treatment, biography"},
-            {code:"610",label:"Medicine and health"},
-            {code:"611",label:"Human anatomy, cytology, histology"},
-            {code:"612",label:"Human physiology"},
-            {code:"613",label:"Personal health & safety"},
-            {code:"614",label:"Forensic medicine; incidence of disease"},
-            {code:"615",label:"Pharmacology and therapeutics"},
-            {code:"616",label:"Diseases"},
-            {code:"617",label:"Surgery & related medical specialties"},
-            {code:"618",label:"Gynecology, obstetrics, pediatrics, geriatrics"},
-            {code:"620",label:"Engineering and allied operations"},
-            {code:"621",label:"Applied physics"},
-            {code:"622",label:"Mining and related operations"},
-            {code:"623",label:"Military and nautical engineering"},
-            {code:"624",label:"Civil engineering"},
-            {code:"625",label:"Engineering of railroads and roads"},
-            {code:"627",label:"Hydraulic engineering"},
-            {code:"628",label:"Environmental & sanitary engineering"},
-            {code:"629",label:"Other branches of engineering"},
-            {code:"630",label:"Agriculture and related technologies"},
-            {code:"631",label:"Techniques, equipment & materials"},
-            {code:"632",label:"Plant injuries, diseases, pests"},
-            {code:"633",label:"Field and plantation crops"},
-            {code:"634",label:"Orchards, fruits, forestry"},
-            {code:"635",label:"Garden crops (Horticulture)"},
-            {code:"636",label:"Animal husbandry"},
-            {code:"637",label:"Processing dairy and related products"},
-            {code:"638",label:"Insect culture"},
-            {code:"639",label:"Hunting, fishing & conservation"},
-            {code:"640",label:"Home and family management"},
-            {code:"641",label:"Food and drink"},
-            {code:"642",label:"Meals and table service"},
-            {code:"643",label:"Housing and household equipment"},
-            {code:"646",label:"Sewing, clothing & personal living"},
-            {code:"649",label:"Child rearing & home care of people"},
-            {code:"650",label:"Management and auxiliary services"},
-            {code:"651",label:"Office services"},
-            {code:"652",label:"Processes of written communication"},
-            {code:"657",label:"Accounting"},
-            {code:"658",label:"General management"},
-            {code:"659",label:"Advertising and public relations"},
-            {code:"660",label:"Chemical engineering"},
-            {code:"661",label:"Technology of industrial chemicals"},
-            {code:"662",label:"Explosives, fuels & related products"},
-            {code:"663",label:"Beverage technology"},
-            {code:"664",label:"Food technology"},
-            {code:"669",label:"Metallurgy"},
-            {code:"670",label:"Manufacturing"},
-            {code:"671",label:"Metalworking & primary metal products"},
-            {code:"677",label:"Textiles"},
-            {code:"680",label:"Manufacture of products for specific uses"},
-            {code:"681",label:"Precision instruments and other devices"},
-            {code:"683",label:"Hardware, weapons & household appliances"},
-            {code:"684",label:"Furnishings and home workshops"},
-            {code:"686",label:"Printing and related activities"},
-            {code:"690",label:"Construction of buildings"},
-            {code:"691",label:"Building materials"},
-
-            // 700
-            {code:"700",label:"The arts"},
-            {code:"701",label:"Philosophy of fine & decorative arts"},
-            {code:"704",label:"Special topics in fine and decorative arts"},
-            {code:"708",label:"Galleries, museums & private collections"},
-            {code:"709",label:"History, geographic treatment, biography"},
-            {code:"710",label:"Area planning and landscape architecture"},
-            {code:"711",label:"Area planning (Civic art)"},
-            {code:"712",label:"Landscape architecture"},
-            {code:"720",label:"Architecture"},
-            {code:"721",label:"Architectural materials and structure"},
-            {code:"722",label:"Architecture from earliest times to ca. 300"},
-            {code:"723",label:"Architecture from ca. 300 to 1399"},
-            {code:"724",label:"Architecture from 1400"},
-            {code:"725",label:"Public structures"},
-            {code:"726",label:"Buildings for religious and related purposes"},
-            {code:"728",label:"Residential and related buildings"},
-            {code:"730",label:"Sculpture and related arts"},
-            {code:"731",label:"Processes, forms, subjects of sculpture"},
-            {code:"736",label:"Carving and carvings"},
-            {code:"737",label:"Numismatics and sigillography"},
-            {code:"738",label:"Ceramic arts"},
-            {code:"739",label:"Art metalwork"},
-            {code:"740",label:"Design and related arts"},
-            {code:"741",label:"Drawing and drawings"},
-            {code:"743",label:"Drawing and drawings by subject"},
-            {code:"745",label:"Decorative arts"},
-            {code:"746",label:"Textile arts"},
-            {code:"747",label:"Interior decoration"},
-            {code:"748",label:"Glass"},
-            {code:"749",label:"Furniture and accessories"},
-            {code:"750",label:"Painting and paintings"},
-            {code:"751",label:"Techniques, equipment, materials & forms"},
-            {code:"752",label:"Color"},
-            {code:"753",label:"Symbolism, allegory, mythology, legend"},
-            {code:"755",label:"Religion"},
-            {code:"757",label:"Human figures"},
-            {code:"758",label:"Nature, cityscapes & other subjects"},
-            {code:"759",label:"History, geographic treatment, biography"},
-            {code:"760",label:"Printmaking & prints"},
-            {code:"769",label:"Prints"},
-            {code:"770",label:"Photography, computer art, film, video"},
-            {code:"771",label:"Techniques, equipment & materials"},
-            {code:"778",label:"Specific fields & kinds of photography"},
-            {code:"779",label:"Photographic images"},
-            {code:"780",label:"Music"},
-            {code:"781",label:"General principles and musical forms"},
-            {code:"782",label:"Vocal music"},
-            {code:"784",label:"Instruments & instrumental ensembles"},
-            {code:"786",label:"Keyboard & other instruments"},
-            {code:"787",label:"Stringed instruments"},
-            {code:"788",label:"Wind instruments"},
-            {code:"790",label:"Recreational and performing arts"},
-            {code:"791",label:"Public performances"},
-            {code:"792",label:"Stage presentations"},
-            {code:"793",label:"Indoor games and amusements"},
-            {code:"794",label:"Indoor games of skill"},
-            {code:"795",label:"Games of chance"},
-            {code:"796",label:"Athletic and outdoor sports and games"},
-            {code:"799",label:"Fishing, hunting, shooting"},
-
-            // 800
-            {code:"800",label:"Literature and rhetoric"},
-            {code:"801",label:"Philosophy and theory"},
-            {code:"808",label:"Rhetoric & collections of literature"},
-            {code:"809",label:"History, description & criticism"},
-            {code:"810",label:"American literature in English"},
-            {code:"811",label:"American poetry"},
-            {code:"812",label:"American drama"},
-            {code:"813",label:"American fiction"},
-            {code:"814",label:"American essays"},
-            {code:"820",label:"English & Old English literatures"},
-            {code:"821",label:"English poetry"},
-            {code:"822",label:"English drama"},
-            {code:"823",label:"English fiction"},
-            {code:"830",label:"German & related literatures"},
-            {code:"840",label:"French and related literatures"},
-            {code:"850",label:"Italian, Romanian & related literatures"},
-            {code:"860",label:"Spanish & Portuguese literatures"},
-            {code:"870",label:"Latin & related Italic literatures"},
-            {code:"880",label:"Classical Greek & Hellenic literatures"},
-            {code:"890",label:"Literatures of other languages"},
-            {code:"891",label:"East Indo-European and Celtic literatures"},
-            {code:"892",label:"Afro-Asiatic literatures"},
-            {code:"895",label:"Literatures of East and Southeast Asia"},
-
-            // 900
-            {code:"900",label:"History & geography"},
-            {code:"901",label:"Philosophy and theory of history"},
-            {code:"904",label:"Collected accounts of events"},
-            {code:"909",label:"World history"},
-            {code:"910",label:"Geography and travel"},
-            {code:"911",label:"Historical geography"},
-            {code:"912",label:"Maps and plans of surface of earth"},
-            {code:"913",label:"Geography of and travel in ancient world"},
-            {code:"914",label:"Geography of and travel in Europe"},
-            {code:"917",label:"Geography of & travel in North America"},
-            {code:"920",label:"Biography, genealogy, insignia"},
-            {code:"929",label:"Genealogy, names & insignia"},
-            {code:"930",label:"History of ancient world to ca. 499"},
-            {code:"931",label:"China to 420"},
-            {code:"932",label:"Egypt to 640"},
-            {code:"933",label:"Palestine to 70"},
-            {code:"934",label:"India to 647"},
-            {code:"937",label:"Italy & adjacent territories to 476"},
-            {code:"938",label:"Greece to 323"},
-            {code:"940",label:"History of Europe"},
-            {code:"941",label:"British Isles"},
-            {code:"942",label:"England and Wales"},
-            {code:"943",label:"Germany and central Europe"},
-            {code:"944",label:"France and Monaco"},
-            {code:"945",label:"Italy"},
-            {code:"946",label:"Spain and Portugal"},
-            {code:"947",label:"Russia and east Europe"},
-            {code:"950",label:"History of Asia"},
-            {code:"951",label:"China"},
-            {code:"952",label:"Japan"},
-            {code:"953",label:"Arabian Peninsula"},
-            {code:"954",label:"India & south Asia"},
-            {code:"956",label:"Middle East (Near East)"},
-            {code:"960",label:"History of Africa"},
-            {code:"962",label:"Egypt, Sudan, South Sudan"},
-            {code:"970",label:"History of North America"},
-            {code:"971",label:"Canada"},
-            {code:"972",label:"Mexico, Central America, West Indies"},
-            {code:"973",label:"United States"},
-            {code:"980",label:"History of South America"},
-            {code:"981",label:"Brazil"},
-            {code:"990",label:"History of other areas"},
-            {code:"993",label:"New Zealand"},
-            {code:"994",label:"Australia"},
-            {code:"999",label:"Extraterrestrial worlds"}
-        ];
 
         // Boot
       document.addEventListener('DOMContentLoaded', () => {
           app.init();
-      });
+    });
   </script>
 
 </body>
