@@ -258,11 +258,6 @@ __|  \/\|/   /(____|/ //                    /  /||~|~|~|__
                 if (e.key === 'Enter') this.fetchSummary();
             });
         }
-        
-        const mdsFilter = document.getElementById('mds-filter');
-          if (mdsFilter) {
-              this.renderMDS();
-        }
     },
 
     safeCopy(text) {
@@ -297,7 +292,6 @@ __|  \/\|/   /(____|/ //                    /  /||~|~|~|__
     launchProvider(provider) {
         const query = document.getElementById('univ-search-input').value.trim();
         if (!query) {
-            this.toast("Please enter a search term first", "error");
             document.getElementById('univ-search-input').focus();
             return;
         }
@@ -351,13 +345,11 @@ __|  \/\|/   /(____|/ //                    /  /||~|~|~|__
         document.getElementById("field3").value = parts[2] || "";
 
         ['sep-0', 'sep-1'].forEach(id => document.getElementById(id).textContent = '+');
-        this.toast("Builder populated");
     },
 
     clearBuilder() {
         ['field1', 'field2', 'field3'].forEach(id => document.getElementById(id).value = '');
         ['sep-0', 'sep-1'].forEach(id => document.getElementById(id).textContent = '+');
-        this.toast("Cleared");
     },
 
     getBuilderString() {
@@ -377,13 +369,11 @@ __|  \/\|/   /(____|/ //                    /  /||~|~|~|__
     copyMARC() {
         const text = this.getBuilderString() + ".";
         this.safeCopy(text);
-        this.toast("Copied MARC string");
     },
 
     copyJuvMARC() {
         const text = this.getBuilderString() + "|vJuvenile literature.";
         this.safeCopy(text);
-        this.toast("Copied Juvenile string");
     },
 
     async getGoogleBook(isbn) {
@@ -406,7 +396,6 @@ __|  \/\|/   /(____|/ //                    /  /||~|~|~|__
 
     async fetchSummary() {
         const isbn = document.getElementById("isbn").value.trim();
-        if (!isbn) return this.toast("Enter an ISBN", "error");
 
         const btn = document.querySelector('#summary-single-mode button');
         const prev = btn.innerHTML;
@@ -432,14 +421,13 @@ __|  \/\|/   /(____|/ //                    /  /||~|~|~|__
     copySummary() {
         const text = document.getElementById("summary").innerText;
         this.safeCopy(text);
-        this.toast("Summary copied");
     },
-  },
+  };
 
     // Boot
-    document.addEventListener('DOMContentLoaded', () => {
-        app.init();
-    });
+  document.addEventListener('DOMContentLoaded', () => {
+      app.init();
+  });
   </script>
 
 </body>
