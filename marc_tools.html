@@ -144,6 +144,7 @@ __|  \/\|/   /(____|/ //                    /  /||~|~|~|__
       <button onclick="app.launchProvider('amazon')" class="provider-btn">Amazon</button>
       <button onclick="app.launchProvider('librarything')" class="provider-btn">LibraryThing</button>
       <button onclick="app.launchProvider('googlebooks')" class="provider-btn">Google Books</button>
+      <button onclick="app.launchProvider('googleisbn')" class="provider-btn">Google Books (ISBN)</button> 
       <button onclick="app.launchProvider('abebooks')" class="provider-btn">AbeBooks</button>                     
     </div>
   </div>
@@ -201,20 +202,6 @@ __|  \/\|/   /(____|/ //                    /  /||~|~|~|__
           <a href="https://www.getty.edu/research/tools/vocabularies/tgn/" target="_blank" rel="noopener noreferrer">Search GTN (Getty)</a>
           <a href="https://www.loc.gov/aba/publications/FreeLCGFT/freelcgft.html" target="_blank" rel="noopener noreferrer">LCGFT Terms</a>
         </p>
-      </div>
-    </div>
-  </div>
-
-  <!-- 520 Search (Summaries) -->
-  <div id="tabs-3" class="tabContent">
-    <h2>Summary Search</h2>
-    <div id="summary-single-mode">
-      <label>Google Books ISBN Search</label>
-      <input type="text" id="isbn" placeholder="Enter ISBN (e.g. 9780123456789)">
-      <button onclick="app.fetchSummary()">Find</button>
-      <div id="summary-result-container">
-        <p id="summary"></p>
-        <button onclick="app.copySummary()">Copy Summary</button>
       </div>
     </div>
   </div>
@@ -289,6 +276,7 @@ __|  \/\|/   /(____|/ //                    /  /||~|~|~|__
             case 'amazon': return `https://www.amazon.com/s?k=${encoded}`;
             case 'librarything': return `https://www.librarything.com/search.php?term=${encoded}&searchtype=work`;
             case 'googlebooks': return `https://www.google.com/search?tbm=bks&q=${encoded}`;
+            case 'googleisbn': return `https://www.google.com/search?tbo=p&tbm=bks&q=isbn:${encoded}`;
             case 'abebooks': return `https://www.abebooks.com/servlet/SearchResults?sts=t&tn=${encoded}`;
             default: return '#';
         }
@@ -380,54 +368,6 @@ __|  \/\|/   /(____|/ //                    /  /||~|~|~|__
         const text = this.getBuilderString() + "|vJuvenile literature.";
         this.safeCopy(text);
     },
-
-    async getGoogleBook(isbn) {
-        try {
-            const res = await fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${encodeURIComponent(isbn)}`);
-            const data = await res.json();
-            const book = data.items?.find(item => item.volumeInfo.industryIdentifiers?.some(id => id.identifier === isbn)) || data.items?.[0];
-
-            if (book && book.volumeInfo.description) {
-                let text = book.volumeInfo.description.trim();
-                text = text.replace(/<[^>]*>?/gm, '');
-                if (!text.startsWith('"')) text = `"${text}"`;
-                return text + " --Google Books";
-            }
-            return null;
-        } catch (e) {
-            return null;
-        }
-    },
-
-    async fetchSummary() {
-        const isbn = document.getElementById("isbn").value.trim();
-
-        const btn = document.querySelector('#summary-single-mode button');
-        const prev = btn.innerHTML;
-        btn.innerHTML = '<div class="loader"></div>';
-        btn.disabled = true;
-
-        const text = await this.getGoogleBook(isbn);
-        btn.innerHTML = prev;
-        btn.disabled = false;
-
-        const container = document.getElementById("summary-result-container");
-        const sumEl = document.getElementById("summary");
-
-        if (text) {
-            sumEl.innerText = text;
-            container.classList.remove('hidden');
-        } else {
-            sumEl.innerText = "No summary found.";
-            container.classList.remove('hidden');
-        }
-    },
-
-    copySummary() {
-        const text = document.getElementById("summary").innerText;
-        this.safeCopy(text);
-    },
-  };
 
     // Boot
   document.addEventListener('DOMContentLoaded', () => {
