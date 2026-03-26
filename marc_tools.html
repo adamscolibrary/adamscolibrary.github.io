@@ -52,7 +52,24 @@
     <b>Workspace</b>
     
     <hr>
-
+      
+    <h2>Item Search</h2>
+    <p>Type a title or ISBN, then click a database to open.</p>
+    <div>
+      <input type="text" id="univ-search-input"                           
+      placeholder="Enter book title, ISBN, or keywords..." 
+      oninput="app.updateSearchLinks()"></input>                      
+    </div>                   
+    <div id="provider-grid">
+      <p>Click to Open Database</p>                        
+      <button onclick="app.launchProvider('worldcat')" class="provider-btn">WorldCat</button>
+      <button onclick="app.launchProvider('amazon')" class="provider-btn">Amazon</button>
+      <button onclick="app.launchProvider('librarything')" class="provider-btn">LibraryThing</button>
+      <button onclick="app.launchProvider('googlebooks')" class="provider-btn">Google Books</button>
+      <button onclick="app.launchProvider('googleisbn')" class="provider-btn">Google Books (ISBN)</button> 
+      <button onclick="app.launchProvider('abebooks')" class="provider-btn">AbeBooks</button>                     
+    </div>
+      
     <p><button id="tabs1" onclick="app.showStuff(this)">About</button></P>   
     <p><button id="tabs2" onclick="app.showStuff(this)">Subject Builder</button></P>              
     
@@ -175,25 +192,6 @@ __|  \/\|/   /(____|/ //                    /  /||~|~|~|__
         <p><input type="text" id="searchInput1" oninput="app.searchLOC()"></input></p>
       </div>                
       <div id="results"></div>                
-    </div>
-
-    <hr>
-      
-    <h2>Item Search</h2>
-    <p>Type a title or ISBN, then click a database to open.</p>
-    <div>
-      <input type="text" id="univ-search-input"                           
-      placeholder="Enter book title, ISBN, or keywords..." 
-      oninput="app.updateSearchLinks()"></input>                      
-    </div>                   
-    <div id="provider-grid">
-      <p>Click to Open Database</p>                        
-      <button onclick="app.launchProvider('worldcat')" class="provider-btn">WorldCat</button>
-      <button onclick="app.launchProvider('amazon')" class="provider-btn">Amazon</button>
-      <button onclick="app.launchProvider('librarything')" class="provider-btn">LibraryThing</button>
-      <button onclick="app.launchProvider('googlebooks')" class="provider-btn">Google Books</button>
-      <button onclick="app.launchProvider('googleisbn')" class="provider-btn">Google Books (ISBN)</button> 
-      <button onclick="app.launchProvider('abebooks')" class="provider-btn">AbeBooks</button>                     
     </div>
   </div>
   <!-- Hidden Textarea for Copy Fallback -->
