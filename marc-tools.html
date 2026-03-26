@@ -133,7 +133,7 @@
       <h3>LCSH Search</h3>
         <p>Search controlled vocabulary and click on result to populate builder</p>
       <div>
-        <p><input type="text" id="searchInput1"></input><button onclick="app.searchLOC()">Search</button></p>
+        <p><input type="text" id="searchInput1"></input>&ensp;<button onclick="app.searchLOC()">Search</button></p>
       </div>                
       <div id="results"></div>                
     </div>
@@ -164,17 +164,10 @@
                 e.preventDefault();
                 this.clearBuilder();
             }
-            if (e.enter) {
-                e.preventDefault();
-                this.app.searchLOC();
+            if (e.key === 'Enter') {
+                this.searchLOC();
             }
         });
-
-        const isbnInput = document.getElementById('isbn');
-        if (isbnInput) {
-            isbnInput.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') this.fetchSummary();
-            });
         }
     },
 
