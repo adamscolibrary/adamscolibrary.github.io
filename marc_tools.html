@@ -49,18 +49,17 @@
 <body>
   <div class="sidebar">
     <h1>MARC Tools</h1>
-    <b>Workspace</b>
-    
+    <b>Item Search</b>
+      
     <hr>
       
-    <h2>Item Search</h2>
     <p>Type a title or ISBN, then click a database to open.</p>
     <div>
       <input type="text" id="univ-search-input"                           
       placeholder="Enter book title, ISBN, or keywords..." 
       oninput="app.updateSearchLinks()"></input>                      
     </div>                   
-    <div id="provider-grid">
+    <div>
       <p>Click to Open Database</p>                        
       <button onclick="app.launchProvider('worldcat')" class="provider-btn">WorldCat</button>
       <button onclick="app.launchProvider('amazon')" class="provider-btn">Amazon</button>
@@ -100,9 +99,11 @@
     <p>Dublin Core</p>
     <p><a href="https://www.dublincore.org/specifications/dublin-core/dces/" target="_blank">Metadata Element Reference</a></p>
   </div>
-  
-<div id="tabs-1" class="tabContent" style="display:block;">    
-  <pre>
+ 
+  <!-- Workspace -->        
+  <div id="tabs-1" class="tabContent" style="display:block;">
+
+    <pre>
 
 888b     d888        d8888 8888888b.   .d8888b.     88888888888 .d88888b.   .d88888b.  888      .d8888b.  
 8888b   d8888       d88888 888   Y88b d88P  Y88b        888    d88P" "Y88b d88P" "Y88b 888     d88P  Y88b 
@@ -113,42 +114,8 @@
 888   "   888  d8888888888 888  T88b  Y88b  d88P        888    Y88b. .d88P Y88b. .d88P 888     Y88b  d88P 
 888       888 d88P     888 888   T88b  "Y8888P"         888     "Y88888P"   "Y88888P"  88888888 "Y8888P"  
 
-   ____________________________________________________
-  |____________________________________________________|
-  | __     __   ____   ___ ||  ____    ____     _  __  |    This started as a way to learn cataloging
-  ||  |__ |--|_| || |_|   |||_|**|*|__|+|+||___| ||  | |    for work, and got way out of hand.
-  ||==|^^||--| |=||=| |=*=||| |~~|~|  |=|=|| | |~||==| |                                          
-  ||  |##||  | | || | |JRO|||-|  | |==|+|+||-|-|~||__| |    If you stumble upon this, please don't 
-  ||__|__||__|_|_||_|_|___|||_|__|_|__|_|_||_|_|_||__|_|    abuse the Talpa tool. The link is public
-  ||_______________________||__________________________|    information, but it's not meant for
-  | _____________________  ||      __   __  _  __    _ |    overuse.
-  ||=|=|=|=|=|=|=|=|=|=|=| __..\/ |  |_|  ||#||==|  / /|
-  || | | | | | | | | | | |/\ \  \\|++|=|  || ||==| / / |    This tool is built on a single HTML doc,
-  ||_|_|_|_|_|_|_|_|_|_|_/_/\_.___\__|_|__||_||__|/_/__|    and uses minimal styling, JS, and API's.
-  |____________________ /\~()/()~//\ __________________|                                          
-  | __   __    _  _     \_  (_ .  _/ _      _     _____|    Please use and change it however you want.
-  ||~~|_|..|__| || |_ _   \ //\\ /  |=|_  /) |___| | | |
-  ||--|+|^^|==|1||2| | |__/\ __ /\__| |(\/((\ +|+|=|=|=|    Hopefully I can get back to work now.
-  ||__|_|__|__|_||_|_| /  \ \  / /  \_|_\___/|_|_|_|_|_|
-  |_________________ _/    \/\/\/    \_ /   /__________|                                          -JF
-  | _____   _   __  |/      \../      \/   /   __   ___|
-  ||_____|_| |_|##|_||   |   \/ __\       /=|_|++|_|-|||    
-  ||______||=|#|--| |\   \   o     \_____/  |~|  | | |||    
-  ||______||_|_|__|_|_\   \  o     | |_|_|__|_|__|_|_|||
-  |_________ __________\___\_______|____________ ______|    
-  |__    _  /    ________     ______           /| _ _ _|
-  |\ \  |=|/   //    /| //   /  /  / |        / ||%|%|%|
-  | \/\ |*/  .//____// //   /__/__/ (_)      /  ||=|=|=|
-__|  \/\|/   /(____|/ //                    /  /||~|~|~|__
-  |___\_/   /________//   ________         /  / ||_|_|_|
-  |___ /   (|________/   |\_______\       /  /| |______|
-      /                  \|________)     /  / | |
-
     </pre>
-  </div> 
- 
-  <!-- Workspace -->        
-  <div id="tabs-2" class="tabContent">
+      
     <h2>LCSH MARC Builder</h2>
     <p>Construct subject headings with subfield codes.</p>               
     <div>
@@ -200,16 +167,6 @@ __|  \/\|/   /(____|/ //                    /  /||~|~|~|__
 
   <script>
   const app = {
-      
-    showStuff(element) {
-        var tabContents = document.getElementsByClassName('tabContent');
-        for (var i = 0; i < tabContents.length; i++) {
-            tabContents[i].style.display = 'none';
-        }
-
-        var tabContentIdToShow = element.id.replace(/(\d)/g, '-$1');
-        document.getElementById(tabContentIdToShow).style.display = 'block';
-    },
 
     init() {
 
