@@ -22,7 +22,7 @@
           margin-left: 200px;
           padding: 1px 16px;
           height: 1000px;
-          display: none;
+          display: block;
           }
 
         /* Keyboard Shortcut Badge */
@@ -61,16 +61,13 @@
     </div>                   
     <div>
       <p>Click to Open Database</p>                        
-      <button onclick="app.launchProvider('worldcat')" class="provider-btn">WorldCat</button>
-      <button onclick="app.launchProvider('amazon')" class="provider-btn">Amazon</button>
-      <button onclick="app.launchProvider('librarything')" class="provider-btn">LibraryThing</button>
-      <button onclick="app.launchProvider('googlebooks')" class="provider-btn">Google Books</button>
-      <button onclick="app.launchProvider('googleisbn')" class="provider-btn">Google Books (ISBN)</button> 
-      <button onclick="app.launchProvider('abebooks')" class="provider-btn">AbeBooks</button>                     
+      <p><button onclick="app.launchProvider('worldcat')" class="provider-btn">WorldCat</button></p>
+      <p><button onclick="app.launchProvider('amazon')" class="provider-btn">Amazon</button></p>
+      <p><button onclick="app.launchProvider('librarything')" class="provider-btn">LibraryThing</button></p>
+      <p><button onclick="app.launchProvider('googlebooks')" class="provider-btn">Google Books</button></p>
+      <p><button onclick="app.launchProvider('googleisbn')" class="provider-btn">Google Books (ISBN)</button></p> 
+      <p><button onclick="app.launchProvider('abebooks')" class="provider-btn">AbeBooks</button></p>                     
     </div>
-      
-    <p><button id="tabs1" onclick="app.showStuff(this)">About</button></P>   
-    <p><button id="tabs2" onclick="app.showStuff(this)">Subject Builder</button></P>              
     
     <br>
 
@@ -101,23 +98,10 @@
   </div>
  
   <!-- Workspace -->        
-  <div id="tabs-1" class="tabContent" style="display:block;">
-
-    <pre>
-
-888b     d888        d8888 8888888b.   .d8888b.     88888888888 .d88888b.   .d88888b.  888      .d8888b.  
-8888b   d8888       d88888 888   Y88b d88P  Y88b        888    d88P" "Y88b d88P" "Y88b 888     d88P  Y88b 
-88888b.d88888      d88P888 888    888 888    888        888    888     888 888     888 888     Y88b.      
-888Y88888P888     d88P 888 888   d88P 888               888    888     888 888     888 888      "Y888b.   
-888 Y888P 888    d88P  888 8888888P"  888               888    888     888 888     888 888         "Y88b. 
-888  Y8P  888   d88P   888 888 T88b   888    888        888    888     888 888     888 888           "888 
-888   "   888  d8888888888 888  T88b  Y88b  d88P        888    Y88b. .d88P Y88b. .d88P 888     Y88b  d88P 
-888       888 d88P     888 888   T88b  "Y8888P"         888     "Y88888P"   "Y88888P"  88888888 "Y8888P"  
-
-    </pre>
+  <div class="tabContent">
       
     <h2>LCSH MARC Builder</h2>
-    <p>Construct subject headings with subfield codes.</p>               
+    <p>Construct subject headings with subfield codes</p>               
     <div>
       <button onclick="app.copyMARC()" title="Ctrl+C">Copy 650 ^C</button>
       <button onclick="app.copyJuvMARC()" title="Ctrl+J">Copy Juv ^J</button>
@@ -157,6 +141,7 @@
       <h3>LCSH Search</h3>
       <div>
         <p><input type="text" id="searchInput1" oninput="app.searchLOC()"></input></p>
+        <p>Start typing to search controlled vocabulary</p>
       </div>                
       <div id="results"></div>                
     </div>
