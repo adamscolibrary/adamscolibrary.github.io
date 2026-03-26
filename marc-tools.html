@@ -194,7 +194,6 @@
     getUrlForProvider(provider, query) {
         const encoded = encodeURIComponent(query);
         switch (provider) {
-            case 'worldcat': return `https://search.worldcat.org/search?q=${encoded}`;
             case 'amazon': return `https://www.amazon.com/s?k=${encoded}`;
             case 'librarything': return `https://www.librarything.com/search.php?term=${encoded}&searchtype=work`;
             case 'googlebooks': return `https://www.google.com/search?tbm=bks&q=${encoded}`;
