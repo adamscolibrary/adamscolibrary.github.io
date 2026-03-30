@@ -52,6 +52,7 @@
             <p><button onclick="app.launchProvider('googleisbn')" class="provider-btn">Google Books (ISBN)</button></p>
             <p><button onclick="app.launchProvider('abebooks')" class="provider-btn">AbeBooks</button></p>
             <p><button onclick="app.launchProvider('tmdb')" class="provider-btn">The Movie Database</button></p>
+            <p><button onclick="app.launchProvider('discogs')" class="provider-btn">Discogs</button></p>
         </div>
         <br>
         <b>External Bookmarks</b>
@@ -170,6 +171,7 @@
                 googleisbn:   'https://www.google.com/search?tbm=bks&q=isbn:' + encodeURIComponent(q),
                 abebooks:     'https://www.abebooks.com/servlet/SearchResults?kn=' + encodeURIComponent(q),
                 tmdb:     'https://www.themoviedb.org/search?query=' + encodeURIComponent(q),
+                discogs:    'https://www.discogs.com/search?q=' + encodeURIComponent(q),
             };
             if (urls[provider]) window.open(urls[provider], '_blank');
         },
@@ -214,7 +216,7 @@
                 return;
             }
 
-            let seconds = 5;
+            let seconds = 3;
             const countdown = setInterval(() => {
                 resultsDiv.innerHTML = `<p>An error occurred, retrying in ${seconds}...</p>`;
                 if (seconds === 0) {
