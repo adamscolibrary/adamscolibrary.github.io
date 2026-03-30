@@ -179,7 +179,7 @@
         if (!query) return;
 
             const resultsDiv = document.getElementById("results");
-            resultsDiv.innerHTML = '<div class="loader"></div>';
+            resultsDiv.innerHTML = '<p>Searching...</p>';
 
             fetch(`https://id.loc.gov/authorities/subjects/suggest2?q=${encodeURIComponent(query)}`)
                 .then(res => res.json())
