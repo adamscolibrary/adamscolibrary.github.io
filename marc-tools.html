@@ -174,7 +174,7 @@
             if (urls[provider]) window.open(urls[provider], '_blank');
         },
 
-        async searchLOC(retryCount = 0) {
+    async searchLOC(retryCount = 0) {
         const query = document.getElementById("searchInput1").value;
         if (!query) return;
 
@@ -182,7 +182,14 @@
         resultsDiv.innerHTML = retryCount > 0 ? '<p>An error occurred, retrying...</p>' : '<p>Searching...</p>';
 
         try {
-            const res = await fetch(`https://id.loc.gov/authorities/subjects/suggest2?q=${encodeURIComponent(query)}`);
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 5000);
+
+            const res = await fetch(`https://id.loc.gov/authorities/subjects/suggest2?q=${encodeURIComponent(query)}`, {
+                signal: controller.signal
+            });
+            clearTimeout(timeout);
+
             const data = await res.json();
 
             resultsDiv.innerHTML = "";
