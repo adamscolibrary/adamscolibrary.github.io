@@ -231,7 +231,7 @@
         const query = document.getElementById("searchInput1").value;
         if (!query) return;
 
-            const LCSHresultsDiv = document.getElementById("results");
+            const LCSHresultsDiv = document.getElementById("LCSHresults");
             LCSHresultsDiv.innerHTML = '<div class="loader"></div>';
 
             fetch(`https://id.loc.gov/authorities/subjects/suggest2?q=${encodeURIComponent(query)}`)
@@ -265,7 +265,7 @@
         const query = document.getElementById("searchInput2").value;
         if (!query) return;
 
-            const OLresultsDiv = document.getElementById("results");
+            const OLresultsDiv = document.getElementById("OLresults");
             OLresultsDiv.innerHTML = '<div class="loader"></div>';
 
             fetch(`https://openlibrary.org/api/books?bibkeys=ISBN:${encodeURIComponent(query)}&jscmd=data&format=json`)
