@@ -60,7 +60,7 @@
     </div>                   
     <div>
       <p>Click to Open Database</p>                        
-      <p><button onclick="app.launchProvider('amazon')" class="provider-btn">Amazon</button></p>
+      <p><button onclick="app.launchProvider('hardcover')" class="provider-btn">Hardcover</button></p>
       <p><button onclick="app.launchProvider('librarything')" class="provider-btn">LibraryThing</button></p>
       <p><button onclick="app.launchProvider('googlebooks')" class="provider-btn">Google Books</button></p>
       <p><button onclick="app.launchProvider('googleisbn')" class="provider-btn">Google Books (ISBN)</button></p> 
@@ -137,7 +137,19 @@
       </div>                
       <div id="results"></div>                
     </div>
-  </div>
+
+
+    <hr>
+
+    <div>
+      <h3>Open Library Search</h3>
+        <p>Search controlled vocabulary and click on result to populate builder</p>
+      <div>
+        <input type="text" id="searchInput2"></input>&ensp;<button onclick="app.searchOL()">Search</button>
+      </div>                
+      <div id="results"></div>                
+    </div>
+  </div>  
   <!-- Hidden Textarea for Copy Fallback -->
   <textarea id="clipboard-helper" class="absolute -left-[9999px] top-0 opacity-0"></textarea>
 
@@ -191,7 +203,7 @@
     getUrlForProvider(provider, query) {
         const encoded = encodeURIComponent(query);
         switch (provider) {
-            case 'amazon': return `https://www.amazon.com/s?k=${encoded}`;
+            case 'hardcover': return `https://hardcover.app/search?q=${encoded}`;
             case 'librarything': return `https://www.librarything.com/search.php?term=${encoded}&searchtype=work`;
             case 'googlebooks': return `https://www.google.com/search?tbm=bks&q=${encoded}`;
             case 'googleisbn': return `https://www.google.com/search?tbo=p&tbm=bks&q=isbn:${encoded}`;
@@ -246,6 +258,40 @@
                 })
                 .catch(() => {
                     resultsDiv.innerHTML = '<p>Error connecting to LOC.</p>';
+                });
+    },
+
+    searchOL() {
+        const query = document.getElementById("searchInput2").value;
+        if (!query) return;
+
+            const resultsDiv = document.getElementById("results");
+            resultsDiv.innerHTML = '<div class="loader"></div>';
+
+            fetch(`https://openlibrary.org/api/books?bibkeys=ISBN:${encodeURIComponent(query)}&jscmd=data&format=json`)
+                .then(res => res.json())
+                .then(data => {
+                  resultsDiv.innerHTML = "";
+                    if (!data.hits || data.hits.length === 0) {
+                        resultsDiv.innerHTML = '<p>No results found.</p>';
+                        return;
+                    }
+
+                    data.hits.forEach(hit => {
+                        const el = document.createElement("div");
+    
+
+                        el.innerHTML = `
+                            <u><div onclick="app.populateBuilder('${hit.suggestLabel.replace(/'/g, "\\'")}')">
+                                ${hit.suggestLabel}
+                            </div></u>
+                            
+                        `;
+                        resultsDiv.appendChild(el);
+                    });
+                })
+                .catch(() => {
+                    resultsDiv.innerHTML = '<p>Error connecting to Open Library.</p>';
                 });
     },
 
