@@ -51,17 +51,16 @@
             <p><button onclick="app.launchProvider('googlebooks')" class="provider-btn">Google Books</button></p>
             <p><button onclick="app.launchProvider('googleisbn')" class="provider-btn">Google Books (ISBN)</button></p>
             <p><button onclick="app.launchProvider('abebooks')" class="provider-btn">AbeBooks</button></p>
+            <p><button onclick="app.launchProvider('tmdb')" class="provider-btn">The Movie Database</button></p>
         </div>
         <br>
         <b>External Bookmarks</b>
         <hr>
         <p>Library of Congress</p>
-        <p><a href="https://www.loc.gov/aba/cataloging/tools/" target="_blank">LCSH Headers</a></p>
         <p><a href="https://authorities.loc.gov/" target="_blank">LOC Authorities</a></p>
         <p><a href="https://www.loc.gov/aba/publications/FreeLCGFT/freelcgft.html" target="_blank">LCGFT Terms</a></p>
         <br>
         <p>LibraryThing</p>
-        <p><a href="https://www.librarything.com/search.php?searchtype=newwork_titles&term=" target="_blank">Works Search</a></p>
         <p><a href="https://www.librarything.com/mds" target="_blank">MDS</a></p>
         <p><a href="https://www.talpasearch.com/429.669/search?su_catalog_url=https%3A%2F%2Fohio.ent.sirsi.net%2Fclient%2Fen_US%2Facp%2F" target="_blank">Talpa AI (SEO)</a></p>
         <br>
@@ -149,6 +148,7 @@
                 googlebooks:  'https://www.google.com/search?tbm=bks&q=' + encodeURIComponent(q),
                 googleisbn:   'https://www.google.com/search?tbm=bks&q=isbn:' + encodeURIComponent(q),
                 abebooks:     'https://www.abebooks.com/servlet/SearchResults?kn=' + encodeURIComponent(q),
+                tmdb:     'https://www.themoviedb.org/search?query=' + encodeURIComponent(q),
             };
             if (urls[provider]) window.open(urls[provider], '_blank');
         },
