@@ -113,11 +113,14 @@
           <h3>LCSH Search</h3>
             <p>Search controlled vocabulary and click on result to populate builder</p>
           <div>
-            <p><input type="text" id="searchInput1"></input>&ensp;<button onclick="app.searchLOC()">Search</button></p>
+            <p><input type="text" id="searchInput1" onkeydown="if(event.key==='Enter')app.searchLOC()">&ensp;<button onclick="app.searchLOC()">Search</button></p>
           </div>                
           <div id="results"></div>                
         </div>
-    <div>
+
+        <hr>
+        
+        <div>
         <h3>Open Library Search</h3>
             <p>Enter an ISBN to retrieve book data from Open Library</p>
         <div>
