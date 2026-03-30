@@ -153,104 +153,78 @@
             if (urls[provider]) window.open(urls[provider], '_blank');
         },
 
-        // ── MARC Builder ──
-
-        selectSeparator(index, sep) {
-            this.separators[index] = sep;
-            document.getElementById('sep-' + index).textContent = sep;
-        },
-
-        _buildMARC(juvenile) {
-            const f1 = document.getElementById('field1').value.trim();
-            const f2 = document.getElementById('field2').value.trim();
-            const f3 = document.getElementById('field3').value.trim();
-            let parts = [];
-            if (f1) parts.push(f1);
-            if (f2) {
-                const s = this.separators[0] === '+' ? '' : ' ' + this.separators[0] + ' ';
-                parts.push(s + f2);
-            }
-            if (f3) {
-                const s = this.separators[1] === '+' ? '' : ' ' + this.separators[1] + ' ';
-                parts.push(s + f3);
-            }
-            let heading = parts.join('');
-            if (juvenile) heading += ' |v Juvenile literature';
-            return heading;
-        },
-
-        _copyText(text) {
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(text);
-            } else {
-                const ta = document.getElementById('clipboard-helper');
-                ta.value = text;
-                ta.select();
-                document.execCommand('copy');
-            }
-        },
-
-        copyMARC() {
-            const text = this._buildMARC(false);
-            if (text) this._copyText(text);
-        },
-
-        copyJuvMARC() {
-            const text = this._buildMARC(true);
-            if (text) this._copyText(text);
-        },
-
-        clearBuilder() {
-            document.getElementById('field1').value = '';
-            document.getElementById('field2').value = '';
-            document.getElementById('field3').value = '';
-            this.separators = ['+', '+'];
-            document.getElementById('sep-0').textContent = '+';
-            document.getElementById('sep-1').textContent = '+';
-        },
-
-        // ── LCSH Search (LOC Suggest) ──
-
         searchLOC() {
-            const q = document.getElementById('searchInput1').value.trim();
-            const resultsDiv = document.getElementById('LCSHresults');
-            if (!q) { resultsDiv.innerHTML = '<p>Please enter a search term.</p>'; return; }
-            resultsDiv.innerHTML = '<p>Searching...</p>';
+        const query = document.getElementById("searchInput1").value;
+        if (!query) return;
 
-            fetch('https://id.loc.gov/authorities/subjects/suggest2?q=' + encodeURIComponent(q))
+            const resultsDiv = document.getElementById("results");
+            resultsDiv.innerHTML = '<div class="loader"></div>';
+
+            fetch(`https://id.loc.gov/authorities/subjects/suggest2?q=${encodeURIComponent(query)}`)
                 .then(res => res.json())
                 .then(data => {
-                    resultsDiv.innerHTML = '';
-                    const hits = data.hits || [];
-                    if (hits.length === 0) {
+                  resultsDiv.innerHTML = "";
+                    if (!data.hits || data.hits.length === 0) {
                         resultsDiv.innerHTML = '<p>No results found.</p>';
                         return;
                     }
-                    hits.forEach(hit => {
-                        const label = hit.suggestLabel || hit.aLabel || '';
-                        const uri = hit.uri || '';
-                        const p = document.createElement('p');
-                        const link = document.createElement('a');
-                        link.href = '#';
-                        link.textContent = label;
-                        link.onclick = (e) => {
-                            e.preventDefault();
-                            document.getElementById('field1').value = label;
-                            document.getElementById('field1').focus();
-                        };
-                        p.appendChild(link);
-                        if (uri) {
-                            const small = document.createElement('small');
-                            small.textContent = '  (' + uri + ')';
-                            p.appendChild(small);
-                        }
-                        resultsDiv.appendChild(p);
+
+                    data.hits.forEach(hit => {
+                        const el = document.createElement("div");
+
+
+                        el.innerHTML = `
+                            <u><div onclick="app.populateBuilder('${hit.suggestLabel.replace(/'/g, "\\'")}')">
+                                ${hit.suggestLabel}
+                            </div></u>
+                            
+                        `;
+                        resultsDiv.appendChild(el);
                     });
                 })
-                .catch(err => {
-                    resultsDiv.innerHTML = '<p>Error: ' + err.message + '</p>';
+                .catch(() => {
+                    resultsDiv.innerHTML = '<p>Error connecting to LOC.</p>';
                 });
-        },
+    },
+
+    populateBuilder(subject) {
+        const parts = subject.split("--");
+        document.getElementById("field1").value = parts[0] || "";
+        document.getElementById("field2").value = parts[1] || "";
+        document.getElementById("field3").value = parts[2] || "";
+
+        ['sep-0', 'sep-1'].forEach(id => document.getElementById(id).textContent = '+');
+    },
+
+    clearBuilder() {
+        ['field1', 'field2', 'field3'].forEach(id => document.getElementById(id).value = '');
+        ['sep-0', 'sep-1'].forEach(id => document.getElementById(id).textContent = '+');
+    },
+
+    getBuilderString() {
+        const f1 = document.getElementById("field1").value;
+        const f2 = document.getElementById("field2").value;
+        const f3 = document.getElementById("field3").value;
+
+        const s0 = document.getElementById("sep-0").textContent;
+        const s1 = document.getElementById("sep-1").textContent;
+
+        const sep0 = s0.includes("|") ? s0 : "";
+        const sep1 = s1.includes("|") ? s1 : "";
+
+        return `${f1}${sep0}${f2}${sep1}${f3}`.trim();
+    },
+
+    copyMARC() {
+        const text = this.getBuilderString() + ".";
+        this.safeCopy(text);
+    },
+
+    copyJuvMARC() {
+        const text = this.getBuilderString() + "|vJuvenile literature.";
+        this.safeCopy(text);
+    },
+    },
 
         // ── Open Library ISBN Search ──
 
