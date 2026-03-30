@@ -260,13 +260,12 @@
     },
 
     searchOL() {
-    const query = document.getElementById("searchInput2").value;
+    const query = document.getElementById("searchInput2").value.trim();
     if (!query) return;
 
     const OLresultsDiv = document.getElementById("OLresults");
     OLresultsDiv.innerHTML = '<div class="loader"></div>';
 
-    // Set the specific key Open Library uses
     const bibkey = `ISBN:${encodeURIComponent(query)}`;
 
     fetch(`https://openlibrary.org/api/books?bibkeys=${bibkey}&jscmd=data&format=json`)
@@ -274,28 +273,37 @@
         .then(data => {
             OLresultsDiv.innerHTML = "";
             
-            // 1. Target the specific book object using the ISBN key instead of an array of "hits"
             const bookData = data[bibkey];
 
-            // 2. If the ISBN isn't found, bookData will be undefined
             if (!bookData) {
                 OLresultsDiv.innerHTML = '<p>No results found.</p>';
                 return;
             }
 
-            // 3. Map Open Library's "title" to act just like your LOC "suggestLabel"
+            // Use the title as the label (similar to LOC's suggestLabel)
             const suggestLabel = bookData.title || "Unknown Title";
 
-            // 4. Build the exact DOM structure your tool already expects
+            // 1. Create the container element
             const el = document.createElement("div");
-            el.innerHTML = `
-                <u><div style="cursor: pointer;" onclick="app.populateBuilder('${suggestLabel.replace(/'/g, "\\'")}')">
-                    ${suggestLabel}
-                </div></u>
-            `;
+            
+            // 2. Create the inner clickable element
+            const linkWrapper = document.createElement("u");
+            const clickArea = document.createElement("div");
+            clickArea.style.cursor = "pointer";
+            clickArea.textContent = suggestLabel; // Safely sets text without quote issues
+
+            // 3. Attach the function directly (This avoids the SyntaxError entirely)
+            clickArea.onclick = function() {
+                app.populateBuilder(suggestLabel);
+            };
+
+            // 4. Assemble and append
+            linkWrapper.appendChild(clickArea);
+            el.appendChild(linkWrapper);
             OLresultsDiv.appendChild(el);
         })
-        .catch(() => {
+        .catch((err) => {
+            console.error(err);
             OLresultsDiv.innerHTML = '<p>Error connecting to Open Library.</p>';
         });
     },
