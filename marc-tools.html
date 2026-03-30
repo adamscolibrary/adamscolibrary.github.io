@@ -135,7 +135,7 @@
       <div>
         <input type="text" id="searchInput1"></input>&ensp;<button onclick="app.searchLOC()">Search</button>
       </div>                
-      <div id="results"></div>                
+      <div id="LCSHresults"></div>                
     </div>
 
 
@@ -147,7 +147,7 @@
       <div>
         <input type="text" id="searchInput2"></input>&ensp;<button onclick="app.searchOL()">Search</button>
       </div>                
-      <div id="results"></div>                
+      <div id="OLresults"></div>                
     </div>
   </div>  
   <!-- Hidden Textarea for Copy Fallback -->
@@ -231,15 +231,15 @@
         const query = document.getElementById("searchInput1").value;
         if (!query) return;
 
-            const resultsDiv = document.getElementById("results");
-            resultsDiv.innerHTML = '<div class="loader"></div>';
+            const LCSHresultsDiv = document.getElementById("results");
+            LCSHresultsDiv.innerHTML = '<div class="loader"></div>';
 
             fetch(`https://id.loc.gov/authorities/subjects/suggest2?q=${encodeURIComponent(query)}`)
                 .then(res => res.json())
                 .then(data => {
-                  resultsDiv.innerHTML = "";
+                  LCSHresultsDiv.innerHTML = "";
                     if (!data.hits || data.hits.length === 0) {
-                        resultsDiv.innerHTML = '<p>No results found.</p>';
+                        LCSHresultsDiv.innerHTML = '<p>No results found.</p>';
                         return;
                     }
 
@@ -253,11 +253,11 @@
                             </div></u>
                             
                         `;
-                        resultsDiv.appendChild(el);
+                        LCSHresultsDiv.appendChild(el);
                     });
                 })
                 .catch(() => {
-                    resultsDiv.innerHTML = '<p>Error connecting to LOC.</p>';
+                    LCSHresultsDiv.innerHTML = '<p>Error connecting to LOC.</p>';
                 });
     },
 
@@ -265,15 +265,15 @@
         const query = document.getElementById("searchInput2").value;
         if (!query) return;
 
-            const resultsDiv = document.getElementById("results");
-            resultsDiv.innerHTML = '<div class="loader"></div>';
+            const OLresultsDiv = document.getElementById("results");
+            OLresultsDiv.innerHTML = '<div class="loader"></div>';
 
             fetch(`https://openlibrary.org/api/books?bibkeys=ISBN:${encodeURIComponent(query)}&jscmd=data&format=json`)
                 .then(res => res.json())
                 .then(data => {
-                  resultsDiv.innerHTML = "";
+                  OLresultsDiv.innerHTML = "";
                     if (!data.hits || data.hits.length === 0) {
-                        resultsDiv.innerHTML = '<p>No results found.</p>';
+                        OLresultsDiv.innerHTML = '<p>No results found.</p>';
                         return;
                     }
 
@@ -287,11 +287,11 @@
                             </div></u>
                             
                         `;
-                        resultsDiv.appendChild(el);
+                        OLresultsDiv.appendChild(el);
                     });
                 })
                 .catch(() => {
-                    resultsDiv.innerHTML = '<p>Error connecting to Open Library.</p>';
+                    OLresultsDiv.innerHTML = '<p>Error connecting to Open Library.</p>';
                 });
     },
 
