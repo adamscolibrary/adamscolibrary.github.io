@@ -174,12 +174,12 @@
             if (urls[provider]) window.open(urls[provider], '_blank');
         },
 
-        async searchLOC(retrying = false) {
+        async searchLOC(retryCount = 0) {
         const query = document.getElementById("searchInput1").value;
         if (!query) return;
 
         const resultsDiv = document.getElementById("results");
-        resultsDiv.innerHTML = retrying ? '<p>An error occurred, retrying...</p>' : '<p>Searching...</p>';
+        resultsDiv.innerHTML = retryCount > 0 ? '<p>An error occurred, retrying...</p>' : '<p>Searching...</p>';
 
         try {
             const res = await fetch(`https://id.loc.gov/authorities/subjects/suggest2?q=${encodeURIComponent(query)}`);
@@ -202,8 +202,20 @@
             });
 
         } catch {
-            resultsDiv.innerHTML = '<p>An error occurred, retrying...</p>';
-            setTimeout(() => this.searchLOC(true), 1000);
+            if (retryCount >= 3) {
+                resultsDiv.innerHTML = '<p>Searching failed. Try again later.</p>';
+                return;
+            }
+
+            let seconds = 5;
+            const countdown = setInterval(() => {
+                resultsDiv.innerHTML = `<p>An error occurred, retrying in ${seconds}...</p>`;
+                if (seconds === 0) {
+                    clearInterval(countdown);
+                    this.searchLOC(retryCount + 1);
+                }
+                seconds--;
+            }, 1000);
         }
     },
 
