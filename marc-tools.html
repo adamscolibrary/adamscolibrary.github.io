@@ -260,14 +260,13 @@
     },
 
     searchOL() {
-    // 1. Get and format the input
-    const query = document.getElementById("searchInput2").value.trim();
+    const query = document.getElementById("searchInput2").value;
     if (!query) return;
 
     const OLresultsDiv = document.getElementById("OLresults");
     OLresultsDiv.innerHTML = '<div class="loader"></div>';
 
-    // 2. Define the exact key Open Library will use in its response
+    // Set the specific key Open Library uses
     const bibkey = `ISBN:${encodeURIComponent(query)}`;
 
     fetch(`https://openlibrary.org/api/books?bibkeys=${bibkey}&jscmd=data&format=json`)
@@ -275,60 +274,31 @@
         .then(data => {
             OLresultsDiv.innerHTML = "";
             
-            // 3. Access the book data directly using the bibkey
+            // 1. Target the specific book object using the ISBN key instead of an array of "hits"
             const bookData = data[bibkey];
 
-            // If the bookData is undefined, the ISBN wasn't found
+            // 2. If the ISBN isn't found, bookData will be undefined
             if (!bookData) {
                 OLresultsDiv.innerHTML = '<p>No results found.</p>';
                 return;
             }
 
-            // 4. Extract data safely (handling missing fields)
-            const title = bookData.title || "Unknown Title";
-            const authors = bookData.authors ? bookData.authors.map(a => a.name).join(", ") : "Unknown Author";
-            const publishDate = bookData.publish_date || "Unknown Date";
-            const coverUrl = bookData.cover && bookData.cover.medium ? bookData.cover.medium : null;
+            // 3. Map Open Library's "title" to act just like your LOC "suggestLabel"
+            const suggestLabel = bookData.title || "Unknown Title";
 
-            // 5. Build the UI
+            // 4. Build the exact DOM structure your tool already expects
             const el = document.createElement("div");
-            el.className = "book-result"; 
-            
-            // Using a flexbox layout for a clean image + text side-by-side look
-            let htmlContent = `
-                <div style="display: flex; gap: 15px; align-items: flex-start; border: 1px solid #ddd; padding: 15px; border-radius: 8px; margin-bottom: 10px; background-color: #fff;">
+            el.innerHTML = `
+                <u><div style="cursor: pointer;" onclick="app.populateBuilder('${suggestLabel.replace(/'/g, "\\'")}')">
+                    ${suggestLabel}
+                </div></u>
             `;
-            
-            // Add cover image if it exists
-            if (coverUrl) {
-                htmlContent += `<img src="${coverUrl}" alt="Cover of ${title}" style="max-width: 80px; height: auto; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">`;
-            }
-
-            // Add text details and your populateBuilder function
-            // Escaping single quotes in the title to prevent breaking the onclick handler
-            const safeTitle = title.replace(/'/g, "\\'"); 
-
-            htmlContent += `
-                    <div>
-                        <h3 style="margin: 0 0 8px 0; font-size: 1.2rem;">${title}</h3>
-                        <p style="margin: 0 0 4px 0; font-size: 0.9rem;"><strong>Author:</strong> ${authors}</p>
-                        <p style="margin: 0 0 12px 0; font-size: 0.9rem;"><strong>Published:</strong> ${publishDate}</p>
-                        
-                        <button style="padding: 6px 12px; cursor: pointer;" onclick="app.populateBuilder('${safeTitle}')">
-                            Select Book
-                        </button>
-                    </div>
-                </div>
-            `;
-
-            el.innerHTML = htmlContent;
             OLresultsDiv.appendChild(el);
         })
-        .catch((error) => {
-            console.error("Open Library Fetch Error:", error);
+        .catch(() => {
             OLresultsDiv.innerHTML = '<p>Error connecting to Open Library.</p>';
         });
-    },    
+    },
 
     populateBuilder(subject) {
         const parts = subject.split("--");
