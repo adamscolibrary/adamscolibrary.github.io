@@ -132,8 +132,6 @@
 
     <script>
     const app = {
-        separators: ['+', '+'],
-
         safeCopy(text) {
             const textarea = document.getElementById('clipboard-helper');
             textarea.value = text;
@@ -150,7 +148,7 @@
                 return false;
             }
         },
-
+    
         updateSearchLinks() {
             const q = document.getElementById('univ-search-input').value.trim();
             const container = document.querySelector('.provider-btn')?.parentElement?.parentElement;
@@ -158,7 +156,7 @@
                 container.classList.toggle('provider-empty', q.length === 0);
             }
         },
-
+    
         launchProvider(provider) {
             const q = document.getElementById('univ-search-input').value.trim();
             if (!q) return;
@@ -207,6 +205,11 @@
                 });
     },
 
+    selectSeparator(index, value) {
+        document.getElementById(`sep-${index}`).textContent = value || "+";
+        document.getElementById(`dropdown-menu-${index}`).classList.add('hidden');
+    },
+        
     populateBuilder(subject) {
         const parts = subject.split("--");
         document.getElementById("field1").value = parts[0] || "";
@@ -239,7 +242,7 @@
         const text = this.getBuilderString() + ".";
         this.safeCopy(text);
     },
-
+    
     copyJuvMARC() {
         const text = this.getBuilderString() + "|vJuvenile literature.";
         this.safeCopy(text);
@@ -390,8 +393,7 @@
                     resultsDiv.innerHTML = '<p>Error: ' + err.message + '</p>';
                 });
         },
-    };
-
+    }
     // Keyboard shortcuts
     document.addEventListener('keydown', (e) => {
         if (e.ctrlKey || e.metaKey) {
@@ -402,7 +404,6 @@
             }
         }
     });
-
     // Init on load
     app.updateSearchLinks();
     </script>
