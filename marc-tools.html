@@ -1,356 +1,417 @@
 <!DOCTYPE html>
-<html lang="en" class="antialiased">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MARC Tools Suite</title>
     <meta name="description" content="A suite of tools for librarians including MARC building, ISBN summaries, and Database Search.">
-
     <style>
-
         .sidebar {
-          margin: 0;
-          padding: 0;
-          width: 200px;
-          background-color: #f1f1f1;
-          position: fixed;
-          height: 100%;
-          overflow: auto;
-          }
-
-        .tabContent {
-          margin-left: 200px;
-          padding: 1px 16px;
-          height: 100%;
-          display: block;
-          }
-
-        /* Keyboard Shortcut Badge */
-        .kbd-badge {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.7rem;
-            padding: 0.1rem 0.3rem;
-            border-radius: 0.25rem;
-            background-color: rgba(0,0,0,0.1);
-            border: 1px solid rgba(0,0,0,0.1);
+            margin: 0;
+            padding: 0;
+            width: 200px;
+            background-color: #f1f1f1;
+            position: fixed;
+            height: 100%;
+            overflow: auto;
         }
-
-        
-        /* Disabled/Empty State */
+        .tabContent {
+            margin-left: 200px;
+            padding: 1px 16px;
+            height: 100%;
+        }
         .provider-empty .provider-btn {
             opacity: 0.7;
             cursor: not-allowed;
             filter: grayscale(100%);
         }
-        
+        #OLresults p, #LCSHresults p {
+            margin: 2px 0;
+        }
+        #OLresults a, #LCSHresults a {
+            color: #0366d6;
+        }
+        #OLresults a:hover, #LCSHresults a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
-
 <body>
-  <div class="sidebar">
-    <h1>MARC Tools</h1>
-    <b>Item Search</b>
-      
-    <hr>
-      
-    <div>
-      <input type="text" id="univ-search-input"                           
-      placeholder="Enter book title, ISBN, or keywords..." 
-      oninput="app.updateSearchLinks()"></input>                      
-    </div>                   
-    <div>
-      <p>Click to Open Database</p>                        
-      <p><button onclick="app.launchProvider('hardcover')" class="provider-btn">Hardcover</button></p>
-      <p><button onclick="app.launchProvider('librarything')" class="provider-btn">LibraryThing</button></p>
-      <p><button onclick="app.launchProvider('googlebooks')" class="provider-btn">Google Books</button></p>
-      <p><button onclick="app.launchProvider('googleisbn')" class="provider-btn">Google Books (ISBN)</button></p> 
-      <p><button onclick="app.launchProvider('abebooks')" class="provider-btn">AbeBooks</button></p>                     
-    </div>
-    
-    <br>
-
-    <b>External Bookmarks</b>
-    
-    <hr>
-    
-    <p> Library of Congress</p> 
-    <p><a href="https://www.loc.gov/aba/cataloging/tools/" target="_blank">LCSH Headers</a></p>
-    <p><a href="https://authorities.loc.gov/" target="_blank">LOC Authorities</a></p>
-    <p><a href="https://www.loc.gov/aba/publications/FreeLCGFT/freelcgft.html" target="_blank" rel="noopener noreferrer">LCGFT Terms</a></p>
-    <br>
-    <p> LibraryThing</p>
-    <p><a href="https://www.librarything.com/search.php?searchtype=newwork_titles&ampterm=" target="_blank">Works Search</a></p>
-    <p><a href="https://www.librarything.com/mds" target="_blank">MDS</a></p>
-    <p><a href="https://www.talpasearch.com/429.669/search?su_catalog_url=https%3A%2F%2Fohio.ent.sirsi.net%2Fclient%2Fen_US%2Facp%2F" target="_blank">Talpa AI (SEO)</a></p>
-    <br>
-    <p> OCLC</p>
-    <p><a href="https://www.oclc.org/bibformats/en/0xx.html" target="_blank">Bib Formats</a></p>
-    <p><a href="https://entities.oclc.org/worldcat/ddc/" target="_blank">Dewey Linked Data</a></p>
-    <p><a href="https://fast.oclc.org/searchfast/?&amplimit=keywords&ampfacet=topic&ampquery=&ampsort=usage+desc&ampstart=0" target="_blank" rel="noopener noreferrer"> Search FAST (OCLC)</a></p>
-  </div>
- 
-  <!-- Workspace -->        
-  <div class="tabContent">
-      
-    <h2>LCSH MARC Builder</h2>
-    <p>Construct subject headings with subfield codes</p>               
-    <div>
-      <button onclick="app.copyMARC()" title="Ctrl+C">Copy ^C</button>
-      <button onclick="app.copyJuvMARC()" title="Ctrl+J">Copy Juv ^J</button>
-      <button onclick="app.clearBuilder()" title="Ctrl+X">Clear ^X</button>
-    </div>
-    <div>                 
-      <p>
-        <input type="text" id="field1" placeholder="Main Term">
-      </p>              
-      <p>                         
-        <button onclick="app.selectSeparator(0, '+')">None</button>
-        <button onclick="app.selectSeparator(0, '|v')"><span>|v</span> Form</button>
-        <button onclick="app.selectSeparator(0, '|x')"><span>|x</span> General</button>
-        <button onclick="app.selectSeparator(0, '|y')"><span>|y</span> Chronological</button>
-        <button onclick="app.selectSeparator(0, '|z')"><span>|z</span> Geographic</button>
-      </p>
-      <p>
-        <span id="sep-0">+</span>
-        <input type="text" id="field2">
-      </p>
-      <p>                        
-        <button onclick="app.selectSeparator(1, '+')">None</button>
-        <button onclick="app.selectSeparator(1, '|v')"><span>|v</span> Form</button>
-        <button onclick="app.selectSeparator(1, '|x')"><span>|x</span> General</button>
-        <button onclick="app.selectSeparator(1, '|y')"><span>|y</span> Chronological</button>
-        <button onclick="app.selectSeparator(1, '|z')"><span>|z</span> Geographic</button>
-      </p>                   
-      <p>
-        <span id="sep-1">+</span>
-        <input type="text" id="field3">
-      </p>  
-    </div>
-    
-    <hr>
-    
-    <div>
-      <h3>LCSH Search</h3>
-        <p>Search controlled vocabulary and click on result to populate builder</p>
-      <div>
-        <input type="text" id="searchInput1"></input>&ensp;<button onclick="app.searchLOC()">Search</button>
-      </div>                
-      <div id="LCSHresults"></div>                
+    <div class="sidebar">
+        <h1>MARC Tools</h1>
+        <b>Item Search</b>
+        <hr>
+        <div>
+            <input type="text" id="univ-search-input" placeholder="Enter book title, ISBN, or keywords..." oninput="app.updateSearchLinks()">
+        </div>
+        <div>
+            <p>Click to Open Database</p>
+            <p><button onclick="app.launchProvider('hardcover')" class="provider-btn">Hardcover</button></p>
+            <p><button onclick="app.launchProvider('librarything')" class="provider-btn">LibraryThing</button></p>
+            <p><button onclick="app.launchProvider('googlebooks')" class="provider-btn">Google Books</button></p>
+            <p><button onclick="app.launchProvider('googleisbn')" class="provider-btn">Google Books (ISBN)</button></p>
+            <p><button onclick="app.launchProvider('abebooks')" class="provider-btn">AbeBooks</button></p>
+        </div>
+        <br>
+        <b>External Bookmarks</b>
+        <hr>
+        <p>Library of Congress</p>
+        <p><a href="https://www.loc.gov/aba/cataloging/tools/" target="_blank">LCSH Headers</a></p>
+        <p><a href="https://authorities.loc.gov/" target="_blank">LOC Authorities</a></p>
+        <p><a href="https://www.loc.gov/aba/publications/FreeLCGFT/freelcgft.html" target="_blank">LCGFT Terms</a></p>
+        <br>
+        <p>LibraryThing</p>
+        <p><a href="https://www.librarything.com/search.php?searchtype=newwork_titles&term=" target="_blank">Works Search</a></p>
+        <p><a href="https://www.librarything.com/mds" target="_blank">MDS</a></p>
+        <p><a href="https://www.talpasearch.com/429.669/search?su_catalog_url=https%3A%2F%2Fohio.ent.sirsi.net%2Fclient%2Fen_US%2Facp%2F" target="_blank">Talpa AI (SEO)</a></p>
+        <br>
+        <p>OCLC</p>
+        <p><a href="https://www.oclc.org/bibformats/en/0xx.html" target="_blank">Bib Formats</a></p>
+        <p><a href="https://entities.oclc.org/worldcat/ddc/" target="_blank">Dewey Linked Data</a></p>
+        <p><a href="https://fast.oclc.org/searchfast/?limit=keywords&facet=topic&query=&sort=usage+desc&start=0" target="_blank">Search FAST (OCLC)</a></p>
     </div>
 
+    <!-- Workspace -->
+    <div class="tabContent">
+        <h2>LCSH MARC Builder</h2>
+        <p>Construct subject headings with subfield codes</p>
+        <div>
+            <button onclick="app.copyMARC()" title="Ctrl+C">Copy ^C</button>
+            <button onclick="app.copyJuvMARC()" title="Ctrl+J">Copy Juv ^J</button>
+            <button onclick="app.clearBuilder()" title="Ctrl+X">Clear ^X</button>
+        </div>
+        <div>
+            <p><input type="text" id="field1" placeholder="Main Term"></p>
+            <p>
+                <button onclick="app.selectSeparator(0, '+')">None</button>
+                <button onclick="app.selectSeparator(0, '|v')"><span>|v</span> Form</button>
+                <button onclick="app.selectSeparator(0, '|x')"><span>|x</span> General</button>
+                <button onclick="app.selectSeparator(0, '|y')"><span>|y</span> Chronological</button>
+                <button onclick="app.selectSeparator(0, '|z')"><span>|z</span> Geographic</button>
+            </p>
+            <p><span id="sep-0">+</span> <input type="text" id="field2"></p>
+            <p>
+                <button onclick="app.selectSeparator(1, '+')">None</button>
+                <button onclick="app.selectSeparator(1, '|v')"><span>|v</span> Form</button>
+                <button onclick="app.selectSeparator(1, '|x')"><span>|x</span> General</button>
+                <button onclick="app.selectSeparator(1, '|y')"><span>|y</span> Chronological</button>
+                <button onclick="app.selectSeparator(1, '|z')"><span>|z</span> Geographic</button>
+            </p>
+            <p><span id="sep-1">+</span> <input type="text" id="field3"></p>
+        </div>
 
-    <hr>
+        <hr>
 
-    <div>
-      <h3>Open Library Search</h3>
-        <p>Search controlled vocabulary and click on result to populate builder</p>
-      <div>
-        <input type="text" id="searchInput2"></input>&ensp;<button onclick="app.searchOL()">Search</button>
-      </div>                
-      <div id="OLresults"></div>                
+        <div>
+            <h3>LCSH Search</h3>
+            <p>Search controlled vocabulary and click on result to populate builder</p>
+            <div>
+                <input type="text" id="searchInput1" onkeydown="if(event.key==='Enter')app.searchLOC()">&ensp;<button onclick="app.searchLOC()">Search</button>
+            </div>
+            <div id="LCSHresults"></div>
+        </div>
+
+        <hr>
+
+        <div>
+            <h3>Open Library Search</h3>
+            <p>Enter an ISBN to retrieve book data from Open Library</p>
+            <div>
+                <input type="text" id="searchInput2" placeholder="Enter ISBN..." onkeydown="if(event.key==='Enter')app.searchOL()">&ensp;<button onclick="app.searchOL()">Search</button>
+            </div>
+            <div id="OLresults"></div>
+        </div>
     </div>
-  </div>  
-  <!-- Hidden Textarea for Copy Fallback -->
-  <textarea id="clipboard-helper" class="absolute -left-[9999px] top-0 opacity-0"></textarea>
 
+    <!-- Hidden Textarea for Copy Fallback -->
+    <textarea id="clipboard-helper" style="position:absolute;left:-9999px;opacity:0;"></textarea>
 
-  <script>
-  const app = {
+    <script>
+    const app = {
+        separators: ['+', '+'],
 
-    init() {
+        // ── Sidebar: Universal Search ──
 
-        document.addEventListener('keydown', (e) => {
-            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
-                e.preventDefault();
-                document.getElementById('searchInput1').focus();
+        updateSearchLinks() {
+            const q = document.getElementById('univ-search-input').value.trim();
+            const container = document.querySelector('.provider-btn')?.parentElement?.parentElement;
+            if (container) {
+                container.classList.toggle('provider-empty', q.length === 0);
             }
-            if ((e.ctrlKey || e.metaKey) && e.key === 'c' && !window.getSelection().toString()) {
-                e.preventDefault();
-                this.copyMARC();
-            }
-            if ((e.ctrlKey || e.metaKey) && e.key === 'j') {
-                e.preventDefault();
-                this.copyJuvMARC();
-            }
-            if ((e.ctrlKey || e.metaKey) && e.key === 'x') {
-                e.preventDefault();
-                this.clearBuilder();
-            }
-            if (e.key === 'Enter') {
-                this.searchLOC();
-            }
-    },
+        },
 
-    safeCopy(text) {
-        const textarea = document.getElementById('clipboard-helper');
-        textarea.value = text;
-        textarea.select();
-        try {
-            document.execCommand('copy');
-            return true;
-        } catch (err) {
-            if (navigator.clipboard) {
+        launchProvider(provider) {
+            const q = document.getElementById('univ-search-input').value.trim();
+            if (!q) return;
+            const urls = {
+                hardcover:    'https://hardcover.app/search?q=' + encodeURIComponent(q),
+                librarything: 'https://www.librarything.com/search.php?search=' + encodeURIComponent(q),
+                googlebooks:  'https://www.google.com/search?tbm=bks&q=' + encodeURIComponent(q),
+                googleisbn:   'https://www.google.com/search?tbm=bks&q=isbn:' + encodeURIComponent(q),
+                abebooks:     'https://www.abebooks.com/servlet/SearchResults?kn=' + encodeURIComponent(q),
+            };
+            if (urls[provider]) window.open(urls[provider], '_blank');
+        },
+
+        // ── MARC Builder ──
+
+        selectSeparator(index, sep) {
+            this.separators[index] = sep;
+            document.getElementById('sep-' + index).textContent = sep;
+        },
+
+        _buildMARC(juvenile) {
+            const f1 = document.getElementById('field1').value.trim();
+            const f2 = document.getElementById('field2').value.trim();
+            const f3 = document.getElementById('field3').value.trim();
+            let parts = [];
+            if (f1) parts.push(f1);
+            if (f2) {
+                const s = this.separators[0] === '+' ? '' : ' ' + this.separators[0] + ' ';
+                parts.push(s + f2);
+            }
+            if (f3) {
+                const s = this.separators[1] === '+' ? '' : ' ' + this.separators[1] + ' ';
+                parts.push(s + f3);
+            }
+            let heading = parts.join('');
+            if (juvenile) heading += ' |v Juvenile literature';
+            return heading;
+        },
+
+        _copyText(text) {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
                 navigator.clipboard.writeText(text);
-                return true;
+            } else {
+                const ta = document.getElementById('clipboard-helper');
+                ta.value = text;
+                ta.select();
+                document.execCommand('copy');
             }
-            console.error('Copy failed', err);
-            return false;
-        }
-    },
+        },
 
-    getUrlForProvider(provider, query) {
-        const encoded = encodeURIComponent(query);
-        switch (provider) {
-            case 'hardcover': return `https://hardcover.app/search?q=${encoded}`;
-            case 'librarything': return `https://www.librarything.com/search.php?term=${encoded}&searchtype=work`;
-            case 'googlebooks': return `https://www.google.com/search?tbm=bks&q=${encoded}`;
-            case 'googleisbn': return `https://www.google.com/search?tbo=p&tbm=bks&q=isbn:${encoded}`;
-            case 'abebooks': return `https://www.abebooks.com/servlet/SearchResults?sts=t&tn=${encoded}`;
-            default: return '#';
-        }
-    },
+        copyMARC() {
+            const text = this._buildMARC(false);
+            if (text) this._copyText(text);
+        },
 
-    launchProvider(provider) {
-        const query = document.getElementById('univ-search-input').value.trim();
-        if (!query) {
-            document.getElementById('univ-search-input').focus();
-            return;
-        }
-        const url = this.getUrlForProvider(provider, query);
-        window.open(url, '_blank');
-    },
+        copyJuvMARC() {
+            const text = this._buildMARC(true);
+            if (text) this._copyText(text);
+        },
 
-    selectSeparator(index, value) {
-        document.getElementById(`sep-${index}`).textContent = value || "+";
-        document.getElementById(`dropdown-menu-${index}`).classList.add('hidden');
-    },
+        clearBuilder() {
+            document.getElementById('field1').value = '';
+            document.getElementById('field2').value = '';
+            document.getElementById('field3').value = '';
+            this.separators = ['+', '+'];
+            document.getElementById('sep-0').textContent = '+';
+            document.getElementById('sep-1').textContent = '+';
+        },
 
-    searchLOC() {
-        const query = document.getElementById("searchInput1").value;
-        if (!query) return;
+        // ── LCSH Search (LOC Suggest) ──
 
-            const LCSHresultsDiv = document.getElementById("LCSHresults");
-            LCSHresultsDiv.innerHTML = '<div class="loader"></div>';
+        searchLOC() {
+            const q = document.getElementById('searchInput1').value.trim();
+            const resultsDiv = document.getElementById('LCSHresults');
+            if (!q) { resultsDiv.innerHTML = '<p>Please enter a search term.</p>'; return; }
+            resultsDiv.innerHTML = '<p>Searching...</p>';
 
-            fetch(`https://id.loc.gov/authorities/subjects/suggest2?q=${encodeURIComponent(query)}`)
+            fetch('https://id.loc.gov/authorities/subjects/suggest2?q=' + encodeURIComponent(q))
                 .then(res => res.json())
                 .then(data => {
-                  LCSHresultsDiv.innerHTML = "";
-                    if (!data.hits || data.hits.length === 0) {
-                        LCSHresultsDiv.innerHTML = '<p>No results found.</p>';
+                    resultsDiv.innerHTML = '';
+                    const hits = data.hits || [];
+                    if (hits.length === 0) {
+                        resultsDiv.innerHTML = '<p>No results found.</p>';
+                        return;
+                    }
+                    hits.forEach(hit => {
+                        const label = hit.suggestLabel || hit.aLabel || '';
+                        const uri = hit.uri || '';
+                        const p = document.createElement('p');
+                        const link = document.createElement('a');
+                        link.href = '#';
+                        link.textContent = label;
+                        link.onclick = (e) => {
+                            e.preventDefault();
+                            document.getElementById('field1').value = label;
+                            document.getElementById('field1').focus();
+                        };
+                        p.appendChild(link);
+                        if (uri) {
+                            const small = document.createElement('small');
+                            small.textContent = '  (' + uri + ')';
+                            p.appendChild(small);
+                        }
+                        resultsDiv.appendChild(p);
+                    });
+                })
+                .catch(err => {
+                    resultsDiv.innerHTML = '<p>Error: ' + err.message + '</p>';
+                });
+        },
+
+        // ── Open Library ISBN Search ──
+
+        searchOL() {
+            const q = document.getElementById('searchInput2').value.trim();
+            const resultsDiv = document.getElementById('OLresults');
+            if (!q) { resultsDiv.innerHTML = '<p>Please enter an ISBN.</p>'; return; }
+            resultsDiv.innerHTML = '<p>Searching...</p>';
+
+            const bibkey = 'ISBN:' + q.replace(/[^0-9Xx]/g, '');
+
+            fetch('https://openlibrary.org/api/books?bibkeys=' + encodeURIComponent(bibkey) + '&jscmd=data&format=json')
+                .then(res => res.json())
+                .then(data => {
+                    resultsDiv.innerHTML = '';
+                    const keys = Object.keys(data);
+                    if (keys.length === 0) {
+                        resultsDiv.innerHTML = '<p>No results found for "' + q + '".</p>';
                         return;
                     }
 
-                    data.hits.forEach(hit => {
-                        const el = document.createElement("div");
-    
+                    const book = data[keys[0]];
+                    const frag = document.createDocumentFragment();
 
-                        el.innerHTML = `
-                            <u><div onclick="app.populateBuilder('${hit.suggestLabel.replace(/'/g, "\\'")}')">
-                                ${hit.suggestLabel}
-                            </div></u>
-                            
-                        `;
-                        LCSHresultsDiv.appendChild(el);
-                    });
+                    function addLine(label, value) {
+                        if (!value && value !== 0) return;
+                        const p = document.createElement('p');
+                        p.innerHTML = '<b>' + label + ':</b> ' + value;
+                        frag.appendChild(p);
+                    }
+
+                    function addLinkLine(label, url, text) {
+                        if (!url) return;
+                        const p = document.createElement('p');
+                        p.innerHTML = '<b>' + label + ':</b> <a href="' + url + '" target="_blank">' + (text || url) + '</a>';
+                        frag.appendChild(p);
+                    }
+
+                    function nameList(arr) {
+                        if (!arr || arr.length === 0) return null;
+                        return arr.map(a => a.name).join('; ');
+                    }
+
+                    function linkedNameList(arr) {
+                        if (!arr || arr.length === 0) return null;
+                        return arr.map(a => {
+                            if (a.url) return '<a href="' + a.url + '" target="_blank">' + a.name + '</a>';
+                            return a.name;
+                        }).join('; ');
+                    }
+
+                    // ── Render all data points ──
+                    addLine('Title', book.title);
+                    if (book.subtitle) addLine('Subtitle', book.subtitle);
+                    addLinkLine('URL', book.url, book.url);
+                    addLine('Key', book.key);
+
+                    if (book.authors && book.authors.length) {
+                        addLine('Author(s)', linkedNameList(book.authors));
+                    }
+
+                    addLine('By Statement', book.by_statement);
+                    addLine('Number of Pages', book.number_of_pages);
+                    addLine('Pagination', book.pagination);
+                    addLine('Weight', book.weight);
+                    addLine('Publish Date', book.publish_date);
+                    addLine('Publisher(s)', nameList(book.publishers));
+                    addLine('Publish Place(s)', nameList(book.publish_places));
+
+                    if (book.identifiers) {
+                        const ids = book.identifiers;
+                        Object.keys(ids).forEach(key => {
+                            const label = key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+                            addLine(label, ids[key].join(', '));
+                        });
+                    }
+
+                    if (book.classifications) {
+                        const cls = book.classifications;
+                        if (cls.lc_classifications) addLine('LC Classification', cls.lc_classifications.join(', '));
+                        if (cls.dewey_decimal_class) addLine('DDC', cls.dewey_decimal_class.join(', '));
+                    }
+
+                    if (book.subjects && book.subjects.length) {
+                        addLine('Subjects', linkedNameList(book.subjects));
+                    }
+                    if (book.subject_people && book.subject_people.length) {
+                        addLine('Subject People', linkedNameList(book.subject_people));
+                    }
+                    if (book.subject_places && book.subject_places.length) {
+                        addLine('Subject Places', linkedNameList(book.subject_places));
+                    }
+                    if (book.subject_times && book.subject_times.length) {
+                        addLine('Subject Times', linkedNameList(book.subject_times));
+                    }
+
+                    addLine('Notes', book.notes);
+
+                    if (book.ebooks && book.ebooks.length) {
+                        book.ebooks.forEach((eb, i) => {
+                            const prefix = book.ebooks.length > 1 ? 'Ebook ' + (i + 1) + ' ' : 'Ebook ';
+                            addLine(prefix + 'Availability', eb.availability);
+                            if (eb.preview_url) addLinkLine(prefix + 'Preview', eb.preview_url, eb.preview_url);
+                            if (eb.borrow_url) addLinkLine(prefix + 'Borrow', eb.borrow_url, eb.borrow_url);
+                            if (eb.checkedout !== undefined) addLine(prefix + 'Checked Out', eb.checkedout ? 'Yes' : 'No');
+                        });
+                    }
+
+                    if (book.cover) {
+                        let coverHTML = '';
+                        if (book.cover.small) coverHTML += '<a href="' + book.cover.small + '" target="_blank">Small</a> ';
+                        if (book.cover.medium) coverHTML += '<a href="' + book.cover.medium + '" target="_blank">Medium</a> ';
+                        if (book.cover.large) coverHTML += '<a href="' + book.cover.large + '" target="_blank">Large</a>';
+                        if (coverHTML) addLine('Cover Links', coverHTML);
+                        if (book.cover.medium) {
+                            const img = document.createElement('img');
+                            img.src = book.cover.medium;
+                            img.alt = book.title || 'Cover';
+                            img.style.maxHeight = '150px';
+                            img.style.marginTop = '4px';
+                            frag.appendChild(img);
+                        }
+                    }
+
+                    if (book.links && book.links.length) {
+                        const linkHTML = book.links.map(l => '<a href="' + l.url + '" target="_blank">' + l.title + '</a>').join('; ');
+                        addLine('Links', linkHTML);
+                    }
+
+                    if (book.table_of_contents && book.table_of_contents.length) {
+                        const tocHTML = book.table_of_contents.map(t => t.title || t.label || t.value || '').filter(Boolean).join('; ');
+                        if (tocHTML) addLine('Table of Contents', tocHTML);
+                    }
+
+                    if (book.excerpts && book.excerpts.length) {
+                        book.excerpts.forEach((ex, i) => {
+                            addLine('Excerpt' + (book.excerpts.length > 1 ? ' ' + (i+1) : ''), ex.text);
+                        });
+                    }
+
+                    resultsDiv.appendChild(frag);
                 })
-                .catch(() => {
-                    LCSHresultsDiv.innerHTML = '<p>Error connecting to LOC.</p>';
+                .catch(err => {
+                    resultsDiv.innerHTML = '<p>Error: ' + err.message + '</p>';
                 });
-    },
+        },
+    };
 
-    searchOL() {
-    const query = document.getElementById("searchInput2").value.trim();
-    if (!query) return;
-
-    const OLresultsDiv = document.getElementById("OLresults");
-    OLresultsDiv.innerHTML = '<div class="loader"></div>';
-
-    const bibkey = `ISBN:${encodeURIComponent(query)}`;
-
-    fetch(`https://openlibrary.org/api/books?bibkeys=${bibkey}&jscmd=data&format=json`)
-        .then(res => res.json())
-        .then(data => {
-            OLresultsDiv.innerHTML = "";
-            
-            const bookData = data[bibkey];
-
-            if (!bookData) {
-                OLresultsDiv.innerHTML = '<p>No results found.</p>';
-                return;
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+        if (e.ctrlKey || e.metaKey) {
+            if (e.key === 'j') { e.preventDefault(); app.copyJuvMARC(); }
+            if (e.key === 'x' && !['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) {
+                e.preventDefault();
+                app.clearBuilder();
             }
+        }
+    });
 
-            // Use the title as the label (similar to LOC's suggestLabel)
-            const suggestLabel = bookData.title || "Unknown Title";
-
-            // 1. Create the container element
-            const el = document.createElement("div");
-            
-            // 2. Create the inner clickable element
-            const linkWrapper = document.createElement("u");
-            const clickArea = document.createElement("div");
-            clickArea.style.cursor = "pointer";
-            clickArea.textContent = suggestLabel; // Safely sets text without quote issues
-
-            // 3. Attach the function directly (This avoids the SyntaxError entirely)
-            clickArea.onclick = function() {
-                app.populateBuilder(suggestLabel);
-            };
-
-            // 4. Assemble and append
-            linkWrapper.appendChild(clickArea);
-            el.appendChild(linkWrapper);
-            OLresultsDiv.appendChild(el);
-        })
-        .catch((err) => {
-            console.error(err);
-            OLresultsDiv.innerHTML = '<p>Error connecting to Open Library.</p>';
-        });
-    },
-
-    populateBuilder(subject) {
-        const parts = subject.split("--");
-        document.getElementById("field1").value = parts[0] || "";
-        document.getElementById("field2").value = parts[1] || "";
-        document.getElementById("field3").value = parts[2] || "";
-
-        ['sep-0', 'sep-1'].forEach(id => document.getElementById(id).textContent = '+');
-    },
-
-    clearBuilder() {
-        ['field1', 'field2', 'field3'].forEach(id => document.getElementById(id).value = '');
-        ['sep-0', 'sep-1'].forEach(id => document.getElementById(id).textContent = '+');
-    },
-
-    getBuilderString() {
-        const f1 = document.getElementById("field1").value;
-        const f2 = document.getElementById("field2").value;
-        const f3 = document.getElementById("field3").value;
-
-        const s0 = document.getElementById("sep-0").textContent;
-        const s1 = document.getElementById("sep-1").textContent;
-
-        const sep0 = s0.includes("|") ? s0 : "";
-        const sep1 = s1.includes("|") ? s1 : "";
-
-        return `${f1}${sep0}${f2}${sep1}${f3}`.trim();
-    },
-
-    copyMARC() {
-        const text = this.getBuilderString() + ".";
-        this.safeCopy(text);
-    },
-
-    copyJuvMARC() {
-        const text = this.getBuilderString() + "|vJuvenile literature.";
-        this.safeCopy(text);
-    },
-  }
-    // Boot
-  document.addEventListener('DOMContentLoaded', () => {
-      app.init();
-  });
-  </script>
-
+    // Init on load
+    app.updateSearchLinks();
+    </script>
 </body>
 </html>
