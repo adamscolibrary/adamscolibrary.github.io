@@ -305,19 +305,17 @@
         },
         
         // Intelligent matching method
-        isIntelligentMatch(text, query) {
+        isIntelligentMatch = (text, query) => {
             // First, check for direct substring match of the full query
             // This handles hyphenated terms like "man-woman" matching "man-woman relationships"
             if (text.includes(query)) {
-                // Verify it's at a word boundary (not embedded in another word)
                 const index = text.indexOf(query);
                 const charBefore = index === 0 ? ' ' : text[index - 1];
                 const charAfter = index + query.length >= text.length ? ' ' : text[index + query.length];
                 const boundaryChars = /[\s\(\)\|\,\.\;\:\/]|^|$/;
         
-                // Allow match if query is at start of text or after a boundary
                 if (index === 0 || boundaryChars.test(charBefore)) {
-                    return true;
+            return true;
                 }
             }
     
@@ -326,7 +324,6 @@
                 const words = text.split(/[\s\(\)\|\,\.\;\:\/]+/);
         
                 for (const word of words) {
-                    // Word might contain hyphens, split further for checking
                     const subWords = word.split('-');
             
                     for (const subWord of subWords) {
@@ -341,7 +338,7 @@
                 }
             }
     
-            // Handle hyphenated queries - check if all parts match in sequence
+            // Handle hyphenated queries
             if (query.includes('-')) {
                 const queryParts = query.split('-');
                 const textParts = text.split(/[\s\(\)\|\,\.\;\:\/]+/);
@@ -349,7 +346,6 @@
                 for (const textWord of textParts) {
                     const textSubWords = textWord.split('-');
             
-                    // Check if query parts match the beginning of text subwords in sequence
                     if (textSubWords.length >= queryParts.length) {
                         let allMatch = true;
                         for (let i = 0; i < queryParts.length; i++) {
@@ -368,6 +364,36 @@
             // Multi-word space-separated queries
             if (query.includes(' ')) {
                 if (text.includes(query)) {
+                    return true;
+                }
+            }
+    
+            return false;
+        },
+
+        isStemMatch = (word, query) => {
+            if (word.startsWith(query)) {
+                return true;
+            }
+    
+            const suffixes = ['s', 'es', 'ed', 'ing', 'er', 'ers', 'ly', 'tion', 'sion', 'ment', 'ness', 'ity', 'al', 'ial'];
+    
+            for (const suffix of suffixes) {
+                if (word === query + suffix) {
+                    return true;
+                }
+            }
+    
+            if (query.endsWith('e')) {
+                const queryNoE = query.slice(0, -1);
+                if (word === queryNoE + 'ing' || word === queryNoE + 'ed' || word === queryNoE + 'er') {
+                    return true;
+                }
+            }
+    
+            if (query.startsWith(word) && query.length > word.length) {
+                const remainder = query.slice(word.length);
+                if (suffixes.includes(remainder)) {
                     return true;
                 }
             }
