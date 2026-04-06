@@ -304,8 +304,40 @@
             searchInput.focus();
         },
         
-        // Intelligent matching method
-        isIntelligentMatch = (text, query) => {
+        isIntelligentMatch(text, query) {
+            const self = this; // Store reference to use in nested function
+    
+            // Helper function defined inside
+            const isStemMatch = (word, query) => {
+                if (word.startsWith(query)) {
+                    return true;
+                }
+
+                const suffixes = ['s', 'es', 'ed', 'ing', 'er', 'ers', 'ly', 'tion', 'sion', 'ment', 'ness', 'ity', 'al', 'ial'];
+
+                for (const suffix of suffixes) {
+                    if (word === query + suffix) {
+                        return true;
+                    }
+                }
+
+                if (query.endsWith('e')) {
+                    const queryNoE = query.slice(0, -1);
+                    if (word === queryNoE + 'ing' || word === queryNoE + 'ed' || word === queryNoE + 'er') {
+                        return true;
+                    }
+                }
+
+                if (query.startsWith(word) && query.length > word.length) {
+                    const remainder = query.slice(word.length);
+                    if (suffixes.includes(remainder)) {
+                        return true;
+                    }
+                }
+
+                return false;
+            };
+
             // First, check for direct substring match of the full query
             // This handles hyphenated terms like "man-woman" matching "man-woman relationships"
             if (text.includes(query)) {
@@ -313,39 +345,39 @@
                 const charBefore = index === 0 ? ' ' : text[index - 1];
                 const charAfter = index + query.length >= text.length ? ' ' : text[index + query.length];
                 const boundaryChars = /[\s\(\)\|\,\.\;\:\/]|^|$/;
-        
+
                 if (index === 0 || boundaryChars.test(charBefore)) {
-            return true;
+                    return true;
                 }
             }
-    
+
             // For single-word queries without hyphens, use word-based matching
             if (!query.includes('-') && !query.includes(' ')) {
                 const words = text.split(/[\s\(\)\|\,\.\;\:\/]+/);
-        
+
                 for (const word of words) {
                     const subWords = word.split('-');
-            
+
                     for (const subWord of subWords) {
                         if (subWord.startsWith(query)) {
                             return true;
                         }
-                
-                        if (this.isStemMatch(subWord, query)) {
+
+                        if (isStemMatch(subWord, query)) {
                             return true;
                         }
                     }
                 }
             }
-    
+
             // Handle hyphenated queries
             if (query.includes('-')) {
                 const queryParts = query.split('-');
                 const textParts = text.split(/[\s\(\)\|\,\.\;\:\/]+/);
-        
+
                 for (const textWord of textParts) {
                     const textSubWords = textWord.split('-');
-            
+
                     if (textSubWords.length >= queryParts.length) {
                         let allMatch = true;
                         for (let i = 0; i < queryParts.length; i++) {
@@ -360,45 +392,35 @@
                     }
                 }
             }
-    
+
             // Multi-word space-separated queries
             if (query.includes(' ')) {
                 if (text.includes(query)) {
                     return true;
                 }
             }
-    
+
             return false;
         },
 
-        isStemMatch = (word, query) => {
-            if (word.startsWith(query)) {
-                return true;
-            }
-    
-            const suffixes = ['s', 'es', 'ed', 'ing', 'er', 'ers', 'ly', 'tion', 'sion', 'ment', 'ness', 'ity', 'al', 'ial'];
-    
-            for (const suffix of suffixes) {
-                if (word === query + suffix) {
-                    return true;
+        getMatchScore(text, query) {
+            const words = text.split(/[\s\-\(\)\|\,\.\;\:\/]+/);
+            let score = 0;
+
+            for (const word of words) {
+                if (word === query) {
+                    score += 100;  // Exact word match
+                } else if (word.startsWith(query)) {
+                    score += 75;   // Starts with query
                 }
             }
-    
-            if (query.endsWith('e')) {
-                const queryNoE = query.slice(0, -1);
-                if (word === queryNoE + 'ing' || word === queryNoE + 'ed' || word === queryNoE + 'er') {
-                    return true;
-                }
+
+            // Boost if query appears at very beginning of text
+            if (text.startsWith(query)) {
+                score += 25;
             }
-    
-            if (query.startsWith(word) && query.length > word.length) {
-                const remainder = query.slice(word.length);
-                if (suffixes.includes(remainder)) {
-                    return true;
-                }
-            }
-    
-            return false;
+
+            return score;
         },
 
         selectSeparator(index, value) {
@@ -595,7 +617,7 @@
                 .catch(err => {
                     resultsDiv.innerHTML = '<p>Error: ' + err.message + '</p>';
                 });
-        },
+        }
     }
     document.addEventListener('keydown', (e) => {
         if (e.ctrlKey || e.metaKey) {
