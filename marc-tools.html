@@ -181,31 +181,55 @@
             const searchInput = document.getElementById('searchInput1');
             const LCSHresultsDiv = document.getElementById('LCSHresults');
             const query = searchInput.value.trim();
-                
+        
             if (!query) {
                 LCSHresultsDiv.innerHTML = '<div class="message-error">Please enter a search term.</div>';
                 return;
             }
-                
+        
             LCSHresultsDiv.innerHTML = '<div class="message-info">Searching...</div>';
-                
+    
+            // Try local JSON first
+            const localResults = await this.searchLocalLCSH(query);
+    
+            if (localResults !== null) {
+                // Local JSON was found and searched
+                LCSHresultsDiv.innerHTML = "";
+        
+                if (localResults.length === 0) {
+                    LCSHresultsDiv.innerHTML = '<div class="message-info">No results found.</div>';
+                    return;
+                }
+        
+                localResults.forEach(term => {
+                    const resultItem = document.createElement('div');
+                    resultItem.className = 'result-item';
+                    resultItem.textContent = term;
+                    resultItem.onclick = () => app.populateBuilder(term);
+                    LCSHresultsDiv.appendChild(resultItem);
+                });
+        
+                return;
+            }
+    
+            // Fallback to LOC API if local JSON couldn't be found
             try {
-               
+       
                 const response = await fetch(`https://id.loc.gov/authorities/subjects/suggest2?q=${encodeURIComponent(query)}`);
-                    
+            
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
-                    
+            
                 const data = await response.json();
-                    
+            
                 LCSHresultsDiv.innerHTML = "";
-                    
+            
                 if (!data.hits || data.hits.length === 0) {
                     LCSHresultsDiv.innerHTML = '<div class="message-info">No results found.</div>';
                     return;
                 }
-                    
+            
                 data.hits.forEach(hit => {
                     if (hit.more && hit.more.marcKeys && hit.more.marcKeys.length > 0) {
                         hit.more.marcKeys.forEach(marcKey => {
@@ -213,7 +237,7 @@
                                 .replace(/^.*?\$a/, '')        // Remove everything up to and including $a
                                 .replace(/\$/g, '|')           // Replace all $ with |
                                 + '.';                         // Add period at end
-                                
+                        
                             const resultItem = document.createElement('div');
                             resultItem.className = 'result-item';
                             resultItem.textContent = formatted;
@@ -223,14 +247,42 @@
                         });
                     }
                 });
-                    
+            
                 if (LCSHresultsDiv.children.length === 0) {
                     LCSHresultsDiv.innerHTML = '<div class="message-info">No MARC keys found in results.</div>';
                 }
-                    
+            
             } catch (error) {
                 console.error('Error fetching LCSH data:', error);
                 LCSHresultsDiv.innerHTML = `<div class="message-error">Error: ${error.message}</div>`;
+            }
+        },
+
+        // Helper method to search local JSON file
+        async searchLocalLCSH(query) {
+            try {
+                const response = await fetch('LCSH26.json');
+        
+                if (!response.ok) {
+                    // Local file not found, return null to trigger fallback
+                    console.log('Local LCSH JSON not found, falling back to LOC API');
+                    return null;
+                }
+        
+                const data = await response.json();
+                const queryLower = query.toLowerCase();
+        
+                // Filter and return matching "marc" values
+                const matches = data
+                    .filter(item => item.marc && item.marc.toLowerCase().includes(queryLower))
+                    .map(item => item.marc);
+        
+                return matches;
+        
+            } catch (error) {
+                // Any error loading local file, return null to trigger fallback
+                console.log('Error loading local LCSH JSON, falling back to LOC API:', error);
+                return null;
             }
         },  
 
