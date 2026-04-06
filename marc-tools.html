@@ -306,29 +306,66 @@
         
         // Intelligent matching method
         isIntelligentMatch(text, query) {
-            // Define word boundary pattern
-            // Matches if query appears at:
-            // - Start of string
-            // - After a space, hyphen, parenthesis, pipe, or other delimiter
-            // And optionally followed by common suffixes or word boundaries
-    
-            const delimiters = /^|[\s\-\(\)\|\,\.\;\/]/;
-            const words = text.split(/[\s\-\(\)\|\,\.\;\/]+/);
-    
-            for (const word of words) {
-                // Check if word starts with query (handles: test -> tests, testing, tested)
-                if (word.startsWith(query)) {
-                    return true;
-                }
+            // First, check for direct substring match of the full query
+            // This handles hyphenated terms like "man-woman" matching "man-woman relationships"
+            if (text.includes(query)) {
+                // Verify it's at a word boundary (not embedded in another word)
+                const index = text.indexOf(query);
+                const charBefore = index === 0 ? ' ' : text[index - 1];
+                const charAfter = index + query.length >= text.length ? ' ' : text[index + query.length];
+                const boundaryChars = /[\s\(\)\|\,\.\;\:\/]|^|$/;
         
-                // Check for common suffix variations where query is the root
-                // Example: query "test" matches word "testing" but not "protestant"
-                if (this.isStemMatch(word, query)) {
+                // Allow match if query is at start of text or after a boundary
+                if (index === 0 || boundaryChars.test(charBefore)) {
                     return true;
                 }
             }
     
-            // Also check for exact phrase match (multi-word queries)
+            // For single-word queries without hyphens, use word-based matching
+            if (!query.includes('-') && !query.includes(' ')) {
+                const words = text.split(/[\s\(\)\|\,\.\;\:\/]+/);
+        
+                for (const word of words) {
+                    // Word might contain hyphens, split further for checking
+                    const subWords = word.split('-');
+            
+                    for (const subWord of subWords) {
+                        if (subWord.startsWith(query)) {
+                            return true;
+                        }
+                
+                        if (this.isStemMatch(subWord, query)) {
+                            return true;
+                        }
+                    }
+                }
+            }
+    
+            // Handle hyphenated queries - check if all parts match in sequence
+            if (query.includes('-')) {
+                const queryParts = query.split('-');
+                const textParts = text.split(/[\s\(\)\|\,\.\;\:\/]+/);
+        
+                for (const textWord of textParts) {
+                    const textSubWords = textWord.split('-');
+            
+                    // Check if query parts match the beginning of text subwords in sequence
+                    if (textSubWords.length >= queryParts.length) {
+                        let allMatch = true;
+                        for (let i = 0; i < queryParts.length; i++) {
+                            if (!textSubWords[i].startsWith(queryParts[i])) {
+                                allMatch = false;
+                                break;
+                            }
+                        }
+                        if (allMatch) {
+                            return true;
+                        }
+                    }
+                }
+            }
+    
+            // Multi-word space-separated queries
             if (query.includes(' ')) {
                 if (text.includes(query)) {
                     return true;
@@ -336,69 +373,6 @@
             }
     
             return false;
-        },
-
-        // Check if word matches query considering common English suffixes
-        isStemMatch(word, query) {
-            // If word starts with query, it's a match (test -> testing, tests)
-            if (word.startsWith(query)) {
-                return true;
-            }
-    
-            // Common suffix patterns to check
-            // This handles cases where the root word changes slightly
-            const suffixes = ['s', 'es', 'ed', 'ing', 'er', 'ers', 'ly', 'tion', 'sion', 'ment', 'ness', 'ity', 'al', 'ial'];
-    
-            // Check if query + suffix = word
-            for (const suffix of suffixes) {
-                if (word === query + suffix) {
-                    return true;
-                }
-            }
-    
-            // Handle special cases where root changes (e.g., "e" dropped before "ing")
-            // test -> testing (normal)
-            // make -> making (drop e)
-            // run -> running (double consonant)
-    
-            if (query.endsWith('e')) {
-                const queryNoE = query.slice(0, -1);
-                if (word === queryNoE + 'ing' || word === queryNoE + 'ed' || word === queryNoE + 'er') {
-                    return true;
-                }
-            }
-    
-            // Check if word is the root and query is a variation
-            // (allows searching "testing" to find "test")
-            if (query.startsWith(word) && query.length > word.length) {
-                const remainder = query.slice(word.length);
-                if (suffixes.includes(remainder)) {
-                    return true;
-                }
-            }
-    
-            return false;
-        },
-        getMatchScore(text, query) {
-            const words = text.split(/[\s\-\(\)\|\,\.\;\/]+/);
-            let score = 0;
-    
-            for (const word of words) {
-                if (word === query) {
-                    score += 100;  // Exact word match
-                } else if (word.startsWith(query)) {
-                    score += 75;   // Starts with query
-                } else if (this.isStemMatch(word, query)) {
-                    score += 50;   // Stem match
-                }
-            }
-    
-            // Boost if query appears at very beginning of text
-            if (text.startsWith(query)) {
-                score += 25;
-            }
-    
-            return score;
         },
 
         selectSeparator(index, value) {
