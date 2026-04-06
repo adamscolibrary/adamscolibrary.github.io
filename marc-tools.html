@@ -258,7 +258,6 @@
             }
         },
 
-        // Helper method to search local JSON file
         async searchLocalLCSH(query) {
             try {
                 const response = await fetch('LCSH26.json');
@@ -270,11 +269,16 @@
                 }
         
                 const data = await response.json();
-                const queryLower = query.toLowerCase();
+                const queryLower = query.toLowerCase().trim();
         
-                // Filter and return matching "marc" values
+                // Filter and return matching "marc" values using intelligent matching
                 const matches = data
-                    .filter(item => item.marc && item.marc.toLowerCase().includes(queryLower))
+                    .filter(item => item.marc && this.isIntelligentMatch(item.marc.toLowerCase(), queryLower))
+                    .map(item => ({
+                        marc: item.marc,
+                        score: this.getMatchScore(item.marc.toLowerCase(), queryLower)
+                    }))
+                    .sort((a, b) => b.score - a.score)
                     .map(item => item.marc);
         
                 return matches;
@@ -284,7 +288,104 @@
                 console.log('Error loading local LCSH JSON, falling back to LOC API:', error);
                 return null;
             }
-        },  
+        },
+
+        // Intelligent matching method
+        isIntelligentMatch(text, query) {
+            // Define word boundary pattern
+            // Matches if query appears at:
+            // - Start of string
+            // - After a space, hyphen, parenthesis, pipe, or other delimiter
+            // And optionally followed by common suffixes or word boundaries
+    
+            const delimiters = /^|[\s\-\(\)\|\,\.\;\/]/;
+            const words = text.split(/[\s\-\(\)\|\,\.\;\/]+/);
+    
+            for (const word of words) {
+                // Check if word starts with query (handles: test -> tests, testing, tested)
+                if (word.startsWith(query)) {
+                    return true;
+                }
+        
+                // Check for common suffix variations where query is the root
+                // Example: query "test" matches word "testing" but not "protestant"
+                if (this.isStemMatch(word, query)) {
+                    return true;
+                }
+            }
+    
+            // Also check for exact phrase match (multi-word queries)
+            if (query.includes(' ')) {
+                if (text.includes(query)) {
+                    return true;
+                }
+            }
+    
+            return false;
+        },
+
+        // Check if word matches query considering common English suffixes
+        isStemMatch(word, query) {
+            // If word starts with query, it's a match (test -> testing, tests)
+            if (word.startsWith(query)) {
+                return true;
+            }
+    
+            // Common suffix patterns to check
+            // This handles cases where the root word changes slightly
+            const suffixes = ['s', 'es', 'ed', 'ing', 'er', 'ers', 'ly', 'tion', 'sion', 'ment', 'ness', 'ity', 'al', 'ial'];
+    
+            // Check if query + suffix = word
+            for (const suffix of suffixes) {
+                if (word === query + suffix) {
+                    return true;
+                }
+            }
+    
+            // Handle special cases where root changes (e.g., "e" dropped before "ing")
+            // test -> testing (normal)
+            // make -> making (drop e)
+            // run -> running (double consonant)
+    
+            if (query.endsWith('e')) {
+                const queryNoE = query.slice(0, -1);
+                if (word === queryNoE + 'ing' || word === queryNoE + 'ed' || word === queryNoE + 'er') {
+                    return true;
+                }
+            }
+    
+            // Check if word is the root and query is a variation
+            // (allows searching "testing" to find "test")
+            if (query.startsWith(word) && query.length > word.length) {
+                const remainder = query.slice(word.length);
+                if (suffixes.includes(remainder)) {
+                    return true;
+                }
+            }
+    
+            return false;
+        },
+        getMatchScore(text, query) {
+            const words = text.split(/[\s\-\(\)\|\,\.\;\/]+/);
+            let score = 0;
+    
+            for (const word of words) {
+                if (word === query) {
+                    score += 100;  // Exact word match
+                } else if (word.startsWith(query)) {
+                    score += 75;   // Starts with query
+                } else if (this.isStemMatch(word, query)) {
+                    score += 50;   // Stem match
+                }
+            }
+    
+            // Boost if query appears at very beginning of text
+            if (text.startsWith(query)) {
+                score += 25;
+            }
+    
+            return score;
+        },
 
         selectSeparator(index, value) {
             document.getElementById(`sep-${index}`).textContent = value || "+";
