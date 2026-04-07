@@ -129,7 +129,12 @@
 
     <div id="tab-ol" class="tab">
         <h3>Open Library Lookup</h3>
-        <p><input id="olInput" placeholder="Enter ISBN..."> <button id="olBtn">Search</button>
+        <p>Enter ISBN and press Enter or click Search
+        <p>
+            <input id="olInput" placeholder="Enter ISBN..." size="20">
+            <button id="olBtn">Search</button>
+            <button id="olClear">Clear</button>
+        </p>
         <div id="olResults"></div>
     </div>
 </div>
@@ -315,10 +320,13 @@ const app = (() => {
     };
 
     const searchOL = () => {
-        const q = $('olInput').value.trim();
-        if (!q) return;
+    const q = $('olInput').value.trim();
+    if (!q) {
+        $('olResults').innerHTML = '<div class="info">Please enter an ISBN</div>';
+        return;
+    }
 
-        $('olResults').innerHTML = '<div class="info">Searching...</div>';
+    $('olResults').innerHTML = '<div class="info">Searching...</div>';
         const isbn = q.replace(/[^0-9Xx]/g, '');
 
         fetch(`https://openlibrary.org/api/books?bibkeys=ISBN:${isbn}&jscmd=data&format=json`)
@@ -345,7 +353,11 @@ const app = (() => {
             })
             .catch(e => $('olResults').innerHTML = `<p>Error: ${e.message}`);
     };
-
+    const clearOL = () => {
+        $('olInput').value = '';
+        $('olResults').innerHTML = '';
+        $('olInput').focus();
+    };
     const init = () => {
         $('tabBar').onclick = e => {
             const btn = e.target.closest('[data-tab]');
@@ -387,8 +399,14 @@ const app = (() => {
             }
         };
 
-        $('olInput').onkeydown = e => e.key === 'Enter' && searchOL();
-        $('olBtn').onclick = searchOL;
+        $('olInput').addEventListener('keydown', e => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                searchOL();
+            }
+        });
+        $('olBtn').addEventListener('click', searchOL);
+        $('olClear').addEventListener('click', clearOL);
 
         document.onkeydown = e => {
             if (!(e.ctrlKey || e.metaKey)) return;
