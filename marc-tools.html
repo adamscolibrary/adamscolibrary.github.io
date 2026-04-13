@@ -109,6 +109,15 @@ const app = (() => {
     
     const isISBN = q => /^[\d\-X]{9,17}$/.test(q.replace(/\s/g, ''));
 
+    const shortcuts = {
+        'a!': 'abebooks',
+        'd!': 'discogs',
+        'g!': 'googlebooks',
+        'h!': 'hardcover',
+        'l!': 'librarything',
+        't!': 'tmdb'
+    };
+
     const providers = {
         abebooks: q => `https://www.abebooks.com/servlet/SearchResults?kn=${q}`,
         discogs: q => `https://www.discogs.com/search?q=${q}`,
@@ -331,6 +340,16 @@ const app = (() => {
         };
 
         $('univSearch').oninput = updateProviders;
+        $('univSearch').addEventListener('keydown', e => {
+            if (e.key !== 'Enter') return;
+            const raw = $('univSearch').value.trim();
+            const prefix = raw.substring(0, 2).toLowerCase();
+            const provider = shortcuts[prefix];
+            if (provider) {
+                const q = encodeURIComponent(raw.substring(2).trim());
+                if (q) window.open(providers[provider](q), '_blank');
+            }
+        });
         $('providers').onclick = e => {
             const p = e.target.dataset.p;
             const q = $('univSearch').value.trim();
