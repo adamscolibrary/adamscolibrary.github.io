@@ -455,13 +455,28 @@ const app = (() => {
         };
 
         $('mdsInput').oninput = searchMDS;
-        $('mdsResults').onclick = e => {
-            const div = e.target.closest('[data-mds]');
-            if (div) {
-                copy(div.dataset.mds);
-                div.style.background = '#d4edda';
-                setTimeout(() => div.style.background = '', 200);
+
+        const mdsClick = e => {
+            // Drill down
+            const browse = e.target.closest('[data-browse]');
+            if (browse) {
+                mdsBrowse(browse.dataset.browse);
+                return;
             }
+            // Copy number
+            const copy_item = e.target.closest('[data-mds]');
+            if (copy_item) {
+                copy(copy_item.dataset.mds);
+                copy_item.style.background = '#d4edda';
+                setTimeout(() => copy_item.style.background = '', 200);
+            }
+        };
+
+        $('mdsResults').onclick = mdsClick;
+        $('mdsBrowse').onclick = mdsClick;
+        $('mdsCrumbs').onclick = e => {
+            const a = e.target.closest('[data-browse]');
+            if (a) { e.preventDefault(); mdsBrowse(a.dataset.browse); }
         };
 
         $('olInput').addEventListener('keydown', e => {
