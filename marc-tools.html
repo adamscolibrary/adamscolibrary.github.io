@@ -84,10 +84,17 @@
     </div>
 
     <div id="tab-mds" class="tab">
-        <h3>Melvil Decimal System Search</h3>
-        <p>Click result to copy number
+        <h3>Melvil Decimal System</h3>
+
+        <b>Search</b>
         <p><input id="mdsInput" placeholder="Search subjects..."> <span id="mdsStatus" class="info"></span>
         <div id="mdsResults" class="res"></div>
+
+        <hr>
+
+        <b>Browse</b>
+        <p id="mdsCrumbs" class="info"></p>
+        <div id="mdsBrowse" class="res"></div>
     </div>
 
     <div id="tab-ol" class="tab">
@@ -265,6 +272,7 @@ const app = (() => {
                 });
                 mdsIndex.addAll(mdsData.map((d, i) => ({ id: i, ...d })));
                 $('mdsStatus').textContent = `✓ ${mdsData.length.toLocaleString()}`;
+                mdsBrowse(''); // render top level on load
             })
             .catch(() => $('mdsStatus').textContent = 'Error loading');
     };
@@ -294,12 +302,84 @@ const app = (() => {
         }, 150);
     };
 
-    const searchOL = () => {
-    const q = $('olInput').value.trim();
-    if (!q) {
-        $('olResults').innerHTML = '<div class="info">Please enter an ISBN</div>';
-        return;
-    }
+    const mdsBrowse = prefix => {
+        const browse = $('mdsBrowse');
+        const crumbs = $('mdsCrumbs');
+
+        // Determine next place value length to show
+        // '' -> 1 digit, '1' -> 2 digits, '12' -> 3 digits, etc.
+        const nextLen = prefix.length + 1;
+
+        // Get all direct children at this level
+        const children = mdsData.filter(d => {
+            if (!d.num.startsWith(prefix)) return false;
+            const rest = d.num.slice(prefix.length);
+            // Only show entries that are exactly one place value deeper
+            // Handle decimal: after 3 digits we go to x.x, x.xx etc.
+            if (prefix.length < 3) {
+                return d.num.length === nextLen;
+            } else {
+                // Past 3 digits, next step is adding one decimal place
+                const expectedLen = prefix.includes('.')
+                    ? prefix.length + 1
+                    : prefix.length + 2; // +2 to include the dot
+                return d.num.length === expectedLen;
+            }
+        });
+
+        // Breadcrumb trail
+        if (!prefix) {
+            crumbs.innerHTML = '<b>All Classes</b>';
+        } else {
+            const parts = [];
+            parts.push(`<a href="#" data-browse="">All Classes</a>`);
+
+            // Build intermediate crumbs
+            for (let i = 1; i <= prefix.length; i++) {
+                const slice = prefix.slice(0, i);
+                const entry = mdsData.find(d => d.num === slice);
+                const label = entry ? `${slice} ${entry.desc}` : slice;
+                if (i < prefix.length) {
+                    parts.push(`<a href="#" data-browse="${slice}">${label}</a>`);
+                } else {
+                    parts.push(`<b>${label}</b>`);
+                }
+            }
+            crumbs.innerHTML = parts.join(' › ');
+        }
+
+        // Render children
+        if (!children.length) {
+            // Leaf node - show copy prompt
+            const entry = mdsData.find(d => d.num === prefix);
+            browse.innerHTML = entry
+                ? `<div data-mds="${entry.num}" style="font-weight:bold">
+                     <span class="mds-num">${entry.num}</span>${entry.desc}
+                     <span class="info"> — click to copy</span>
+                   </div>`
+                : '<div class="info">No further subdivisions</div>';
+            return;
+        }
+
+        browse.innerHTML = children.map(d =>
+            `<div data-browse="${d.num}">
+                <span class="mds-num">${d.num}</span>${d.desc}
+                ${mdsHasChildren(d.num) ? ' ›' : ' <a href="#" data-mds="' + d.num + '" onclick="event.stopPropagation()">copy</a>'}
+             </div>`
+        ).join('');
+    };
+
+    const mdsHasChildren = prefix => {
+        const nextLen = prefix.length < 3 ? prefix.length + 1 : prefix.includes('.') ? prefix.length + 1 : prefix.length + 2;
+        return mdsData.some(d => d.num.startsWith(prefix) && d.num.length === nextLen);
+    };
+    
+        const searchOL = () => {
+        const q = $('olInput').value.trim();
+        if (!q) {
+            $('olResults').innerHTML = '<div class="info">Please enter an ISBN</div>';
+            return;
+        }
 
     $('olResults').innerHTML = '<div class="info">Searching...</div>';
         const isbn = q.replace(/[^0-9Xx]/g, '');
