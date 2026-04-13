@@ -27,7 +27,6 @@
         <p><button data-p="abebooks">AbeBooks</button>
         <p><button data-p="discogs">Discogs</button>
         <p><button data-p="googlebooks">Google Books</button>
-        <p><button data-p="googleisbn">Google ISBN</button>
         <p><button data-p="hardcover">Hardcover</button>
         <p><button data-p="librarything">LibraryThing</button>
         <p><button data-p="tmdb">TMDB</button>
@@ -108,11 +107,14 @@ const app = (() => {
     const LCSH_URL = 'https://raw.githubusercontent.com/adamscolibrary/LCSH-2026/refs/heads/main/LCSH26.json';
     const MDS_URL = 'https://raw.githubusercontent.com/adamscolibrary/Melvil-Decimal-System-1922/refs/heads/main/mds.json';
     
+    const isISBN = q => /^[\d\-X]{9,17}$/.test(q.replace(/\s/g, ''));
+
     const providers = {
         abebooks: q => `https://www.abebooks.com/servlet/SearchResults?kn=${q}`,
         discogs: q => `https://www.discogs.com/search?q=${q}`,
-        googlebooks: q => `https://www.google.com/search?tbm=bks&q=${q}`,
-        googleisbn: q => `https://www.google.com/search?tbm=bks&q=isbn:${q}`,
+        googlebooks: q => isISBN(decodeURIComponent(q))
+            ? `https://www.google.com/search?tbm=bks&q=isbn:${q}`
+            : `https://www.google.com/search?tbm=bks&q=${q}`,
         hardcover: q => `https://hardcover.app/search?q=${q}`,
         librarything: q => `https://www.librarything.com/search.php?search=${q}`,
         tmdb: q => `https://www.themoviedb.org/search?query=${q}`
