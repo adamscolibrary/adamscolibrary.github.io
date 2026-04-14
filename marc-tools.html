@@ -1,510 +1,362 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MARC Tools</title>
-    <script src="https://cdn.jsdelivr.net/npm/minisearch@6.3.0/dist/umd/index.min.js"></script>
-    <style>
-        .side{position:fixed;width:200px;height:100%;overflow:auto;background:#f1f1f1;padding:8px}
-        .main{margin-left:220px;padding:8px}
-        .tab{display:none}.tab.on{display:block}
-        .tab-btn{padding:3px 6px;cursor:pointer}
-        .tab-btn.on{font-weight:bold;border-bottom:2px solid #333}
-        .res div{padding:4px;cursor:pointer;border-bottom:1px solid #eee}
-        .res div:hover{background:#f0f7ff}
-        .mds-num{font-weight:bold;margin-right:8px;color:#0366d6}
-        .info{color:#666;font-size:.9em;padding:4px 0}
-        .disabled{opacity:.5;pointer-events:none}
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MARC Tools</title>
+<script src="https://cdn.jsdelivr.net/npm/minisearch@6.3.0/dist/umd/index.min.js"></script>
+<style>
+.side{position:fixed;width:200px;height:100%;overflow:auto;background:#f1f1f1;padding:8px}
+.main{margin-left:220px;padding:8px}
+.tab{display:none}.tab.on{display:block}
+.tab-btn{padding:3px 6px;cursor:pointer}
+.tab-btn.on{font-weight:bold;border-bottom:2px solid #333}
+.res div{padding:4px;cursor:pointer;border-bottom:1px solid #eee}
+.res div:hover{background:#f0f7ff}
+.mds-num{font-weight:bold;margin-right:8px;color:#0366d6}
+.info{color:#666;font-size:.9em;padding:4px 0}
+.disabled{opacity:.5;pointer-events:none}
+</style>
 </head>
 <body>
 <div class="side">
-    <h1>MARC Tools</h1>
-    <b>Item Search</b>
-    <p><input id="univSearch" placeholder="Title, ISBN, keywords...">
-    <div id="providers">
-        <p><button data-p="abebooks">AbeBooks</button> a!
-        <p><button data-p="discogs">Discogs</button> d!
-        <p><button data-p="googlebooks">Google Books</button> g!
-        <p><button data-p="hardcover">Hardcover</button> h!
-        <p><button data-p="librarything">LibraryThing</button> l!
-        <p><button data-p="tmdb">TMDB</button> t!
-    </div>
-    <hr>
-    <b>Bookmarks</b>
-    <p>OCLC</p>
-    <p><a href="https://www.oclc.org/bibformats/en/0xx.html" target="_blank">OCLC Bib Formats</a>
-    <p><a href="https://entities.oclc.org/worldcat/ddc/" target="_blank">DDC Linked Data</a>
-    <p><a href="https://fast.oclc.org/searchfast/" target="_blank">FAST Search</a>
-    <p>Library of Congress</p>
-    <p><a href="https://authorities.loc.gov/" target="_blank">LOC Authorities</a>
-    <p><a href="https://www.loc.gov/aba/publications/FreeLCGFT/freelcgft.html" target="_blank">LCGFT Terms</a>
-    <p>Library Thing</p>
-    <p><a href="https://www.librarything.com/mds" target="_blank">MDS</a>  
-    <p><a href="https://www.talpasearch.com/429.669/search?su_catalog_url=https%3A%2F%2Fohio.ent.sirsi.net%2Fclient%2Fen_US%2Facp%2F" target="_blank">Talpa AI (SEO)</a>
-    <p>SEO</p>
-    <p><a href="https://support.servingeveryohioan.org/support/solutions" target="_blank">SEO Knowledge Base</a>  
+<h1>MARC Tools</h1>
+<b>Item Search</b>
+<p><input id="univSearch" placeholder="Title, ISBN, keywords...">
+<div id="providers">
+<p><button data-p="abebooks">AbeBooks</button> a!
+<p><button data-p="discogs">Discogs</button> d!
+<p><button data-p="googlebooks">Google Books</button> g!
+<p><button data-p="hardcover">Hardcover</button> h!
+<p><button data-p="librarything">LibraryThing</button> l!
+<p><button data-p="tmdb">TMDB</button> t!
 </div>
+<hr>
+<b>Bookmarks</b>
+<p>OCLC
+<p><a href="https://www.oclc.org/bibformats/en/0xx.html" target="_blank">Bib Formats</a>
+<p><a href="https://entities.oclc.org/worldcat/ddc/" target="_blank">DDC Linked Data</a>
+<p><a href="https://fast.oclc.org/searchfast/" target="_blank">FAST Search</a>
+<p>Library of Congress
+<p><a href="https://authorities.loc.gov/" target="_blank">LOC Authorities</a>
+<p><a href="https://www.loc.gov/aba/publications/FreeLCGFT/freelcgft.html" target="_blank">LCGFT Terms</a>
+<p>LibraryThing
+<p><a href="https://www.librarything.com/mds" target="_blank">MDS</a>
+<p><a href="https://www.talpasearch.com/429.669/search?su_catalog_url=https%3A%2F%2Fohio.ent.sirsi.net%2Fclient%2Fen_US%2Facp%2F" target="_blank">Talpa AI</a>
+<p>SEO
+<p><a href="https://support.servingeveryohioan.org/support/solutions" target="_blank">SEO Knowledge Base</a>
+</div>
+
 <div class="main">
-    <div id="tabBar">
-        <button class="tab-btn on" data-tab="lcsh">LCSH</button>
-        <button class="tab-btn" data-tab="mds">MDS</button>
-        <button class="tab-btn" data-tab="ol">Open Library</button>
-    </div>
+<div id="tabBar">
+<button class="tab-btn on" data-tab="lcsh">LCSH</button>
+<button class="tab-btn" data-tab="mds">MDS</button>
+<button class="tab-btn" data-tab="ol">Open Library</button>
+</div>
 
-    <div id="tab-lcsh" class="tab on">
-        <h3>LCSH MARC Builder</h3>
-        <div id="builderActions">
-            <button data-action="copy" title="Ctrl+C">Copy ^C</button>
-            <button data-action="copyJuv" title="Ctrl+J">Copy Juv ^J</button>
-            <button data-action="clear" title="Ctrl+X">Clear ^X</button>
-        </div>
-        <p><input id="f1" placeholder="Main term">
-        <p>
-            <button data-sep="0" data-val="+">None</button>
-            <button data-sep="0" data-val="|v">|v</button>
-            <button data-sep="0" data-val="|x">|x</button>
-            <button data-sep="0" data-val="|y">|y</button>
-            <button data-sep="0" data-val="|z">|z</button>
-        </p>
-        <p><span id="sep0">+</span><input id="f2">
-        <p>
-            <button data-sep="1" data-val="+">None</button>
-            <button data-sep="1" data-val="|v">|v</button>
-            <button data-sep="1" data-val="|x">|x</button>
-            <button data-sep="1" data-val="|y">|y</button>
-            <button data-sep="1" data-val="|z">|z</button>
-        </p>
-        <p><span id="sep1">+</span><input id="f3">
-        <hr>
-        <h4>LCSH Search</h4>
-        <p><input id="lcshInput" placeholder="Search subjects..."> <span id="lcshStatus" class="info"></span>
-        <div id="lcshResults" class="res"></div>
-    </div>
+<div id="tab-lcsh" class="tab on">
+<h3>LCSH MARC Builder</h3>
+<div id="builderActions">
+<button data-action="copy" title="Ctrl+C">Copy ^C</button>
+<button data-action="copyJuv" title="Ctrl+J">Copy Juv ^J</button>
+<button data-action="clear" title="Ctrl+X">Clear ^X</button>
+</div>
+<p><input id="f1" placeholder="Main term">
+<p>
+<button data-sep="0" data-val="+">None</button>
+<button data-sep="0" data-val="|v">|v</button>
+<button data-sep="0" data-val="|x">|x</button>
+<button data-sep="0" data-val="|y">|y</button>
+<button data-sep="0" data-val="|z">|z</button>
+<p><span id="sep0">+</span><input id="f2">
+<p>
+<button data-sep="1" data-val="+">None</button>
+<button data-sep="1" data-val="|v">|v</button>
+<button data-sep="1" data-val="|x">|x</button>
+<button data-sep="1" data-val="|y">|y</button>
+<button data-sep="1" data-val="|z">|z</button>
+<p><span id="sep1">+</span><input id="f3">
+<hr>
+<h4>LCSH Search</h4>
+<p><input id="lcshInput" placeholder="Search subjects..."> <span id="lcshStatus" class="info"></span>
+<div id="lcshResults" class="res"></div>
+</div>
 
-    <div id="tab-mds" class="tab">
-        <h3>Melvil Decimal System</h3>
+<div id="tab-mds" class="tab">
+<h3>Melvil Decimal System</h3>
+<b>Search</b>
+<p><input id="mdsInput" placeholder="Search subjects..."> <span id="mdsStatus" class="info"></span>
+<div id="mdsResults" class="res"></div>
+<hr>
+<b>Browse</b>
+<p id="mdsCrumbs" class="info"></p>
+<div id="mdsBrowse" class="res"></div>
+</div>
 
-        <b>Search</b>
-        <p><input id="mdsInput" placeholder="Search subjects..."> <span id="mdsStatus" class="info"></span>
-        <div id="mdsResults" class="res"></div>
-
-        <hr>
-
-        <b>Browse</b>
-        <p id="mdsCrumbs" class="info"></p>
-        <div id="mdsBrowse" class="res"></div>
-    </div>
-
-    <div id="tab-ol" class="tab">
-        <h3>Open Library Lookup</h3>
-        <p>Enter ISBN and press Enter or click Search
-        <p>
-            <input id="olInput" placeholder="Enter ISBN..." size="20">
-            <button id="olBtn">Search</button>
-            <button id="olClear">Clear</button>
-        </p>
-        <div id="olResults"></div>
-    </div>
+<div id="tab-ol" class="tab">
+<h3>Open Library Lookup</h3>
+<p><input id="olInput" placeholder="Enter ISBN..." size="20"> <button id="olBtn">Search</button> <button id="olClear">Clear</button>
+<div id="olResults"></div>
+</div>
 </div>
 
 <script>
 const app = (() => {
     const LCSH_URL = 'https://raw.githubusercontent.com/adamscolibrary/LCSH-2026/refs/heads/main/LCSH26.json';
-    const MDS_URL = 'https://raw.githubusercontent.com/adamscolibrary/Melvil-Decimal-System-1922/refs/heads/main/mds.json';
-    
-    const isISBN = q => /^[\d\-X]{9,17}$/.test(q.replace(/\s/g, ''));
-
-    const shortcuts = {
-        'a!': 'abebooks',
-        'd!': 'discogs',
-        'g!': 'googlebooks',
-        'h!': 'hardcover',
-        'l!': 'librarything',
-        't!': 'tmdb'
-    };
-
-    const providers = {
-        abebooks: q => `https://www.abebooks.com/servlet/SearchResults?kn=${q}`,
-        discogs: q => `https://www.discogs.com/search?q=${q}`,
-        googlebooks: q => isISBN(decodeURIComponent(q))
-            ? `https://www.google.com/search?tbm=bks&q=isbn:${q}`
-            : `https://www.google.com/search?tbm=bks&q=${q}`,
-        hardcover: q => `https://hardcover.app/search?q=${q}`,
-        librarything: q => `https://www.librarything.com/search.php?search=${q}`,
-        tmdb: q => `https://www.themoviedb.org/search?query=${q}`
-    };
-
-    const suffixes = ['s','es','ed','ing','er','ers','ly','tion','sion','ment','ness','ity','al','ial'];
-
-    let lcshIndex, lcshData, mdsIndex, mdsData;
-    let lcshTimer, mdsTimer;
-
+    const MDS_URL  = 'https://raw.githubusercontent.com/adamscolibrary/Melvil-Decimal-System-1922/refs/heads/main/mds.json';
+    const SUF = ['s','es','ed','ing','er','ers','ly','tion','sion','ment','ness','ity','al','ial'];
+    const isISBN = q => /^[\d\-X]{9,17}$/.test(q.replace(/\s/g,''));
     const $ = id => document.getElementById(id);
-    
-    const copy = text => navigator.clipboard.writeText(text).catch(() => {
-        const ta = document.createElement('textarea');
-        ta.value = text;
-        document.body.appendChild(ta);
-        ta.select();
-        document.execCommand('copy');
-        document.body.removeChild(ta);
+    const esc = s => s.replace(/"/g,'&quot;');
+    const copy = t => navigator.clipboard.writeText(t).catch(() => {
+        const a = document.createElement('textarea');
+        a.value = t; document.body.appendChild(a); a.select();
+        document.execCommand('copy'); document.body.removeChild(a);
     });
 
-    const switchTab = id => {
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('on', b.dataset.tab === id));
-        document.querySelectorAll('.tab').forEach(t => t.classList.toggle('on', t.id === 'tab-' + id));
+    const shortcuts = {a:'abebooks',d:'discogs',g:'googlebooks',h:'hardcover',l:'librarything',t:'tmdb'};
+
+    const providers = {
+        abebooks:    q => `https://www.abebooks.com/servlet/SearchResults?kn=${q}`,
+        discogs:     q => `https://www.discogs.com/search?q=${q}`,
+        googlebooks: q => `https://www.google.com/search?tbm=bks&q=${isISBN(decodeURIComponent(q))?'isbn:':''}${q}`,
+        hardcover:   q => `https://hardcover.app/search?q=${q}`,
+        librarything:q => `https://www.librarything.com/search.php?search=${q}`,
+        tmdb:        q => `https://www.themoviedb.org/search?query=${q}`
     };
 
-    const updateProviders = () => {
-        $('providers').classList.toggle('disabled', !$('univSearch').value.trim());
-    };
+    let lcshIndex, lcshData, mdsIndex, mdsData, lcshTimer, mdsTimer;
 
-    const getBuilderStr = () => {
-        const f = [$('f1').value, $('f2').value, $('f3').value];
-        const s = [$('sep0').textContent, $('sep1').textContent].map(x => x.includes('|') ? x : '');
-        return `${f[0]}${s[0]}${f[1]}${s[1]}${f[2]}`.trim();
-    };
-
-    const populateBuilder = marc => {
-        const p = marc.replace(/\.$/, '').split('|');
-        $('f1').value = p[0] || '';
-        $('f2').value = p[1]?.slice(1) || '';
-        $('f3').value = p[2]?.slice(1) || '';
-        $('sep0').textContent = p[1] ? '|' + p[1][0] : '+';
-        $('sep1').textContent = p[2] ? '|' + p[2][0] : '+';
-    };
-
-    const clearBuilder = () => {
-        $('f1').value = $('f2').value = $('f3').value = '';
-        $('sep0').textContent = $('sep1').textContent = '+';
-    };
-
-    const matches = (text, query) => {
-        if (text.includes(query)) return true;
+    const matches = (text, q) => {
+        if (text.includes(q)) return true;
         for (const w of text.split(/[\s\|\(\)\,\.\;\:\/\-]+/)) {
-            if (w.startsWith(query) || suffixes.some(s => w === query + s)) return true;
-            if (query.endsWith('e') && ['ing','ed','er'].some(s => w === query.slice(0,-1) + s)) return true;
+            if (w.startsWith(q) || SUF.some(s => w === q+s)) return true;
+            if (q.endsWith('e') && ['ing','ed','er'].some(s => w === q.slice(0,-1)+s)) return true;
         }
         return false;
     };
 
-    const score = (text, query) => {
-        let s = text.startsWith(query) ? 25 : 0;
-        for (const w of text.split(/[\s\-\(\)\|\,\.\;\:\/]+/)) {
-            s += w === query ? 100 : w.startsWith(query) ? 75 : 0;
-        }
+    const score = (text, q) => {
+        let s = text.startsWith(q) ? 25 : 0;
+        for (const w of text.split(/[\s\-\(\)\|\,\.\;\:\/]+/))
+            s += w === q ? 100 : w.startsWith(q) ? 75 : 0;
         return s;
     };
 
+    // Builder
+    const getStr = () => {
+        const f = [$('f1').value,$('f2').value,$('f3').value];
+        const s = [$('sep0').textContent,$('sep1').textContent].map(x => x.includes('|')?x:'');
+        return `${f[0]}${s[0]}${f[1]}${s[1]}${f[2]}`.trim();
+    };
+    const populate = marc => {
+        const p = marc.replace(/\.$/,'').split('|');
+        $('f1').value = p[0]||'';
+        $('f2').value = p[1]?.slice(1)||'';
+        $('f3').value = p[2]?.slice(1)||'';
+        $('sep0').textContent = p[1]?'|'+p[1][0]:'+';
+        $('sep1').textContent = p[2]?'|'+p[2][0]:'+';
+    };
+    const clearB = () => {
+        $('f1').value=$('f2').value=$('f3').value='';
+        $('sep0').textContent=$('sep1').textContent='+';
+    };
+
+    // LCSH
     const loadLCSH = () => {
         $('lcshStatus').textContent = 'Loading...';
-        fetch(LCSH_URL)
-            .then(r => r.ok ? r.json() : Promise.reject())
-            .then(data => {
-                lcshData = data;
-                lcshIndex = new MiniSearch({
-                    fields: ['marc'],
-                    storeFields: ['marc'],
-                    tokenize: t => t.toLowerCase().split(/[\s\|\(\)\,\.\;\:\/\-]+/).filter(x => x.length > 1)
-                });
-                lcshIndex.addAll(data.map((d, i) => ({ id: i, marc: d.marc })));
-                $('lcshStatus').textContent = `✓ ${data.length.toLocaleString()}`;
-            })
-            .catch(() => $('lcshStatus').textContent = 'Using LOC API');
+        fetch(LCSH_URL).then(r=>r.ok?r.json():Promise.reject()).then(data=>{
+            lcshData = data;
+            lcshIndex = new MiniSearch({fields:['marc'],storeFields:['marc'],
+                tokenize:t=>t.toLowerCase().split(/[\s\|\(\)\,\.\;\:\/\-]+/).filter(x=>x.length>1)});
+            lcshIndex.addAll(data.map((d,i)=>({id:i,marc:d.marc})));
+            $('lcshStatus').textContent = `✓ ${data.length.toLocaleString()}`;
+        }).catch(()=>$('lcshStatus').textContent='Using LOC API');
     };
 
     const searchLCSH = () => {
         clearTimeout(lcshTimer);
         const q = $('lcshInput').value.trim();
-        if (q.length < 2) return $('lcshResults').innerHTML = '';
-
-        lcshTimer = setTimeout(() => {
-            let results = [];
-
-            if (lcshIndex) {
-                results = lcshIndex.search(q, { prefix: true, fuzzy: 0.2, combineWith: 'OR' })
-                    .map(r => ({ marc: r.marc, score: r.score }));
-
-                if (results.length < 20 && lcshData) {
-                    const ql = q.toLowerCase();
-                    const seen = new Set(results.map(r => r.marc));
-                    lcshData.filter(d => d.marc && !seen.has(d.marc) && matches(d.marc.toLowerCase(), ql))
-                        .slice(0, 30)
-                        .forEach(d => results.push({ marc: d.marc, score: score(d.marc.toLowerCase(), ql) }));
-                }
-                results.sort((a, b) => b.score - a.score);
-                results = results.slice(0, 75);
+        if (q.length<2) return $('lcshResults').innerHTML='';
+        lcshTimer = setTimeout(()=>{
+            let r = lcshIndex
+                ? lcshIndex.search(q,{prefix:true,fuzzy:.2,combineWith:'OR'}).map(x=>({marc:x.marc,score:x.score}))
+                : [];
+            if (r.length<20 && lcshData) {
+                const ql=q.toLowerCase(), seen=new Set(r.map(x=>x.marc));
+                lcshData.filter(d=>d.marc&&!seen.has(d.marc)&&matches(d.marc.toLowerCase(),ql))
+                    .slice(0,30).forEach(d=>r.push({marc:d.marc,score:score(d.marc.toLowerCase(),ql)}));
             }
-
-            if (results.length) {
-                $('lcshResults').innerHTML = results.map(r => 
-                    `<div data-marc="${r.marc.replace(/"/g, '&quot;')}">${r.marc}</div>`
-                ).join('');
+            r.sort((a,b)=>b.score-a.score);
+            r = r.slice(0,75);
+            if (r.length) {
+                $('lcshResults').innerHTML = r.map(x=>`<div data-marc="${esc(x.marc)}">${x.marc}</div>`).join('');
             } else {
                 $('lcshResults').innerHTML = '<div class="info">Searching LOC...</div>';
                 fetch(`https://id.loc.gov/authorities/subjects/suggest2?q=${encodeURIComponent(q)}`)
-                    .then(r => r.json())
-                    .then(data => {
-                        const hits = (data.hits || []).flatMap(h =>
-                            (h.more?.marcKeys || []).map(k => k.replace(/^.*?\$a/, '').replace(/\$/g, '|') + '.')
-                        );
+                    .then(r=>r.json()).then(data=>{
+                        const hits=(data.hits||[]).flatMap(h=>(h.more?.marcKeys||[])
+                            .map(k=>k.replace(/^.*?\$a/,'').replace(/\$/g,'|')+'.'));
                         $('lcshResults').innerHTML = hits.length
-                            ? hits.map(m => `<div data-marc="${m.replace(/"/g, '&quot;')}">${m}</div>`).join('')
+                            ? hits.map(m=>`<div data-marc="${esc(m)}">${m}</div>`).join('')
                             : '<div class="info">No results</div>';
-                    })
-                    .catch(() => $('lcshResults').innerHTML = '<div class="info">Error</div>');
+                    }).catch(()=>$('lcshResults').innerHTML='<div class="info">Error</div>');
             }
-        }, 150);
+        },150);
     };
 
+    // MDS
     const loadMDS = () => {
         $('mdsStatus').textContent = 'Loading...';
-        fetch(MDS_URL)
-            .then(r => r.ok ? r.json() : Promise.reject())
-            .then(data => {
-                mdsData = Object.entries(data).map(([num, desc]) => ({ num, desc }));
-                mdsIndex = new MiniSearch({
-                    fields: ['desc'],
-                    storeFields: ['num', 'desc'],
-                    tokenize: t => t.toLowerCase().split(/[\s\,\.\;\:\(\)\/\-]+/).filter(x => x.length > 1)
-                });
-                mdsIndex.addAll(mdsData.map((d, i) => ({ id: i, ...d })));
-                $('mdsStatus').textContent = `✓ ${mdsData.length.toLocaleString()}`;
-                mdsBrowse(''); // render top level on load
-            })
-            .catch(() => $('mdsStatus').textContent = 'Error loading');
+        fetch(MDS_URL).then(r=>r.ok?r.json():Promise.reject()).then(data=>{
+            mdsData = Object.entries(data).map(([num,desc])=>({num,desc}));
+            mdsIndex = new MiniSearch({fields:['desc'],storeFields:['num','desc'],
+                tokenize:t=>t.toLowerCase().split(/[\s\,\.\;\:\(\)\/\-]+/).filter(x=>x.length>1)});
+            mdsIndex.addAll(mdsData.map((d,i)=>({id:i,...d})));
+            $('mdsStatus').textContent = `✓ ${mdsData.length.toLocaleString()}`;
+            mdsBrowse('');
+        }).catch(()=>$('mdsStatus').textContent='Error loading');
     };
 
     const searchMDS = () => {
         clearTimeout(mdsTimer);
         const q = $('mdsInput').value.trim();
-        if (q.length < 2) return $('mdsResults').innerHTML = '';
-
-        mdsTimer = setTimeout(() => {
-            let results = mdsIndex.search(q, { prefix: true, fuzzy: 0.2, combineWith: 'OR' })
-                .map(r => ({ num: r.num, desc: r.desc, score: r.score }));
-
-            if (results.length < 20 && mdsData) {
-                const ql = q.toLowerCase();
-                const seen = new Set(results.map(r => r.num));
-                mdsData.filter(d => !seen.has(d.num) && matches(d.desc.toLowerCase(), ql))
-                    .slice(0, 30)
-                    .forEach(d => results.push({ ...d, score: score(d.desc.toLowerCase(), ql) + (5 - d.num.length) * 2 }));
+        if (q.length<2) return $('mdsResults').innerHTML='';
+        mdsTimer = setTimeout(()=>{
+            let r = mdsIndex.search(q,{prefix:true,fuzzy:.2,combineWith:'OR'})
+                .map(x=>({num:x.num,desc:x.desc,score:x.score}));
+            if (r.length<20 && mdsData) {
+                const ql=q.toLowerCase(), seen=new Set(r.map(x=>x.num));
+                mdsData.filter(d=>!seen.has(d.num)&&matches(d.desc.toLowerCase(),ql))
+                    .slice(0,30).forEach(d=>r.push({...d,score:score(d.desc.toLowerCase(),ql)+(5-d.num.length)*2}));
             }
-            results.sort((a, b) => b.score - a.score);
-            results = results.slice(0, 50);
+            r.sort((a,b)=>b.score-a.score);
+            $('mdsResults').innerHTML = r.slice(0,50).map(x=>
+                `<div data-mds="${x.num}"><span class="mds-num">${x.num}</span>${x.desc}</div>`
+            ).join('') || '<div class="info">No results</div>';
+        },150);
+    };
 
-            $('mdsResults').innerHTML = results.length
-                ? results.map(r => `<div data-mds="${r.num}"><span class="mds-num">${r.num}</span>${r.desc}</div>`).join('')
-                : '<div class="info">No results</div>';
-        }, 150);
+    const mdsHasChildren = p => {
+        const n = p.length<3 ? p.length+1 : p.includes('.')?p.length+1:p.length+2;
+        return mdsData.some(d=>d.num.startsWith(p)&&d.num.length===n);
     };
 
     const mdsBrowse = prefix => {
-        const browse = $('mdsBrowse');
-        const crumbs = $('mdsCrumbs');
+        const nextLen = prefix.length<3 ? prefix.length+1 : prefix.includes('.')?prefix.length+1:prefix.length+2;
+        const children = mdsData.filter(d=>d.num.startsWith(prefix)&&d.num.length===nextLen);
 
-        // Determine next place value length to show
-        // '' -> 1 digit, '1' -> 2 digits, '12' -> 3 digits, etc.
-        const nextLen = prefix.length + 1;
-
-        // Get all direct children at this level
-        const children = mdsData.filter(d => {
-            if (!d.num.startsWith(prefix)) return false;
-            const rest = d.num.slice(prefix.length);
-            // Only show entries that are exactly one place value deeper
-            // Handle decimal: after 3 digits we go to x.x, x.xx etc.
-            if (prefix.length < 3) {
-                return d.num.length === nextLen;
-            } else {
-                // Past 3 digits, next step is adding one decimal place
-                const expectedLen = prefix.includes('.')
-                    ? prefix.length + 1
-                    : prefix.length + 2; // +2 to include the dot
-                return d.num.length === expectedLen;
-            }
-        });
-
-        // Breadcrumb trail
+        // Breadcrumbs
         if (!prefix) {
-            crumbs.innerHTML = '<b>All Classes</b>';
+            $('mdsCrumbs').innerHTML = '<b>All Classes</b>';
         } else {
-            const parts = [];
-            parts.push(`<a href="#" data-browse="">All Classes</a>`);
-
-            // Build intermediate crumbs
-            for (let i = 1; i <= prefix.length; i++) {
-                const slice = prefix.slice(0, i);
-                const entry = mdsData.find(d => d.num === slice);
-                const label = entry ? `${slice} ${entry.desc}` : slice;
-                if (i < prefix.length) {
-                    parts.push(`<a href="#" data-browse="${slice}">${label}</a>`);
-                } else {
-                    parts.push(`<b>${label}</b>`);
-                }
+            const parts = [`<a href="#" data-browse="">All Classes</a>`];
+            for (let i=1;i<=prefix.length;i++) {
+                const sl = prefix.slice(0,i);
+                const en = mdsData.find(d=>d.num===sl);
+                const lb = en?`${sl} ${en.desc}`:sl;
+                parts.push(i<prefix.length?`<a href="#" data-browse="${sl}">${lb}</a>`:`<b>${lb}</b>`);
             }
-            crumbs.innerHTML = parts.join(' › ');
+            $('mdsCrumbs').innerHTML = parts.join(' › ');
         }
 
-        // Render children
+        // Children or leaf
         if (!children.length) {
-            // Leaf node - show copy prompt
-            const entry = mdsData.find(d => d.num === prefix);
-            browse.innerHTML = entry
-                ? `<div data-mds="${entry.num}" style="font-weight:bold">
-                     <span class="mds-num">${entry.num}</span>${entry.desc}
-                     <span class="info"> — click to copy</span>
-                   </div>`
+            const en = mdsData.find(d=>d.num===prefix);
+            $('mdsBrowse').innerHTML = en
+                ? `<div data-mds="${en.num}"><span class="mds-num">${en.num}</span>${en.desc} <span class="info">— click to copy</span></div>`
                 : '<div class="info">No further subdivisions</div>';
             return;
         }
-
-        browse.innerHTML = children.map(d =>
-            `<div data-browse="${d.num}">
-                <span class="mds-num">${d.num}</span>${d.desc}
-                ${mdsHasChildren(d.num) ? ' ›' : ' <a href="#" data-mds="' + d.num + '" onclick="event.stopPropagation()">copy</a>'}
-             </div>`
+        $('mdsBrowse').innerHTML = children.map(d=>
+            `<div data-browse="${d.num}"><span class="mds-num">${d.num}</span>${d.desc}${mdsHasChildren(d.num)?' ›':` <a href="#" data-mds="${d.num}" onclick="event.stopPropagation()">copy</a>`}</div>`
         ).join('');
     };
 
-    const mdsHasChildren = prefix => {
-        const nextLen = prefix.length < 3 ? prefix.length + 1 : prefix.includes('.') ? prefix.length + 1 : prefix.length + 2;
-        return mdsData.some(d => d.num.startsWith(prefix) && d.num.length === nextLen);
-    };
-    
-        const searchOL = () => {
+    // Open Library
+    const searchOL = () => {
         const q = $('olInput').value.trim();
-        if (!q) {
-            $('olResults').innerHTML = '<div class="info">Please enter an ISBN</div>';
-            return;
-        }
-
-    $('olResults').innerHTML = '<div class="info">Searching...</div>';
-        const isbn = q.replace(/[^0-9Xx]/g, '');
-
-        fetch(`https://openlibrary.org/api/books?bibkeys=ISBN:${isbn}&jscmd=data&format=json`)
-            .then(r => r.json())
-            .then(data => {
+        if (!q) return $('olResults').innerHTML='<div class="info">Please enter an ISBN</div>';
+        $('olResults').innerHTML = '<div class="info">Searching...</div>';
+        fetch(`https://openlibrary.org/api/books?bibkeys=ISBN:${q.replace(/[^0-9Xx]/g,'')}&jscmd=data&format=json`)
+            .then(r=>r.json()).then(data=>{
                 const book = data[Object.keys(data)[0]];
-                if (!book) return $('olResults').innerHTML = '<p>Not found. <a href="https://openlibrary.org/books/add" target="_blank">Add?</a>';
-
-                const row = (l, v) => v ? `<p><b>${l}:</b> ${v}` : '';
-                const names = arr => arr?.map(x => x.name).join(', ') || '';
-
-                const workId = book.key?.split('/').pop();
-                const safeTitle = book.title ? encodeURIComponent(book.title.replace(/\s+/g, '_')) : '';
-                const editUrl = workId
-                    ? `https://openlibrary.org/books/${workId}/${safeTitle}/edit?work_key=/works/${workId}`
-                    : null;
-
+                if (!book) return $('olResults').innerHTML='<p>Not found. <a href="https://openlibrary.org/books/add" target="_blank">Add?</a>';
+                const row = (l,v) => v?`<p><b>${l}:</b> ${v}`:'';
+                const nm = arr => arr?.map(x=>x.name).join(', ')||'';
+                const wid = book.key?.split('/').pop();
+                const eurl = wid?`https://openlibrary.org/books/${wid}/${encodeURIComponent((book.title||'').replace(/\s+/g,'_'))}/edit?work_key=/works/${wid}`:'';
                 $('olResults').innerHTML = [
-                    row('Title', book.title),
-                    row('Subtitle', book.subtitle),
-                    row('Authors', names(book.authors)),
-                    row('Published', book.publish_date),
-                    row('Publishers', names(book.publishers)),
-                    row('Pages', book.number_of_pages),
-                    row('MDS', book.classifications?.dewey_decimal_class?.join(', ')),
-                    row('LC', book.classifications?.lc_classifications?.join(', ')),
-                    row('Subjects', names(book.subjects)),
-                    book.cover?.medium ? `<p><img src="${book.cover.medium}" style="max-height:120px">` : '',
-                    book.url ? `<p><a href="${book.url}" target="_blank">View on Open Library</a>` : '',
-                    editUrl ? `<p><a href="${editUrl}" target="_blank">Edit on Open Library</a>` : ''
+                    row('Title',book.title),
+                    row('Subtitle',book.subtitle),
+                    row('Authors',nm(book.authors)),
+                    row('Published',book.publish_date),
+                    row('Publishers',nm(book.publishers)),
+                    row('Pages',book.number_of_pages),
+                    row('MDS',book.classifications?.dewey_decimal_class?.join(', ')),
+                    row('LC',book.classifications?.lc_classifications?.join(', ')),
+                    row('Subjects',nm(book.subjects)),
+                    book.cover?.medium?`<p><img src="${book.cover.medium}" style="max-height:120px">`:'',
+                    book.url?`<p><a href="${book.url}" target="_blank">View on Open Library</a>`:'',
+                    eurl?`<p><a href="${eurl}" target="_blank">Edit on Open Library</a>`:''
                 ].join('');
-            })
-            .catch(e => $('olResults').innerHTML = `<p>Error: ${e.message}`);
+            }).catch(e=>$('olResults').innerHTML=`<p>Error: ${e.message}`);
     };
-    const clearOL = () => {
-        $('olInput').value = '';
-        $('olResults').innerHTML = '';
-        $('olInput').focus();
-    };
+
     const init = () => {
-        $('tabBar').onclick = e => {
-            const btn = e.target.closest('[data-tab]');
-            if (btn) switchTab(btn.dataset.tab);
-        };
+        // Tabs
+        $('tabBar').onclick = e => { const b=e.target.closest('[data-tab]'); if(b) { document.querySelectorAll('.tab-btn').forEach(x=>x.classList.toggle('on',x.dataset.tab===b.dataset.tab)); document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x.id==='tab-'+b.dataset.tab)); }};
 
-        $('univSearch').oninput = updateProviders;
+        // Universal search
+        $('univSearch').oninput = () => $('providers').classList.toggle('disabled',!$('univSearch').value.trim());
         $('univSearch').addEventListener('keydown', e => {
-            if (e.key !== 'Enter') return;
-            const raw = $('univSearch').value.trim();
-            const prefix = raw.substring(0, 2).toLowerCase();
-            const provider = shortcuts[prefix];
-            if (provider) {
-                const q = encodeURIComponent(raw.substring(2).trim());
-                if (q) window.open(providers[provider](q), '_blank');
-            }
+            if (e.key!=='Enter') return;
+            const raw=$('univSearch').value.trim();
+            const p=shortcuts[raw[0]];
+            if (p&&raw[1]==='!') { const q=encodeURIComponent(raw.substring(2).trim()); if(q) window.open(providers[p](q),'_blank'); }
         });
-        $('providers').onclick = e => {
-            const p = e.target.dataset.p;
-            const q = $('univSearch').value.trim();
-            if (p && q) window.open(providers[p](encodeURIComponent(q)), '_blank');
-        };
+        $('providers').onclick = e => { const p=e.target.dataset.p,q=$('univSearch').value.trim(); if(p&&q) window.open(providers[p](encodeURIComponent(q)),'_blank'); };
 
+        // Builder
         $('builderActions').onclick = e => {
-            const action = e.target.dataset.action;
-            if (action === 'copy') copy(getBuilderStr() + '.');
-            if (action === 'copyJuv') copy(getBuilderStr() + '|vJuvenile literature.');
-            if (action === 'clear') clearBuilder();
+            const a=e.target.dataset.action;
+            if(a==='copy') copy(getStr()+'.');
+            if(a==='copyJuv') copy(getStr()+'|vJuvenile literature.');
+            if(a==='clear') clearB();
         };
 
-        document.onclick = e => {
-            const btn = e.target.closest('[data-sep]');
-            if (btn) $('sep' + btn.dataset.sep).textContent = btn.dataset.val;
-        };
+        // Separators - piggyback on document.onclick
+        document.onclick = e => { const b=e.target.closest('[data-sep]'); if(b) $('sep'+b.dataset.sep).textContent=b.dataset.val; };
 
+        // LCSH
         $('lcshInput').oninput = searchLCSH;
-        $('lcshResults').onclick = e => {
-            const div = e.target.closest('[data-marc]');
-            if (div) populateBuilder(div.dataset.marc);
-        };
+        $('lcshResults').onclick = e => { const d=e.target.closest('[data-marc]'); if(d) populate(d.dataset.marc); };
 
+        // MDS
         $('mdsInput').oninput = searchMDS;
-
         const mdsClick = e => {
-            // Drill down
-            const browse = e.target.closest('[data-browse]');
-            if (browse) {
-                mdsBrowse(browse.dataset.browse);
-                return;
-            }
-            // Copy number
-            const copy_item = e.target.closest('[data-mds]');
-            if (copy_item) {
-                copy(copy_item.dataset.mds);
-                copy_item.style.background = '#d4edda';
-                setTimeout(() => copy_item.style.background = '', 200);
-            }
+            const br=e.target.closest('[data-browse]');
+            if (br) { mdsBrowse(br.dataset.browse); return; }
+            const it=e.target.closest('[data-mds]');
+            if (it) { copy(it.dataset.mds); it.style.background='#d4edda'; setTimeout(()=>it.style.background='',200); }
         };
+        $('mdsResults').onclick = $('mdsBrowse').onclick = mdsClick;
+        $('mdsCrumbs').onclick = e => { const a=e.target.closest('[data-browse]'); if(a){e.preventDefault();mdsBrowse(a.dataset.browse);}};
 
-        $('mdsResults').onclick = mdsClick;
-        $('mdsBrowse').onclick = mdsClick;
-        $('mdsCrumbs').onclick = e => {
-            const a = e.target.closest('[data-browse]');
-            if (a) { e.preventDefault(); mdsBrowse(a.dataset.browse); }
-        };
-
-        $('olInput').addEventListener('keydown', e => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                searchOL();
-            }
-        });
+        // Open Library
+        $('olInput').addEventListener('keydown', e => { if(e.key==='Enter'){e.preventDefault();searchOL();}});
         $('olBtn').addEventListener('click', searchOL);
-        $('olClear').addEventListener('click', clearOL);
+        $('olClear').addEventListener('click', ()=>{ $('olInput').value=''; $('olResults').innerHTML=''; $('olInput').focus(); });
 
+        // Keyboard shortcuts
         document.onkeydown = e => {
-            if (!(e.ctrlKey || e.metaKey)) return;
-            const inInput = ['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName);
-            if (e.key === 'c' && !inInput) { e.preventDefault(); copy(getBuilderStr() + '.'); }
-            if (e.key === 'j') { e.preventDefault(); copy(getBuilderStr() + '|vJuvenile literature.'); }
-            if (e.key === 'x' && !inInput) { e.preventDefault(); clearBuilder(); }
+            if (!(e.ctrlKey||e.metaKey)) return;
+            const inp=['INPUT','TEXTAREA'].includes(document.activeElement.tagName);
+            if (e.key==='c'&&!inp){e.preventDefault();copy(getStr()+'.');}
+            if (e.key==='j'){e.preventDefault();copy(getStr()+'|vJuvenile literature.');}
+            if (e.key==='x'&&!inp){e.preventDefault();clearB();}
         };
 
-        updateProviders();
         loadLCSH();
         loadMDS();
     };
