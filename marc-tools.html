@@ -393,6 +393,12 @@ const app = (() => {
                 const row = (l, v) => v ? `<p><b>${l}:</b> ${v}` : '';
                 const names = arr => arr?.map(x => x.name).join(', ') || '';
 
+                const workId = book.key?.split('/').pop();
+                const safeTitle = book.title ? encodeURIComponent(book.title.replace(/\s+/g, '_')) : '';
+                const editUrl = workId
+                    ? `https://openlibrary.org/books/${workId}/${safeTitle}/edit?work_key=/works/${workId}`
+                    : null;
+
                 $('olResults').innerHTML = [
                     row('Title', book.title),
                     row('Subtitle', book.subtitle),
@@ -403,7 +409,9 @@ const app = (() => {
                     row('MDS', book.classifications?.dewey_decimal_class?.join(', ')),
                     row('LC', book.classifications?.lc_classifications?.join(', ')),
                     row('Subjects', names(book.subjects)),
-                    book.cover?.medium ? `<p><img src="${book.cover.medium}" style="max-height:120px">` : ''
+                    book.cover?.medium ? `<p><img src="${book.cover.medium}" style="max-height:120px">` : '',
+                    book.url ? `<p><a href="${book.url}" target="_blank">View on Open Library</a>` : '',
+                    editUrl ? `<p><a href="${editUrl}" target="_blank">Edit on Open Library</a>` : ''
                 ].join('');
             })
             .catch(e => $('olResults').innerHTML = `<p>Error: ${e.message}`);
