@@ -16,6 +16,7 @@
 .mds-num{font-weight:bold;margin-right:8px;color:#0366d6}
 .info{color:#666;font-size:.9em;padding:4px 0}
 .disabled{opacity:.5;pointer-events:none}
+.thumb{max-height:120px}
 </style>
 </head>
 <body>
@@ -31,19 +32,17 @@
 <p><button data-p="librarything">LibraryThing</button> l!
 <p><button data-p="tmdb">TMDB</button> t!
 </div>
-<hr>
-<b>Bookmarks</b>
-<p>OCLC
+<hr>OCLC
 <p><a href="https://www.oclc.org/bibformats/en/0xx.html" target="_blank">Bib Formats</a>
 <p><a href="https://entities.oclc.org/worldcat/ddc/" target="_blank">DDC Linked Data</a>
 <p><a href="https://fast.oclc.org/searchfast/" target="_blank">FAST Search</a>
-<p>Library of Congress
+<hr>Library of Congress
 <p><a href="https://authorities.loc.gov/" target="_blank">LOC Authorities</a>
 <p><a href="https://www.loc.gov/aba/publications/FreeLCGFT/freelcgft.html" target="_blank">LCGFT Terms</a>
-<p>LibraryThing
+<hr>LibraryThing
 <p><a href="https://www.librarything.com/mds" target="_blank">MDS</a>
 <p><a href="https://www.talpasearch.com/429.669/search?su_catalog_url=https%3A%2F%2Fohio.ent.sirsi.net%2Fclient%2Fen_US%2Facp%2F" target="_blank">Talpa AI</a>
-<p>SEO
+<hr>SEO
 <p><a href="https://support.servingeveryohioan.org/support/solutions" target="_blank">SEO Knowledge Base</a>
 </div>
 
@@ -62,19 +61,9 @@
 <button data-action="clear" title="Ctrl+X">Clear ^X</button>
 </div>
 <p><input id="f1" placeholder="Main term">
-<p>
-<button data-sep="0" data-val="+">None</button>
-<button data-sep="0" data-val="|v">|v</button>
-<button data-sep="0" data-val="|x">|x</button>
-<button data-sep="0" data-val="|y">|y</button>
-<button data-sep="0" data-val="|z">|z</button>
+<p id="seps0"></p>
 <p><span id="sep0">+</span><input id="f2">
-<p>
-<button data-sep="1" data-val="+">None</button>
-<button data-sep="1" data-val="|v">|v</button>
-<button data-sep="1" data-val="|x">|x</button>
-<button data-sep="1" data-val="|y">|y</button>
-<button data-sep="1" data-val="|z">|z</button>
+<p id="seps1"></p>
 <p><span id="sep1">+</span><input id="f3">
 <hr>
 <h4>LCSH Search</h4>
@@ -105,17 +94,14 @@ const app = (() => {
     const LCSH_URL = 'https://raw.githubusercontent.com/adamscolibrary/LCSH-2026/refs/heads/main/LCSH26.json';
     const MDS_URL  = 'https://raw.githubusercontent.com/adamscolibrary/Melvil-Decimal-System-1922/refs/heads/main/mds.json';
     const SUF = ['s','es','ed','ing','er','ers','ly','tion','sion','ment','ness','ity','al','ial'];
+    const TOKENIZE = t => t.toLowerCase().split(/[\s\|\(\)\,\.\;\:\/\-]+/).filter(x=>x.length>1);
     const isISBN = q => /^[\d\-X]{9,17}$/.test(q.replace(/\s/g,''));
     const $ = id => document.getElementById(id);
     const esc = s => s.replace(/"/g,'&quot;');
-    const copy = t => navigator.clipboard.writeText(t).catch(() => {
-        const a = document.createElement('textarea');
-        a.value = t; document.body.appendChild(a); a.select();
-        document.execCommand('copy'); document.body.removeChild(a);
-    });
+    const row = (l,v) => v ? `<p><b>${l}:</b> ${v}` : '';
+    const copy = t => navigator.clipboard.writeText(t);
 
     const shortcuts = {a:'abebooks',d:'discogs',g:'googlebooks',h:'hardcover',l:'librarything',t:'tmdb'};
-
     const providers = {
         abebooks:    q => `https://www.abebooks.com/servlet/SearchResults?kn=${q}`,
         discogs:     q => `https://www.discogs.com/search?q=${q}`,
@@ -127,53 +113,66 @@ const app = (() => {
 
     let lcshIndex, lcshData, mdsIndex, mdsData, lcshTimer, mdsTimer;
 
-    const matches = (text, q) => {
-        if (text.includes(q)) return true;
+    // Shared match + score
+    const matchScore = (text, q) => {
+        let s = 0;
+        if (text.includes(q)) s += 50;
         for (const w of text.split(/[\s\|\(\)\,\.\;\:\/\-]+/)) {
-            if (w.startsWith(q) || SUF.some(s => w === q+s)) return true;
-            if (q.endsWith('e') && ['ing','ed','er'].some(s => w === q.slice(0,-1)+s)) return true;
+            if (w.startsWith(q)) s += 75;
+            else if (SUF.some(x=>w===q+x)) s += 40;
+            else if (q.endsWith('e')&&['ing','ed','er'].some(x=>w===q.slice(0,-1)+x)) s += 40;
         }
-        return false;
+        if (text.startsWith(q)) s += 25;
+        for (const w of text.split(/[\s\-\(\)\|\,\.\;\:\/]+/))
+            s += w===q ? 100 : 0;
+        return s;
     };
 
-    const score = (text, q) => {
-        let s = text.startsWith(q) ? 25 : 0;
-        for (const w of text.split(/[\s\-\(\)\|\,\.\;\:\/]+/))
-            s += w === q ? 100 : w.startsWith(q) ? 75 : 0;
-        return s;
+    // Shared index loader
+    const loadIndex = (url, field, statusEl, onDone) => {
+        $(statusEl).textContent = 'Loading...';
+        fetch(url).then(r=>r.ok?r.json():Promise.reject()).then(data=>{
+            const idx = new MiniSearch({
+                fields:[field], storeFields:['num','desc','marc'],
+                tokenize: TOKENIZE
+            });
+            onDone(data, idx, statusEl);
+        }).catch(()=>$(statusEl).textContent='Error loading');
+    };
+
+    // Shared search supplement
+    const supplement = (results, data, q, keyFn, textFn, scoreFn) => {
+        if (results.length >= 20 || !data) return results;
+        const ql = q.toLowerCase(), seen = new Set(results.map(keyFn));
+        data.filter(d => !seen.has(keyFn(d)) && matchScore(textFn(d).toLowerCase(), ql) > 0)
+            .slice(0, 30)
+            .forEach(d => results.push({...d, score: scoreFn(d, ql)}));
+        return results;
     };
 
     // Builder
     const getStr = () => {
         const f = [$('f1').value,$('f2').value,$('f3').value];
-        const s = [$('sep0').textContent,$('sep1').textContent].map(x => x.includes('|')?x:'');
+        const s = [$('sep0').textContent,$('sep1').textContent].map(x=>x.includes('|')?x:'');
         return `${f[0]}${s[0]}${f[1]}${s[1]}${f[2]}`.trim();
     };
     const populate = marc => {
         const p = marc.replace(/\.$/,'').split('|');
-        $('f1').value = p[0]||'';
-        $('f2').value = p[1]?.slice(1)||'';
-        $('f3').value = p[2]?.slice(1)||'';
-        $('sep0').textContent = p[1]?'|'+p[1][0]:'+';
-        $('sep1').textContent = p[2]?'|'+p[2][0]:'+';
+        $('f1').value=p[0]||''; $('f2').value=p[1]?.slice(1)||''; $('f3').value=p[2]?.slice(1)||'';
+        $('sep0').textContent=p[1]?'|'+p[1][0]:'+';
+        $('sep1').textContent=p[2]?'|'+p[2][0]:'+';
     };
     const clearB = () => {
         $('f1').value=$('f2').value=$('f3').value='';
         $('sep0').textContent=$('sep1').textContent='+';
     };
 
+    // Separator buttons - generated once
+    const sepBtns = ['+','|v','|x','|y','|z'].map(v=>
+        `<button data-sep="${v==='+' ? 'none' : v}" data-val="${v}">${v==='+'?'None':v}</button>`
+    ).join('');
+    
     // LCSH
-    const loadLCSH = () => {
-        $('lcshStatus').textContent = 'Loading...';
-        fetch(LCSH_URL).then(r=>r.ok?r.json():Promise.reject()).then(data=>{
-            lcshData = data;
-            lcshIndex = new MiniSearch({fields:['marc'],storeFields:['marc'],
-                tokenize:t=>t.toLowerCase().split(/[\s\|\(\)\,\.\;\:\/\-]+/).filter(x=>x.length>1)});
-            lcshIndex.addAll(data.map((d,i)=>({id:i,marc:d.marc})));
-            $('lcshStatus').textContent = `✓ ${data.length.toLocaleString()}`;
-        }).catch(()=>$('lcshStatus').textContent='Using LOC API');
-    };
-
     const searchLCSH = () => {
         clearTimeout(lcshTimer);
         const q = $('lcshInput').value.trim();
@@ -182,11 +181,7 @@ const app = (() => {
             let r = lcshIndex
                 ? lcshIndex.search(q,{prefix:true,fuzzy:.2,combineWith:'OR'}).map(x=>({marc:x.marc,score:x.score}))
                 : [];
-            if (r.length<20 && lcshData) {
-                const ql=q.toLowerCase(), seen=new Set(r.map(x=>x.marc));
-                lcshData.filter(d=>d.marc&&!seen.has(d.marc)&&matches(d.marc.toLowerCase(),ql))
-                    .slice(0,30).forEach(d=>r.push({marc:d.marc,score:score(d.marc.toLowerCase(),ql)}));
-            }
+            r = supplement(r, lcshData, q, x=>x.marc, x=>x.marc, (d,ql)=>matchScore(d.marc.toLowerCase(),ql));
             r.sort((a,b)=>b.score-a.score);
             r = r.slice(0,75);
             if (r.length) {
@@ -206,18 +201,6 @@ const app = (() => {
     };
 
     // MDS
-    const loadMDS = () => {
-        $('mdsStatus').textContent = 'Loading...';
-        fetch(MDS_URL).then(r=>r.ok?r.json():Promise.reject()).then(data=>{
-            mdsData = Object.entries(data).map(([num,desc])=>({num,desc}));
-            mdsIndex = new MiniSearch({fields:['desc'],storeFields:['num','desc'],
-                tokenize:t=>t.toLowerCase().split(/[\s\,\.\;\:\(\)\/\-]+/).filter(x=>x.length>1)});
-            mdsIndex.addAll(mdsData.map((d,i)=>({id:i,...d})));
-            $('mdsStatus').textContent = `✓ ${mdsData.length.toLocaleString()}`;
-            mdsBrowse('');
-        }).catch(()=>$('mdsStatus').textContent='Error loading');
-    };
-
     const searchMDS = () => {
         clearTimeout(mdsTimer);
         const q = $('mdsInput').value.trim();
@@ -225,11 +208,8 @@ const app = (() => {
         mdsTimer = setTimeout(()=>{
             let r = mdsIndex.search(q,{prefix:true,fuzzy:.2,combineWith:'OR'})
                 .map(x=>({num:x.num,desc:x.desc,score:x.score}));
-            if (r.length<20 && mdsData) {
-                const ql=q.toLowerCase(), seen=new Set(r.map(x=>x.num));
-                mdsData.filter(d=>!seen.has(d.num)&&matches(d.desc.toLowerCase(),ql))
-                    .slice(0,30).forEach(d=>r.push({...d,score:score(d.desc.toLowerCase(),ql)+(5-d.num.length)*2}));
-            }
+            r = supplement(r, mdsData, q, x=>x.num, x=>x.desc,
+                (d,ql)=>matchScore(d.desc.toLowerCase(),ql)+(5-d.num.length)*2);
             r.sort((a,b)=>b.score-a.score);
             $('mdsResults').innerHTML = r.slice(0,50).map(x=>
                 `<div data-mds="${x.num}"><span class="mds-num">${x.num}</span>${x.desc}</div>`
@@ -237,30 +217,21 @@ const app = (() => {
         },150);
     };
 
-    const mdsHasChildren = p => {
-        const n = p.length<3 ? p.length+1 : p.includes('.')?p.length+1:p.length+2;
-        return mdsData.some(d=>d.num.startsWith(p)&&d.num.length===n);
-    };
+    const mdsChildLen = p => p.length<3 ? p.length+1 : p.includes('.')?p.length+1:p.length+2;
 
     const mdsBrowse = prefix => {
-        const nextLen = prefix.length<3 ? prefix.length+1 : prefix.includes('.')?prefix.length+1:prefix.length+2;
+        const nextLen = mdsChildLen(prefix);
         const children = mdsData.filter(d=>d.num.startsWith(prefix)&&d.num.length===nextLen);
 
-        // Breadcrumbs
-        if (!prefix) {
-            $('mdsCrumbs').innerHTML = '<b>All Classes</b>';
-        } else {
-            const parts = [`<a href="#" data-browse="">All Classes</a>`];
-            for (let i=1;i<=prefix.length;i++) {
-                const sl = prefix.slice(0,i);
-                const en = mdsData.find(d=>d.num===sl);
-                const lb = en?`${sl} ${en.desc}`:sl;
-                parts.push(i<prefix.length?`<a href="#" data-browse="${sl}">${lb}</a>`:`<b>${lb}</b>`);
-            }
-            $('mdsCrumbs').innerHTML = parts.join(' › ');
-        }
+        $('mdsCrumbs').innerHTML = !prefix ? '<b>All Classes</b>' : [
+            `<a href="#" data-browse="">All Classes</a>`,
+            ...Array.from({length:prefix.length},(_,i)=>{
+                const sl=prefix.slice(0,i+1), en=mdsData.find(d=>d.num===sl);
+                const lb=en?`${sl} ${en.desc}`:sl;
+                return i+1<prefix.length?`<a href="#" data-browse="${sl}">${lb}</a>`:`<b>${lb}</b>`;
+            })
+        ].join(' › ');
 
-        // Children or leaf
         if (!children.length) {
             const en = mdsData.find(d=>d.num===prefix);
             $('mdsBrowse').innerHTML = en
@@ -268,9 +239,11 @@ const app = (() => {
                 : '<div class="info">No further subdivisions</div>';
             return;
         }
-        $('mdsBrowse').innerHTML = children.map(d=>
-            `<div data-browse="${d.num}"><span class="mds-num">${d.num}</span>${d.desc}${mdsHasChildren(d.num)?' ›':` <a href="#" data-mds="${d.num}" onclick="event.stopPropagation()">copy</a>`}</div>`
-        ).join('');
+
+        $('mdsBrowse').innerHTML = children.map(d=>{
+            const hasKids = mdsData.some(x=>x.num.startsWith(d.num)&&x.num.length===mdsChildLen(d.num));
+            return `<div data-browse="${d.num}"><span class="mds-num">${d.num}</span>${d.desc}${hasKids?' ›':`<a href="#" data-mds="${d.num}" onclick="event.stopPropagation()"> copy</a>`}</div>`;
+        }).join('');
     };
 
     // Open Library
@@ -282,21 +255,17 @@ const app = (() => {
             .then(r=>r.json()).then(data=>{
                 const book = data[Object.keys(data)[0]];
                 if (!book) return $('olResults').innerHTML='<p>Not found. <a href="https://openlibrary.org/books/add" target="_blank">Add?</a>';
-                const row = (l,v) => v?`<p><b>${l}:</b> ${v}`:'';
                 const nm = arr => arr?.map(x=>x.name).join(', ')||'';
                 const wid = book.key?.split('/').pop();
                 const eurl = wid?`https://openlibrary.org/books/${wid}/${encodeURIComponent((book.title||'').replace(/\s+/g,'_'))}/edit?work_key=/works/${wid}`:'';
                 $('olResults').innerHTML = [
-                    row('Title',book.title),
-                    row('Subtitle',book.subtitle),
-                    row('Authors',nm(book.authors)),
-                    row('Published',book.publish_date),
-                    row('Publishers',nm(book.publishers)),
-                    row('Pages',book.number_of_pages),
+                    row('Title',book.title), row('Subtitle',book.subtitle),
+                    row('Authors',nm(book.authors)), row('Published',book.publish_date),
+                    row('Publishers',nm(book.publishers)), row('Pages',book.number_of_pages),
                     row('MDS',book.classifications?.dewey_decimal_class?.join(', ')),
                     row('LC',book.classifications?.lc_classifications?.join(', ')),
                     row('Subjects',nm(book.subjects)),
-                    book.cover?.medium?`<p><img src="${book.cover.medium}" style="max-height:120px">`:'',
+                    book.cover?.medium?`<p><img src="${book.cover.medium}" class="thumb">`:'',
                     book.url?`<p><a href="${book.url}" target="_blank">View on Open Library</a>`:'',
                     eurl?`<p><a href="${eurl}" target="_blank">Edit on Open Library</a>`:''
                 ].join('');
@@ -304,15 +273,22 @@ const app = (() => {
     };
 
     const init = () => {
+        // Inject separator buttons
+        $('seps0').innerHTML = $('seps1').innerHTML = sepBtns;
+
         // Tabs
-        $('tabBar').onclick = e => { const b=e.target.closest('[data-tab]'); if(b) { document.querySelectorAll('.tab-btn').forEach(x=>x.classList.toggle('on',x.dataset.tab===b.dataset.tab)); document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x.id==='tab-'+b.dataset.tab)); }};
+        $('tabBar').onclick = e => {
+            const b=e.target.closest('[data-tab]');
+            if (!b) return;
+            document.querySelectorAll('.tab-btn').forEach(x=>x.classList.toggle('on',x.dataset.tab===b.dataset.tab));
+            document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x.id==='tab-'+b.dataset.tab));
+        };
 
         // Universal search
         $('univSearch').oninput = () => $('providers').classList.toggle('disabled',!$('univSearch').value.trim());
         $('univSearch').addEventListener('keydown', e => {
             if (e.key!=='Enter') return;
-            const raw=$('univSearch').value.trim();
-            const p=shortcuts[raw[0]];
+            const raw=$('univSearch').value.trim(), p=shortcuts[raw[0]];
             if (p&&raw[1]==='!') { const q=encodeURIComponent(raw.substring(2).trim()); if(q) window.open(providers[p](q),'_blank'); }
         });
         $('providers').onclick = e => { const p=e.target.dataset.p,q=$('univSearch').value.trim(); if(p&&q) window.open(providers[p](encodeURIComponent(q)),'_blank'); };
@@ -324,9 +300,10 @@ const app = (() => {
             if(a==='copyJuv') copy(getStr()+'|vJuvenile literature.');
             if(a==='clear') clearB();
         };
-
-        // Separators - piggyback on document.onclick
-        document.onclick = e => { const b=e.target.closest('[data-sep]'); if(b) $('sep'+b.dataset.sep).textContent=b.dataset.val; };
+        document.onclick = e => {
+            const b=e.target.closest('[data-sep]');
+            if (b) { const idx=b.closest('#seps0')?0:1; $('sep'+idx).textContent=b.dataset.val; }
+        };
 
         // LCSH
         $('lcshInput').oninput = searchLCSH;
@@ -344,7 +321,7 @@ const app = (() => {
         $('mdsCrumbs').onclick = e => { const a=e.target.closest('[data-browse]'); if(a){e.preventDefault();mdsBrowse(a.dataset.browse);}};
 
         // Open Library
-        $('olInput').addEventListener('keydown', e => { if(e.key==='Enter'){e.preventDefault();searchOL();}});
+        $('olInput').addEventListener('keydown', e=>{if(e.key==='Enter'){e.preventDefault();searchOL();}});
         $('olBtn').addEventListener('click', searchOL);
         $('olClear').addEventListener('click', ()=>{ $('olInput').value=''; $('olResults').innerHTML=''; $('olInput').focus(); });
 
@@ -357,8 +334,21 @@ const app = (() => {
             if (e.key==='x'&&!inp){e.preventDefault();clearB();}
         };
 
-        loadLCSH();
-        loadMDS();
+        // Load data
+        loadIndex(LCSH_URL, 'marc', 'lcshStatus', (data, idx, statusEl) => {
+            lcshData = data;
+            idx.addAll(data.map((d,i)=>({id:i,marc:d.marc})));
+            lcshIndex = idx;
+            $(statusEl).textContent = `✓ ${data.length.toLocaleString()}`;
+        });
+
+        loadIndex(MDS_URL, 'desc', 'mdsStatus', (data, idx, statusEl) => {
+            mdsData = Object.entries(data).map(([num,desc])=>({num,desc}));
+            idx.addAll(mdsData.map((d,i)=>({id:i,...d})));
+            mdsIndex = idx;
+            $(statusEl).textContent = `✓ ${mdsData.length.toLocaleString()}`;
+            mdsBrowse('');
+        });
     };
 
     return { init };
