@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MDS Search</title>
+<script src="https://cdn.jsdelivr.net/npm/minisearch@6.3.0/dist/umd/index.min.js"></script>
+<style>
+body{max-width:600px;margin:0 auto;padding:8px}
+.res div{padding:4px;cursor:pointer;border-bottom:1px solid #eee}
+.res div:hover{background:#f0f7ff}
+.mds-num{font-weight:bold;margin-right:8px;color:#0366d6}
+.info{color:#666;font-size:.9em;padding:4px 0}
+</style>
+</head>
+<body>
+<h2>MDS Search ᶠᵒʳ ᵃᵐʸ</h2>
+<p><input id="mdsInput" placeholder="Search topics..." size="40"> <span id="mdsStatus" class="info"></span>
+<div id="mdsResults" class="res"></div>
+<hr>
+<b>Browse</b>
+<p id="mdsCrumbs" class="info"></p>
+<div id="mdsBrowse" class="res"></div>
+
+<script>
+const MDS_URL = 'https://raw.githubusercontent.com/adamscolibrary/Melvil-Decimal-System-1922/refs/heads/main/mds.json';
+const SUF = ['s','es','ed','ing','er','ers','ly','tion','sion','ment','ness','ity','al','ial'];
+const $ = id => document.getElementById(id);
+const copy = t => navigator.clipboard.writeText(t);
+
+let mdsIndex, mdsData, mdsTimer;
+
+const matchScore = (text, q) => {
+    let s = text.includes(q) ? 50 : 0;
+    for (const w of text.split(/[\s\|\(\)\,\.\;\:\/\-]+/)) {
+        if (w.startsWith(q)) s += 75;
+        else if (SUF.some(x=>w===q+x)) s += 40;
+        else if (q.endsWith('e')&&['ing','ed','er'].some(x=>w===q.slice(0,-1)+x)) s += 40;
+        if (w===q) s += 100;
+    }
+    if (text.startsWith(q)) s += 25;
+    return s;
+};
+
+const childLen = p => p.length<3 ? p.length+1 : p.includes('.')?p.length+1:p.length+2;
+
+// Load
+$('mdsStatus').textContent = 'Loading...';
+fetch(MDS_URL).then(r=>r.json()).then(data=>{
+    mdsData = Object.entries(data).map(([num,desc])=>({num,desc}));
+    mdsIndex = new MiniSearch({
+        fields:['desc'], storeFields:['num','desc'],
+        tokenize: t=>t.toLowerCase().split(/[\s\,\.\;\:\(\)\/\-]+/).filter(x=>x.length>1)
+    });
+    mdsIndex.addAll(mdsData.map((d,i)=>({id:i,...d})));
+    $('mdsStatus').textContent = `✓ ${mdsData.length.toLocaleString()}`;
+    browse('');
+}).catch(()=>$('mdsStatus').textContent='Error loading');
+
+// Search
+const search = () => {
+    clearTimeout(mdsTimer);
+    const q = $('mdsInput').value.trim();
+    if (q.length<2) return $('mdsResults').innerHTML='';
+    mdsTimer = setTimeout(()=>{
+        const ql = q.toLowerCase();
+        let r = mdsIndex.search(q,{prefix:true,fuzzy:.2,combineWith:'OR'})
+            .map(x=>({num:x.num,desc:x.desc,score:x.score}));
+        if (r.length<20) {
+            const seen = new Set(r.map(x=>x.num));
+            mdsData.filter(d=>!seen.has(d.num)&&matchScore(d.desc.toLowerCase(),ql)>0)
+                .slice(0,30)
+                .forEach(d=>r.push({...d,score:matchScore(d.desc.toLowerCase(),ql)+(5-d.num.length)*2}));
+        }
+        r.sort((a,b)=>b.score-a.score);
+        $('mdsResults').innerHTML = r.slice(0,50).map(x=>
+            `<div data-mds="${x.num}"><span class="mds-num">${x.num}</span>${x.desc}</div>`
+        ).join('') || '<div class="info">No results</div>';
+    },150);
+};
+
+// Browse
+const browse = prefix => {
+    const nextLen = childLen(prefix);
+    const children = mdsData.filter(d=>d.num.startsWith(prefix)&&d.num.length===nextLen);
+
+    $('mdsCrumbs').innerHTML = !prefix ? '<b>All Classes</b>' : [
+        '<a href="#" data-browse="">All Classes</a>',
+        ...Array.from({length:prefix.length},(_,i)=>{
+            const sl=prefix.slice(0,i+1), en=mdsData.find(d=>d.num===sl);
+            const lb=en?`${sl} ${en.desc}`:sl;
+            return i+1<prefix.length?`<a href="#" data-browse="${sl}">${lb}</a>`:`<b>${lb}</b>`;
+        })
+    ].join(' › ');
+
+    if (!children.length) {
+        const en = mdsData.find(d=>d.num===prefix);
+        $('mdsBrowse').innerHTML = en
+            ? `<div data-mds="${en.num}"><span class="mds-num">${en.num}</span>${en.desc} <span class="info">— click to copy</span></div>`
+            : '<div class="info">No further subdivisions</div>';
+        return;
+    }
+
+    $('mdsBrowse').innerHTML = children.map(d=>{
+        const hasKids = mdsData.some(x=>x.num.startsWith(d.num)&&x.num.length===childLen(d.num));
+        return `<div data-browse="${d.num}"><span class="mds-num">${d.num}</span>${d.desc}${hasKids?' ›':`<a href="#" data-mds="${d.num}" onclick="event.stopPropagation()"> copy</a>`}</div>`;
+    }).join('');
+};
+
+// Events
+$('mdsInput').oninput = search;
+
+const click = e => {
+    const br = e.target.closest('[data-browse]');
+    if (br) { browse(br.dataset.browse); return; }
+    const it = e.target.closest('[data-mds]');
+    if (it) { copy(it.dataset.mds); it.style.background='#d4edda'; setTimeout(()=>it.style.background='',200); }
+};
+
+$('mdsResults').onclick = $('mdsBrowse').onclick = click;
+$('mdsCrumbs').onclick = e => { const a=e.target.closest('[data-browse]'); if(a){e.preventDefault();browse(a.dataset.browse);}};
+</script>
+</body>
+</html>
